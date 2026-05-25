@@ -14,9 +14,11 @@ describe('workspace skill path definitions', () => {
     path.join(home, '.mastracode', 'skills'),
     path.join(home, '.claude', 'skills'),
     path.join(home, '.agents', 'skills'),
+    path.join(cwd, 'packages', 'skills', 'skills', 'pentest'),
+    path.join(cwd, 'packages', 'skills', 'skills', 'shared'),
   ];
 
-  it('uses the six base skill directories for workspace discovery', () => {
+  it('uses the base and built-in skill directories for workspace discovery', () => {
     expect(skillPaths).toEqual(expectedSkillPaths);
   });
 
@@ -24,7 +26,7 @@ describe('workspace skill path definitions', () => {
     expect(allowedSkillPaths).toBe(skillPaths);
   });
 
-  it('wires the base skill directories into workspace discovery and allowed paths', async () => {
+  it('wires the skill directories into workspace discovery and allowed paths', async () => {
     const fs = await import('node:fs');
     const source = fs.readFileSync(path.join(cwd, 'src/agents/workspace.ts'), 'utf-8');
 
@@ -35,7 +37,7 @@ describe('workspace skill path definitions', () => {
   it('exposes well-formed absolute skill paths', () => {
     for (const p of skillPaths) {
       expect(path.isAbsolute(p)).toBe(true);
-      expect(p).toMatch(/skills$/);
+      expect(p).toMatch(/(skills|pentest|shared)$/);
     }
   });
 });

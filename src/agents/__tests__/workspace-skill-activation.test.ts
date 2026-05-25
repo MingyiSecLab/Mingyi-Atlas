@@ -26,6 +26,101 @@ afterEach(async () => {
 });
 
 describe('mastracode workspace skill activation', () => {
+  it('loads built-in pentest skills from packages/skills', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastracode-built-in-skill-'));
+
+    try {
+      process.chdir(tempDir);
+      const { getDynamicWorkspace } = await import('../workspace.js');
+
+      const requestContext = new RequestContext();
+      requestContext.set('harness', {
+        modeId: 'pentest',
+        getState: () => ({
+          projectPath: tempDir,
+          sandboxAllowedPaths: [],
+        }),
+      });
+
+      const workspace = getDynamicWorkspace({ requestContext });
+      const skill = await workspace.skills?.get('pentest-ssti');
+
+      expect(skill?.name).toBe('pentest-ssti');
+      expect(skill?.description).toContain('server-side template injection');
+      expect(skill?.instructions).toContain('# Pentest SSTI');
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('loads built-in SSTI skill through direct skill hint fallback', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastracode-built-in-skill-hint-'));
+
+    try {
+      process.chdir(tempDir);
+      const { getDynamicWorkspace } = await import('../workspace.js');
+
+      const requestContext = new RequestContext();
+      requestContext.set('harness', {
+        modeId: 'pentest',
+        getState: () => ({
+          projectPath: tempDir,
+          sandboxAllowedPaths: [],
+        }),
+      });
+
+      const workspace = getDynamicWorkspace({ requestContext });
+      const agent = new Agent({
+        id: 'mc-built-in-skill-search-agent',
+        name: 'MC Built-In Skill Search Agent',
+        instructions: 'Load the hinted SSTI skill.',
+        model: new MastraLanguageModelV2Mock({
+          doStream: async () => ({
+            rawCall: { rawPrompt: null, rawSettings: {} },
+            warnings: [],
+            stream: toStream([
+              { type: 'stream-start', warnings: [] },
+              { type: 'response-metadata', id: 'id-0', modelId: 'mock', timestamp: new Date(0) },
+              {
+                type: 'tool-call',
+                toolCallId: 'call-1',
+                toolCallType: 'function',
+                toolName: 'load_skill',
+                input: '{"skillName":"pentest-ssti"}',
+              },
+              {
+                type: 'finish',
+                finishReason: 'tool-calls',
+                usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
+              },
+            ]),
+          }),
+        }) as any,
+        workspace,
+        inputProcessors: [
+          new SkillSearchProcessor({
+            workspace,
+            search: { topK: 5, minScore: 0 },
+            ttl: 0,
+          }),
+        ],
+      });
+
+      const result = await agent.stream('Search SSTI skills', { requestContext });
+      const chunks: any[] = [];
+      for await (const chunk of result.fullStream) {
+        chunks.push(chunk);
+      }
+
+      const toolResult = chunks.find(chunk => chunk.type === 'tool-result');
+      expect(toolResult?.payload.toolName).toBe('load_skill');
+      expect(JSON.stringify(toolResult?.payload.result)).toContain('pentest-ssti');
+      expect(JSON.stringify(toolResult?.payload.result)).toContain('loaded');
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
   it('activates a symlinked local skill by bare name through the mastracode workspace path', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastracode-workspace-skill-'));
 

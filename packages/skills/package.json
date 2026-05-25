@@ -1,0 +1,12 @@
+{
+  "name": "@mingyi-atlas/skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Built-in security skill pack for Mingyi Atlas.",
+  "type": "module",
+  "files": [
+    "README.md",
+    "skillpack.json",
+    "skills"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "mingyi-atlas-skills",
+  "publisher": "MingyiSecLab",
+  "version": "0.1.0",
+  "entry": "skills",
+  "domains": ["pentest", "shared", "ctf", "reverse"],
+  "compatibleWith": ["mingyi-atlas"],
+  "description": "Built-in security skills for Mingyi Atlas.",
+  "installMode": "pack",
+  "skills": {
+    "layout": "domain/skill-name",
+    "root": "skills"
+  }
+}
