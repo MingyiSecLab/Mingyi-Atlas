@@ -53,6 +53,12 @@ const claudeGlobalSkillsPath = path.join(os.homedir(), '.claude', 'skills');
 
 const agentSkillsGlobalPath = path.join(os.homedir(), '.agents', 'skills');
 
+const builtInSkillsRoot = path.resolve(path.join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'packages', 'skills', 'skills'));
+
+const builtInPentestSkillsPath = path.join(builtInSkillsRoot, 'pentest');
+
+const builtInSharedSkillsPath = path.join(builtInSkillsRoot, 'shared');
+
 export const skillPaths = [
   mastraCodeLocalSkillsPath,
   claudeLocalSkillsPath,
@@ -60,6 +66,8 @@ export const skillPaths = [
   mastraCodeGlobalSkillsPath,
   claudeGlobalSkillsPath,
   agentSkillsGlobalPath,
+  builtInPentestSkillsPath,
+  builtInSharedSkillsPath,
 ];
 
 export const allowedSkillPaths = skillPaths;
