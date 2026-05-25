@@ -161,25 +161,16 @@ export function getCurrentGitBranch(cwd: string): string | undefined {
 }
 
 /**
- * Get the application data directory for mastracode
- * - macOS: ~/Library/Application Support/mastracode
- * - Linux: ~/.local/share/mastracode
- * - Windows: %APPDATA%/mastracode
+ * Get the application data directory for Mingyi Atlas.
+ * Kept under the user's home directory on every platform, matching tools such
+ * as Codex and Claude Code.
+ *
+ * - macOS: ~/.mingyi-atlas
+ * - Linux: ~/.mingyi-atlas
+ * - Windows: %USERPROFILE%\.mingyi-atlas
  */
 export function getAppDataDir(): string {
-  const platform = os.platform();
-  let baseDir: string;
-
-  if (platform === 'darwin') {
-    baseDir = path.join(os.homedir(), 'Library', 'Application Support');
-  } else if (platform === 'win32') {
-    baseDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-  } else {
-    // Linux and others - follow XDG spec
-    baseDir = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
-  }
-
-  const appDir = path.join(baseDir, 'mastracode');
+  const appDir = path.join(os.homedir(), '.mingyi-atlas');
 
   // Ensure directory exists
   if (!fs.existsSync(appDir)) {
@@ -189,22 +180,22 @@ export function getAppDataDir(): string {
   return appDir;
 }
 /**
- * Get the database path for mastracode
+ * Get the database path for Mingyi Atlas.
  * Can be overridden with the MASTRA_DB_PATH environment variable for debugging.
  */
 export function getDatabasePath(): string {
   if (process.env.MASTRA_DB_PATH) {
     return process.env.MASTRA_DB_PATH;
   }
-  return path.join(getAppDataDir(), 'mastra.db');
+  return path.join(getAppDataDir(), 'mingyi-atlas.db');
 }
 
 /**
- * Get the vector database path for mastracode.
+ * Get the vector database path for Mingyi Atlas.
  * Separate from the main DB to avoid bloating it with embedding data.
  */
 export function getVectorDatabasePath(): string {
-  return path.join(getAppDataDir(), 'mastra-vectors.db');
+  return path.join(getAppDataDir(), 'mingyi-atlas-vectors.db');
 }
 
 /**

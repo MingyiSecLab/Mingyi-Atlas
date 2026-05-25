@@ -4,7 +4,7 @@ import { PROVIDER_DEFAULT_MODELS } from '../../auth/storage.js';
 import { getAvailableModePacks } from '../packs.js';
 
 describe('getAvailableModePacks', () => {
-  it('uses GPT-5.5 for OpenAI plan and build modes while keeping fast on GPT-5.4 mini', () => {
+  it('uses GPT-5.5 for OpenAI plan, build, and pentest modes while keeping fast on GPT-5.4 mini', () => {
     const packs = getAvailableModePacks({
       anthropic: false,
       openai: 'oauth',
@@ -18,6 +18,7 @@ describe('getAvailableModePacks', () => {
       plan: 'openai/gpt-5.5',
       build: 'openai/gpt-5.5',
       fast: 'openai/gpt-5.4-mini',
+      pentest: 'openai/gpt-5.5',
     });
   });
 
@@ -34,7 +35,7 @@ describe('getAvailableModePacks', () => {
     expect(PROVIDER_DEFAULT_MODELS['openai-codex']).toBe(packs.find(pack => pack.id === 'openai')?.models.build);
   });
 
-  it('exposes a GitHub Copilot pack with defaults for build, plan, and fast modes', () => {
+  it('exposes a GitHub Copilot pack with defaults for build, plan, fast, and pentest modes', () => {
     const packs = getAvailableModePacks({
       anthropic: false,
       openai: false,
@@ -50,6 +51,7 @@ describe('getAvailableModePacks', () => {
       plan: 'github-copilot/gemini-2.5-pro',
       build: 'github-copilot/gpt-4.1',
       fast: 'github-copilot/grok-code-fast-1',
+      pentest: 'github-copilot/gemini-2.5-pro',
     });
   });
 
