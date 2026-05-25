@@ -1,7 +1,7 @@
 /**
  * Onboarding "packs" — predefined model configurations for each mode.
  *
- * Each pack assigns a default model to the build, plan, and fast modes,
+ * Each pack assigns a default model to the build, plan, fast, and pentest modes,
  * plus an OM (observational memory) model.
  */
 
@@ -17,6 +17,7 @@ export interface ModePack {
     build: string;
     plan: string;
     fast: string;
+    pentest?: string;
   };
 }
 
@@ -72,6 +73,7 @@ export function getAvailableModePacks(
         build: anthropicBuild,
         plan: anthropicBuild,
         fast: 'anthropic/claude-haiku-4-5',
+        pentest: anthropicBuild,
       },
     });
   }
@@ -86,6 +88,7 @@ export function getAvailableModePacks(
         build: openaiCodex,
         plan: openaiCodex,
         fast: openaiFast,
+        pentest: openaiCodex,
       },
     });
   }
@@ -99,6 +102,7 @@ export function getAvailableModePacks(
         build: 'github-copilot/gpt-4.1',
         plan: 'github-copilot/gemini-2.5-pro',
         fast: 'github-copilot/grok-code-fast-1',
+        pentest: 'github-copilot/gemini-2.5-pro',
       },
     });
   }
@@ -113,6 +117,7 @@ export function getAvailableModePacks(
         build: cp.models.build ?? '',
         plan: cp.models.plan ?? '',
         fast: cp.models.fast ?? '',
+        pentest: cp.models.pentest ?? cp.models.build ?? '',
       },
     });
   }
@@ -123,7 +128,7 @@ export function getAvailableModePacks(
     id: 'custom',
     name: hasCustom ? 'New Custom' : 'Custom',
     description: 'Choose a model for each mode',
-    models: { build: '', plan: '', fast: '' },
+    models: { build: '', plan: '', fast: '', pentest: '' },
   });
 
   return packs;

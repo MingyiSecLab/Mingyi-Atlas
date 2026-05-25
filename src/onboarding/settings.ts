@@ -775,7 +775,7 @@ export function resolveModelDefaults(
   if (activeModelPackId.startsWith('custom:')) {
     const name = activeModelPackId.slice('custom:'.length);
     const pack = settings.customModelPacks.find(p => p.name === name);
-    if (pack) return pack.models;
+    if (pack) return normalizeModeDefaults(pack.models);
     // Custom pack was deleted — fall through to modeDefaults
     return modeDefaults;
   }
@@ -786,6 +786,12 @@ export function resolveModelDefaults(
 
   // Unknown pack id — fall through
   return modeDefaults;
+}
+
+function normalizeModeDefaults(models: Record<string, string>): Record<string, string> {
+  if (models.pentest) return models;
+  if (!models.build) return models;
+  return { ...models, pentest: models.build };
 }
 
 /**

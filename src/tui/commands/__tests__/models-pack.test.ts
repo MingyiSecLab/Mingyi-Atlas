@@ -58,6 +58,7 @@ const alphaPack: ModePack = {
     plan: 'openai/gpt-5.3-codex',
     build: 'anthropic/claude-sonnet-4-5',
     fast: 'openai/gpt-5.1-codex-mini',
+    pentest: 'openai/gpt-5.3-codex',
   },
 };
 
@@ -145,6 +146,7 @@ describe('upsertCustomPackInSettings', () => {
       plan: alphaPack.models.plan,
       build: alphaPack.models.build,
       fast: 'anthropic/claude-haiku-4-5',
+      pentest: alphaPack.models.pentest,
     });
   });
 
@@ -336,6 +338,7 @@ describe('serializePack / deserializePack', () => {
         build: 'anthropic/claude-sonnet-4-5',
         plan: 'anthropic/claude-sonnet-4-5',
         fast: 'anthropic/claude-haiku-4-5',
+        pentest: 'anthropic/claude-sonnet-4-5',
       },
     };
     const serialized = serializePack(builtIn);
