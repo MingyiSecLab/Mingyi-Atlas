@@ -92,7 +92,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "22.19.15",
+    "@types/node": "25.9.1",
     "@vitest/coverage-v8": "^4.1.7",
     "@vitest/ui": "^4.1.7",
     "eslint": "^10.2.1",
