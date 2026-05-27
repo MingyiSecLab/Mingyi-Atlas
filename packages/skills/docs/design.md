@@ -8,7 +8,7 @@ Mingyi Atlas skills are organized for runtime discovery by agents and for future
 packages/skills/skills/<domain>/<skill-name>/SKILL.md
 ```
 
-The domain path is for humans and package organization. The concrete skill directory name must match the `name` field in `SKILL.md`, such as `packages/skills/skills/pentest/pentest-injection/SKILL.md` with `name: pentest-injection`.
+The domain path is for humans and package organization. The concrete skill directory name must match the `name` field in `SKILL.md`, such as `packages/skills/skills/pentest/injection/SKILL.md` with `name: injection`.
 
 ## Loading Priority
 

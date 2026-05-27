@@ -3,7 +3,7 @@
   "publisher": "MingyiSecLab",
   "version": "0.1.0",
   "entry": "skills",
-  "domains": ["pentest", "shared", "ctf", "reverse"],
+  "domains": ["pentest", "internal-network", "shared", "ctf", "reverse"],
   "compatibleWith": ["mingyi-atlas"],
   "description": "Built-in security skills for Mingyi Atlas.",
   "installMode": "pack",

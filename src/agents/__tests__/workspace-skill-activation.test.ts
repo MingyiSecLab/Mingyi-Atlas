@@ -43,9 +43,9 @@ describe('mastracode workspace skill activation', () => {
       });
 
       const workspace = getDynamicWorkspace({ requestContext });
-      const skill = await workspace.skills?.get('pentest-ssti');
+      const skill = await workspace.skills?.get('ssti');
 
-      expect(skill?.name).toBe('pentest-ssti');
+      expect(skill?.name).toBe('ssti');
       expect(skill?.description).toContain('server-side template injection');
       expect(skill?.instructions).toContain('# Pentest SSTI');
     } finally {
@@ -86,7 +86,7 @@ describe('mastracode workspace skill activation', () => {
                 toolCallId: 'call-1',
                 toolCallType: 'function',
                 toolName: 'load_skill',
-                input: '{"skillName":"pentest-ssti"}',
+                input: '{"skillName":"ssti"}',
               },
               {
                 type: 'finish',
@@ -114,7 +114,7 @@ describe('mastracode workspace skill activation', () => {
 
       const toolResult = chunks.find(chunk => chunk.type === 'tool-result');
       expect(toolResult?.payload.toolName).toBe('load_skill');
-      expect(JSON.stringify(toolResult?.payload.result)).toContain('pentest-ssti');
+      expect(JSON.stringify(toolResult?.payload.result)).toContain('ssti');
       expect(JSON.stringify(toolResult?.payload.result)).toContain('loaded');
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });

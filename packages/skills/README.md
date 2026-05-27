@@ -13,10 +13,10 @@ Skills are organized by domain:
 ```text
 skills/
   pentest/
+  internal-network/
   shared/
   ctf/
   reverse/
 ```
 
 Each concrete skill lives in its own folder and contains a `SKILL.md` file.
-
