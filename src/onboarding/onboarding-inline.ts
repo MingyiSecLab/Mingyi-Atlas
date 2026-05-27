@@ -205,7 +205,7 @@ export class OnboardingInlineComponent extends Box implements Focusable {
 
   private renderWelcome(): void {
     const box = this.makeBox();
-    box.addChild(new Text(theme.bold(theme.fg('accent', '👋 Welcome to Mastra Code')), 0, 0));
+    box.addChild(new Text(theme.bold(theme.fg('accent', '👋 Welcome to Mingyi Atlas')), 0, 0));
     box.addChild(new Spacer(1));
     box.addChild(new Text(theme.fg('text', "Let's configure your models and preferences."), 0, 0));
     box.addChild(new Text(chalk.white('You can re-run this anytime with /setup.'), 0, 0));
@@ -301,7 +301,7 @@ export class OnboardingInlineComponent extends Box implements Focusable {
     if (!this.options.hasProviderAccess) {
       box.addChild(new Text(theme.bold(theme.fg('warning', 'No model providers configured')), 0, 0));
       box.addChild(new Spacer(1));
-      box.addChild(new Text(theme.fg('text', 'To use Mastra Code you need at least one API key or OAuth login'), 0, 0));
+      box.addChild(new Text(theme.fg('text', 'To use Mingyi Atlas you need at least one API key or OAuth login'), 0, 0));
       box.addChild(new Text(theme.fg('text', 'for Anthropic, OpenAI, or another supported provider.'), 0, 0));
       box.addChild(new Spacer(1));
       box.addChild(

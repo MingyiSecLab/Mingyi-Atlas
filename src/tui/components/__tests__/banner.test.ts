@@ -40,14 +40,14 @@ describe('renderBanner', () => {
     expect(plain).toContain('v1.2.3');
   });
 
-  it('uses short MASTRA art for medium terminals (30-49 cols)', () => {
+  it('uses short MINGYI art for medium terminals (30-57 cols)', () => {
     setColumns(40);
     const result = renderBanner('0.2.0');
     const plain = stripAnsi(result);
     const lines = plain.split('\n');
-    // Short art is 24 chars wide, should not contain CODE letters
+    // Short art is 25 chars wide, should not contain ATLAS letters
     expect(lines.length).toBe(4);
-    // First line of short art is 24 chars; full art is 42
+    // First line of short art is 25 chars; full art is 52
     expect(lines[0]!.length).toBeLessThan(30);
   });
 
@@ -55,7 +55,7 @@ describe('renderBanner', () => {
     setColumns(25);
     const result = renderBanner('0.2.0');
     const plain = stripAnsi(result);
-    expect(plain).toContain('Mastra Code');
+    expect(plain).toContain('Mingyi Atlas');
     expect(plain).toContain('v0.2.0');
     // Should be a single line (no block art)
     expect(plain.split('\n').length).toBe(1);

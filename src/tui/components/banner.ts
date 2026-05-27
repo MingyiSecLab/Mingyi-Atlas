@@ -1,6 +1,6 @@
 /**
- * ASCII art banner for the Mastra Code TUI header.
- * Renders "MASTRA CODE" or "MASTRA" in block-letter art with a green gradient.
+ * ASCII art banner for the Mingyi Atlas TUI header.
+ * Renders "MINGYI ATLAS" or "MINGYI" in block-letter art with a green gradient.
  */
 import chalk from 'chalk';
 
@@ -9,15 +9,17 @@ import { theme } from '../theme.js';
 // Mastra brand green gradient stops (left → right)
 const GRADIENT_STOPS = ['#085314', '#0d8020', '#16c858', '#62f69d', '#a1fac7'];
 
-// Full "MASTRA CODE" banner (42 chars wide)
+const DEFAULT_APP_NAME = 'Mingyi Atlas';
+
+// Full "MINGYI ATLAS" banner (52 chars wide)
 const FULL_ART = [
-  '█▀▄▀█ ▄▀█ █▀ ▀█▀ █▀█ ▄▀█   █▀▀ █▀█ █▀▄ █▀▀',
-  '█ ▀ █ █▀█ ▀█  █  █▀▄ █▀█   █   █ █ █ █ █▀▀',
-  '▀   ▀ ▀ ▀ ▀▀  ▀  ▀ ▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀',
+  '█▀▄▀█ █ █▄ █ █▀▀ █▄█ █   ▄▀█ ▀█▀ █   ▄▀█ █▀',
+  '█ ▀ █ █ █ ▀█ █▄█  █  █   █▀█  █  █   █▀█ ▄█',
+  '▀   ▀ ▀ ▀  ▀ ▀ ▀  ▀  ▀   ▀ ▀  ▀  ▀▀▀ ▀ ▀ ▀▀',
 ];
 
-// Short "MASTRA" banner (24 chars wide)
-const SHORT_ART = ['█▀▄▀█ ▄▀█ █▀ ▀█▀ █▀█ ▄▀█', '█ ▀ █ █▀█ ▀█  █  █▀▄ █▀█', '▀   ▀ ▀ ▀ ▀▀  ▀  ▀ ▀ ▀ ▀'];
+// Short "MINGYI" banner (25 chars wide)
+const SHORT_ART = ['█▀▄▀█ █ █▄ █ █▀▀ █▄█ █', '█ ▀ █ █ █ ▀█ █▄█  █  █', '▀   ▀ ▀ ▀  ▀ ▀ ▀  ▀  ▀'];
 
 /**
  * Interpolate between two hex colors.
@@ -57,14 +59,14 @@ function colorLine(line: string): string {
  * Render the banner header for the TUI.
  *
  * @param version - App version string (e.g. "0.2.0")
- * @param appName - App name. Block art is only used for "Mastra Code" (default).
+ * @param appName - App name. Block art is only used for "Mingyi Atlas" (default).
  * @returns Styled multi-line string ready for display.
  */
 export function renderBanner(version: string, appName?: string): string {
-  const name = appName || 'Mastra Code';
+  const name = appName || DEFAULT_APP_NAME;
 
-  // Custom app names get the simple text format (no Mastra branding)
-  if (name !== 'Mastra Code') {
+  // Custom app names get the simple text format (no Mingyi Atlas branding)
+  if (name !== DEFAULT_APP_NAME) {
     return theme.fg('accent', '◆') + ' ' + theme.bold(theme.fg('accent', name)) + theme.fg('dim', ` v${version}`);
   }
 
@@ -73,12 +75,12 @@ export function renderBanner(version: string, appName?: string): string {
   // Narrow terminal — compact single line
   if (cols < 30) {
     return (
-      theme.fg('accent', '◆') + ' ' + theme.bold(theme.fg('accent', 'Mastra Code')) + theme.fg('dim', ` v${version}`)
+      theme.fg('accent', '◆') + ' ' + theme.bold(theme.fg('accent', DEFAULT_APP_NAME)) + theme.fg('dim', ` v${version}`)
     );
   }
 
   // Select art based on available width
-  const art = cols >= 50 ? FULL_ART : SHORT_ART;
+  const art = cols >= 58 ? FULL_ART : SHORT_ART;
   const coloredLines = art.map(line => colorLine(line));
 
   // Append version below the art
