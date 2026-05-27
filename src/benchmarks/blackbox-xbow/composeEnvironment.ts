@@ -1,5 +1,6 @@
-import { access, readFile } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import net from 'node:net';
+import os from 'node:os';
 import path from 'node:path';
 import { execa } from 'execa';
 import YAML from 'yaml';
@@ -18,6 +19,11 @@ interface PortInfo {
   serviceName?: string;
   containerPort: number;
   hostPort?: number;
+}
+
+interface PreparedComposeFile {
+  composeFile: string;
+  temporaryDir?: string;
 }
 
 async function exists(filePath: string): Promise<boolean> {
@@ -100,6 +106,41 @@ export async function parseComposePrimaryPort(composeFile: string): Promise<Port
   return undefined;
 }
 
+function normalizeExposeEntry(value: unknown): { value: unknown; changed: boolean } {
+  if (typeof value !== 'string' || !value.includes(':')) return { value, changed: false };
+  const protocol = value.includes('/') ? `/${value.split('/').at(-1)}` : '';
+  const withoutProtocol = value.split('/')[0] ?? value;
+  const port = withoutProtocol.split(':').filter(Boolean).at(-1);
+  if (!port) return { value, changed: false };
+  return { value: `${port}${protocol}`, changed: true };
+}
+
+async function prepareComposeFile(composeFile: string): Promise<PreparedComposeFile> {
+  const raw = await readFile(composeFile, 'utf-8');
+  const doc = YAML.parse(raw) as { services?: Record<string, { expose?: unknown[] }> } | undefined;
+  let changed = false;
+
+  for (const service of Object.values(doc?.services ?? {})) {
+    if (!Array.isArray(service.expose)) continue;
+    service.expose = service.expose.map(entry => {
+      const normalized = normalizeExposeEntry(entry);
+      changed ||= normalized.changed;
+      return normalized.value;
+    });
+  }
+
+  if (!changed) return { composeFile };
+
+  const temporaryDir = await mkdtemp(path.join(os.tmpdir(), 'atlas-xbow-compose-'));
+  const normalizedFile = path.join(temporaryDir, path.basename(composeFile));
+  await writeFile(normalizedFile, YAML.stringify(doc), 'utf-8');
+  return { composeFile: normalizedFile, temporaryDir };
+}
+
+function composeArgs(prepared: PreparedComposeFile, projectDir: string, args: string[]): string[] {
+  return ['compose', '--project-directory', projectDir, '-f', prepared.composeFile, ...args];
+}
+
 function parseComposePsPorts(stdout: string, containerPort: number): number | undefined {
   for (const line of stdout.trim().split('\n').filter(Boolean)) {
     try {
@@ -154,14 +195,16 @@ export class ComposeEnvironment {
       return { success: false, startedAt, completedAt: nowIso(this.now), error: 'No docker-compose.yml found' };
     }
     const composeDir = path.dirname(composeFile);
+    let prepared: PreparedComposeFile | undefined;
     try {
+      prepared = await prepareComposeFile(composeFile);
       const portInfo = await parseComposePrimaryPort(composeFile);
       if (!portInfo) throw new Error('No published ports found in docker-compose.yml');
-      await this.commandRunner('docker', ['compose', 'up', '-d', '--build'], {
+      await this.commandRunner('docker', composeArgs(prepared, composeDir, ['up', '-d', '--build']), {
         cwd: composeDir,
         timeoutMs: this.options.commandTimeoutMs ?? 300_000,
       });
-      const ps = await this.commandRunner('docker', ['compose', 'ps', '--format', 'json'], {
+      const ps = await this.commandRunner('docker', composeArgs(prepared, composeDir, ['ps', '--format', 'json']), {
         cwd: composeDir,
         timeoutMs: 30_000,
       });
@@ -178,7 +221,10 @@ export class ComposeEnvironment {
         success: true,
         targetUrl,
         composeFile,
+        runtimeComposeFile: prepared.composeFile,
         composeDir,
+        runtimeComposeDir: composeDir,
+        temporaryComposeDir: prepared.temporaryDir,
         serviceName: portInfo.serviceName,
         containerPort: portInfo.containerPort,
         hostPort,
@@ -186,10 +232,15 @@ export class ComposeEnvironment {
         completedAt: nowIso(this.now),
       };
     } catch (error) {
+      if (prepared?.temporaryDir) {
+        await rm(prepared.temporaryDir, { recursive: true, force: true });
+      }
       return {
         success: false,
         composeFile,
+        runtimeComposeFile: prepared?.composeFile,
         composeDir,
+        runtimeComposeDir: composeDir,
         startedAt,
         completedAt: nowIso(this.now),
         error: error instanceof Error ? error.message : String(error),
@@ -199,9 +250,20 @@ export class ComposeEnvironment {
 
   async teardown(setup: BenchmarkSetupResult, cleanup = true): Promise<void> {
     if (!cleanup || !setup.composeDir) return;
-    await this.commandRunner('docker', ['compose', 'down', '--volumes', '--remove-orphans'], {
-      cwd: setup.composeDir,
-      timeoutMs: this.options.commandTimeoutMs ?? 120_000,
-    });
+    const composeFile = setup.runtimeComposeFile ?? setup.composeFile;
+    const composeDir = setup.runtimeComposeDir ?? setup.composeDir;
+    const args = composeFile
+      ? ['compose', '--project-directory', composeDir, '-f', composeFile, 'down', '--volumes', '--remove-orphans']
+      : ['compose', 'down', '--volumes', '--remove-orphans'];
+    try {
+      await this.commandRunner('docker', args, {
+        cwd: composeDir,
+        timeoutMs: this.options.commandTimeoutMs ?? 120_000,
+      });
+    } finally {
+      if (setup.temporaryComposeDir) {
+        await rm(setup.temporaryComposeDir, { recursive: true, force: true });
+      }
+    }
   }
 }

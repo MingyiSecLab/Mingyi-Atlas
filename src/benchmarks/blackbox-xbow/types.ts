@@ -42,7 +42,10 @@ export interface BenchmarkSetupResult {
   success: boolean;
   targetUrl?: string;
   composeFile?: string;
+  runtimeComposeFile?: string;
   composeDir?: string;
+  runtimeComposeDir?: string;
+  temporaryComposeDir?: string;
   serviceName?: string;
   containerPort?: number;
   hostPort?: number;
