@@ -217,7 +217,7 @@ function abortActiveGoalJudge(state: TUIState): boolean {
 
 export function buildLayout(state: TUIState, refreshModelAuthStatus: () => Promise<void>): void {
   // Add header
-  const appName = state.options.appName || 'Mastra Code';
+  const appName = state.options.appName || 'Mingyi Atlas';
   const version = state.options.version || '0.1.0';
 
   const banner = renderBanner(version, appName);
@@ -526,7 +526,7 @@ export function subscribeToHarness(state: TUIState, handleEvent: (event: any) =>
 // =============================================================================
 
 export function updateTerminalTitle(state: TUIState): void {
-  const appName = state.options.appName || 'Mastra Code';
+  const appName = state.options.appName || 'Mingyi Atlas';
   const cwd = process.cwd().split('/').pop() || '';
   state.ui.terminal.setTitle(`${appName} - ${cwd}`);
 }

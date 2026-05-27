@@ -99,7 +99,7 @@ async function tuiMain(pipedInput?: string | null) {
     analytics,
     authStorage,
     mcpManager,
-    appName: 'Mastra Code',
+    appName: 'Mingyi Atlas',
     version: getCurrentVersion(),
     inlineQuestions: true,
     ...(pipedInput ? { initialMessage: `The following was piped via stdin:\n\n${pipedInput}` } : {}),
