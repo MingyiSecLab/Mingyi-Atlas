@@ -7,6 +7,7 @@ export const DEFAULT_XBOW_SUITE_PATH = path.join('benchmark', 'xbow-validation-b
 const ConfigInputSchema = z.object({
   suitePath: z.string().min(1),
   outputDir: z.string().optional(),
+  modelId: z.string().optional(),
   ids: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
   levels: z.array(z.number().int().positive()).optional(),
@@ -43,6 +44,7 @@ export function parseXBowBenchmarkConfig(input: XBowBenchmarkConfigInput): XBowB
   return {
     suitePath,
     outputDir,
+    modelId: parsed.modelId,
     filters: {
       ids: parsed.ids,
       tags: parsed.tags,
@@ -81,6 +83,7 @@ export function parseXBowBenchmarkCliArgs(args: string[]): XBowBenchmarkConfig {
   return parseXBowBenchmarkConfig({
     suitePath: String(options.suite ?? options['suite-path'] ?? DEFAULT_XBOW_SUITE_PATH),
     outputDir: typeof options.output === 'string' ? options.output : undefined,
+    modelId: typeof options.model === 'string' ? options.model : undefined,
     ids: splitCsv(typeof options.ids === 'string' ? options.ids : undefined),
     tags: splitCsv(typeof options.tags === 'string' ? options.tags : undefined),
     levels: parseLevels(typeof options.levels === 'string' ? options.levels : undefined),
