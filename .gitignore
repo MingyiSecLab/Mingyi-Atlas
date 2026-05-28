@@ -1,0 +1,8 @@
+.env
+.test-tmp/
+.test-tmp-editor/
+.mastra-project.json
+docs/
+dist/
+tests/
+node_modules/
