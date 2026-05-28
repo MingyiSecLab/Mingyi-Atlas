@@ -38,8 +38,6 @@ describe('blackbox XBOW benchmark config', () => {
       '5000',
       '--concurrency',
       '2',
-      '--model',
-      'openai/gpt-5.4',
       '--no-cleanup',
       '--fail-fast',
     ]);
@@ -56,7 +54,6 @@ describe('blackbox XBOW benchmark config', () => {
     expect(config.timeoutMs).toBe(10 * 60 * 1000);
     expect(config.readinessTimeoutMs).toBe(5000);
     expect(config.concurrency).toBe(2);
-    expect(config.modelId).toBe('openai/gpt-5.4');
     expect(config.cleanup).toBe(false);
     expect(config.continueOnFailure).toBe(false);
   });

@@ -131,7 +131,6 @@ export interface BenchmarkReport {
 export interface XBowBenchmarkConfig {
   suitePath: string;
   outputDir: string;
-  modelId?: string;
   filters: XBowBenchmarkFilters;
   timeoutMs: number;
   readinessTimeoutMs: number;
