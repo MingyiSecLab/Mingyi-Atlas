@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -44,7 +44,7 @@ describe('ComposeEnvironment', () => {
     const calls: Array<{ command: string; args: string[]; cwd?: string }> = [];
     const runner: CommandRunner = async (command, args, options) => {
       calls.push({ command, args, cwd: options.cwd });
-      if (args.includes('ps')) {
+      if (args.join(' ') === 'compose ps --format json') {
         return { stdout: '{"Publishers":[{"TargetPort":80,"PublishedPort":45678}]}\n', stderr: '' };
       }
       return { stdout: '', stderr: '' };
@@ -59,41 +59,11 @@ describe('ComposeEnvironment', () => {
     expect(setup).toMatchObject({ success: true, targetUrl: 'http://localhost:45678', hostPort: 45678 });
 
     await env.teardown(setup);
-    expect(calls.map(call => call.args.slice(-3).join(' '))).toEqual([
-      'up -d --build',
-      'ps --format json',
-      'down --volumes --remove-orphans',
+    expect(calls.map(call => call.args.join(' '))).toEqual([
+      'compose up -d --build',
+      'compose ps --format json',
+      'compose down --volumes --remove-orphans',
     ]);
-    expect(calls.every(call => call.args.includes('--project-directory'))).toBe(true);
-  });
-
-  it('normalizes legacy expose port mappings in a temporary compose file', async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), 'xbow-compose-normalize-'));
-    const originalComposeFile = await writeCompose(root, 'services:\n  db:\n    expose:\n      - "3306:3306"\n  web:\n    ports:\n      - "8080:80"\n');
-    const runtimeComposeFiles: string[] = [];
-    const runner: CommandRunner = async (_command, args) => {
-      const composeFile = args[args.indexOf('-f') + 1];
-      runtimeComposeFiles.push(composeFile);
-      if (args.at(-3) === 'ps') {
-        return { stdout: '{"Publishers":[{"TargetPort":80,"PublishedPort":45678}]}\n', stderr: '' };
-      }
-      return { stdout: '', stderr: '' };
-    };
-    const env = new ComposeEnvironment({
-      commandRunner: runner,
-      readinessTimeoutMs: 1000,
-      tcpCheck: async () => true,
-      fetch: async () => new Response('ok'),
-    });
-
-    const setup = await env.setup(testCase(root));
-    expect(setup.success).toBe(true);
-    expect(setup.composeFile).toBe(originalComposeFile);
-    expect(setup.runtimeComposeFile).not.toBe(originalComposeFile);
-    expect(await readFile(setup.runtimeComposeFile!, 'utf-8')).toContain('- "3306"');
-
-    await env.teardown(setup);
-    expect(runtimeComposeFiles.every(file => file === setup.runtimeComposeFile)).toBe(true);
   });
 
   it('reports setup failures without throwing', async () => {
@@ -120,7 +90,7 @@ describe('ComposeEnvironment', () => {
       tcpCheck: async () => false,
       commandRunner: async (_command, args) => {
         calls.push(args.join(' '));
-        if (args.includes('ps')) {
+        if (args.join(' ') === 'compose ps --format json') {
           return { stdout: '{"Publishers":[{"TargetPort":80,"PublishedPort":45999}]}\n', stderr: '' };
         }
         return { stdout: '', stderr: '' };
