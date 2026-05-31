@@ -724,7 +724,8 @@ Test plan:
 
     const output = component.render(100).join('\n');
     const visible = stripAnsi(output);
-    expect(output).toContain('\u001b[93m$');
+    expect(visible).toContain('$ printf lines');
+    if (chalk.level > 0) expect(output).toContain('\u001b[93m$');
     expect(output).not.toContain('⟶');
     expect(visible).not.toContain('├');
     expect(visible.split('\n')).toHaveLength(3);
@@ -758,7 +759,7 @@ Test plan:
     const output = component.render(100).join('\n');
     expect(stripAnsi(output)).toContain(command);
     expect(output).toContain(chalk.white('"if then fi"'));
-    expect(output).not.toContain(chalk.blue('then'));
+    if (chalk.level > 0) expect(output).not.toContain(chalk.blue('then'));
     expect(output).toContain(chalk.white("'done'"));
   });
 
@@ -777,7 +778,7 @@ Test plan:
       .filter(line => line.startsWith('│') && line.trim() !== '│');
     expect(footerLines.length).toBeGreaterThan(1);
     expect(stripAnsi(output)).toContain('then fi"');
-    expect(output).not.toContain(chalk.blue('then'));
+    if (chalk.level > 0) expect(output).not.toContain(chalk.blue('then'));
   });
 
   it('preserves standalone ampersands in quiet shell command footers', () => {
