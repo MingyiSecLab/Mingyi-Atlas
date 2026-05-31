@@ -1,5 +1,16 @@
 # Mingyi Atlas Changelog
 
+## 0.21.2-alpha.3
+
+### Changed
+
+- Migrated the TUI dependency from deprecated `@mariozechner/pi-tui` to `@earendil-works/pi-tui`.
+- Kept the published CLI command as `mingyi-atlas`.
+
+### Notes
+
+- Some install warnings still come from upstream browser and Mastra dependency chains, including old WebDriver/Stagehand transitive packages and the current `zod` peer split between older AI SDK internals and newer AI SDK packages.
+
 ## 0.21.2-alpha.2
 
 Initial Mingyi Atlas branded alpha release.

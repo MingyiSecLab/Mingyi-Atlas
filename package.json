@@ -1,6 +1,6 @@
 {
   "name": "@mingyilab/mingyi-atlas",
-  "version": "0.21.2-alpha.2",
+  "version": "0.21.2-alpha.3",
   "description": "Mingyi Atlas command-line coding and security assessment agent.",
   "type": "module",
   "files": [
@@ -66,7 +66,7 @@
     "@ai-sdk/openai": "^3.0.63",
     "@ai-sdk/openai-compatible": "^2.0.47",
     "@ast-grep/napi": "^0.42.0",
-    "@mariozechner/pi-tui": "^0.73.1",
+    "@earendil-works/pi-tui": "^0.78.0",
     "@mastra/agent-browser": "0.2.2",
     "@mastra/core": "1.37.1",
     "@mastra/duckdb": "1.4.0",

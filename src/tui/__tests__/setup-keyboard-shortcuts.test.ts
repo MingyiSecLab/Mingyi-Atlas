@@ -16,7 +16,7 @@ const autocompleteProviders: Array<{
   }>;
 }> = [];
 
-vi.mock('@mariozechner/pi-tui', () => ({
+vi.mock('@earendil-works/pi-tui', () => ({
   CombinedAutocompleteProvider: class {
     constructor(
       commands: Array<{

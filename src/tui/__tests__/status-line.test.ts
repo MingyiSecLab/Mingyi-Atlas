@@ -5,7 +5,7 @@ const { visibleWidthMock, chalkRgbMock } = vi.hoisted(() => ({
   chalkRgbMock: vi.fn(),
 }));
 
-vi.mock('@mariozechner/pi-tui', () => ({
+vi.mock('@earendil-works/pi-tui', () => ({
   visibleWidth: visibleWidthMock,
 }));
 

@@ -12,8 +12,8 @@
  * 3. **Answered** — After the user responds, the box freezes with ✓/✗ icons.
  */
 
-import { Container, getKeybindings, Input, Spacer, visibleWidth, wrapTextWithAnsi } from '@mariozechner/pi-tui';
-import type { Focusable, SelectItem, TUI } from '@mariozechner/pi-tui';
+import { Container, getKeybindings, Input, Spacer, visibleWidth, wrapTextWithAnsi } from '@earendil-works/pi-tui';
+import type { Focusable, SelectItem, TUI } from '@earendil-works/pi-tui';
 import { BOX_INDENT_STR, theme, getSelectListTheme, getEditorTheme } from '../theme.js';
 import { MultilineInput } from './multiline-input.js';
 import { WrappingSelectList } from './wrapping-select-list.js';
