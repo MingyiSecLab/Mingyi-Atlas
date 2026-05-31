@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 declare const MINGYI_ATLAS_VERSION: string | undefined;
 
 const PACKAGE_NAME = '@mingyilab/mingyi-atlas';
-const NPM_REGISTRY_URL = `https://registry.npmjs.org/${encodeURIComponent(PACKAGE_NAME)}/latest`;
+const NPM_REGISTRY_URL = `https://registry.npmjs.org/${encodeURIComponent(PACKAGE_NAME)}`;
 
 /** Timeout for the npm registry fetch (ms). */
 const FETCH_TIMEOUT_MS = 5_000;
@@ -124,32 +124,63 @@ export async function fetchLatestVersion(): Promise<string | null> {
     const res = await fetch(NPM_REGISTRY_URL, { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) return null;
-    const data = (await res.json()) as { version?: string };
-    return data.version ?? null;
+    const data = (await res.json()) as { version?: string; 'dist-tags'?: Record<string, string> };
+    const versions = Object.values(data['dist-tags'] ?? {});
+    if (data.version) versions.push(data.version);
+    return versions.reduce<string | null>((best, version) => {
+      if (!best) return version;
+      return isNewerVersion(best, version) ? version : best;
+    }, null);
   } catch {
     return null;
   }
 }
 
-/**
- * Simple semver comparison: returns true if `latest` is newer than `current`.
- * Handles standard x.y.z versions. Ignores pre-release tags.
- */
 export function isNewerVersion(current: string, latest: string): boolean {
-  const parse = (v: string) =>
-    v
-      .replace(/^v/, '')
-      .split('-')[0]!
-      .split('.')
-      .map(s => {
-        const n = Number(s);
-        return Number.isFinite(n) ? n : 0;
-      });
-  const [cMajor = 0, cMinor = 0, cPatch = 0] = parse(current);
-  const [lMajor = 0, lMinor = 0, lPatch = 0] = parse(latest);
+  const c = parseSemver(current);
+  const l = parseSemver(latest);
+  const [cMajor, cMinor, cPatch] = c.core;
+  const [lMajor, lMinor, lPatch] = l.core;
   if (lMajor !== cMajor) return lMajor > cMajor;
   if (lMinor !== cMinor) return lMinor > cMinor;
-  return lPatch > cPatch;
+  if (lPatch !== cPatch) return lPatch > cPatch;
+  return comparePrerelease(c.prerelease, l.prerelease) < 0;
+}
+
+function parseSemver(version: string): { core: [number, number, number]; prerelease: string[] } {
+  const [corePart = '', prereleasePart = ''] = version.replace(/^v/, '').split('+')[0]!.split('-', 2);
+  const core = corePart.split('.').map(part => {
+    const n = Number(part);
+    return Number.isFinite(n) ? n : 0;
+  });
+  return {
+    core: [core[0] ?? 0, core[1] ?? 0, core[2] ?? 0],
+    prerelease: prereleasePart ? prereleasePart.split('.') : [],
+  };
+}
+
+function comparePrerelease(current: string[], latest: string[]): number {
+  if (current.length === 0 && latest.length === 0) return 0;
+  if (current.length === 0) return 1;
+  if (latest.length === 0) return -1;
+
+  const len = Math.max(current.length, latest.length);
+  for (let i = 0; i < len; i++) {
+    const c = current[i];
+    const l = latest[i];
+    if (c === undefined) return -1;
+    if (l === undefined) return 1;
+    if (c === l) continue;
+
+    const cNum = /^\d+$/.test(c) ? Number(c) : null;
+    const lNum = /^\d+$/.test(l) ? Number(l) : null;
+    if (cNum !== null && lNum !== null) return cNum - lNum;
+    if (cNum !== null) return -1;
+    if (lNum !== null) return 1;
+    return c.localeCompare(l);
+  }
+
+  return 0;
 }
 
 /** Max entries to show in the changelog summary. */

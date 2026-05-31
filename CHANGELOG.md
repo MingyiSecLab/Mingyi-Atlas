@@ -1,5 +1,12 @@
 # Mingyi Atlas Changelog
 
+## 0.21.2-alpha.4
+
+### Fixed
+
+- Fixed update checks for prerelease versions so `0.21.2-alpha.3` is detected as newer than `0.21.2-alpha.2`.
+- Fixed update checks to read npm dist-tags instead of only the `latest` endpoint, so alpha releases are detected even when `latest` lags behind `alpha`.
+
 ## 0.21.2-alpha.3
 
 ### Changed

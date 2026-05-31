@@ -1,6 +1,6 @@
 {
   "name": "@mingyilab/mingyi-atlas",
-  "version": "0.21.2-alpha.3",
+  "version": "0.21.2-alpha.4",
   "description": "Mingyi Atlas command-line coding and security assessment agent.",
   "type": "module",
   "files": [

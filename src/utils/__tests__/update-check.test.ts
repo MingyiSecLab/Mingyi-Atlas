@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchChangelog, parseChangelog } from '../update-check.js';
+import { fetchChangelog, fetchLatestVersion, isNewerVersion, parseChangelog } from '../update-check.js';
 
 const SAMPLE_CHANGELOG = [
   '# mingyi-atlas',
@@ -92,6 +92,57 @@ describe('parseChangelog', () => {
     const md = '## 1.0.0\n\n- First sentence here. Then a longer explanation follows with details.';
     const result = parseChangelog(md, '1.0.0')!;
     expect(result).toContain('First sentence here. Then a longer explanation follows with details');
+  });
+});
+
+describe('isNewerVersion', () => {
+  it('detects newer prerelease builds with the same core version', () => {
+    expect(isNewerVersion('0.21.2-alpha.2', '0.21.2-alpha.3')).toBe(true);
+  });
+
+  it('does not treat an older prerelease as newer', () => {
+    expect(isNewerVersion('0.21.2-alpha.3', '0.21.2-alpha.2')).toBe(false);
+  });
+
+  it('treats stable releases as newer than prereleases with the same core version', () => {
+    expect(isNewerVersion('0.21.2-alpha.3', '0.21.2')).toBe(true);
+  });
+
+  it('does not treat a prerelease as newer than the same stable release', () => {
+    expect(isNewerVersion('0.21.2', '0.21.2-alpha.3')).toBe(false);
+  });
+
+  it('still compares normal patch versions', () => {
+    expect(isNewerVersion('0.21.2', '0.21.3')).toBe(true);
+    expect(isNewerVersion('0.21.3', '0.21.2')).toBe(false);
+  });
+});
+
+describe('fetchLatestVersion', () => {
+  it('selects the newest version across dist-tags', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              'dist-tags': {
+                latest: '0.21.2-alpha.2',
+                alpha: '0.21.2-alpha.3',
+              },
+            }),
+            { status: 200 },
+          ),
+      ),
+    );
+
+    await expect(fetchLatestVersion()).resolves.toBe('0.21.2-alpha.3');
+  });
+
+  it('returns null when registry metadata is unavailable', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('not found', { status: 404 })));
+
+    await expect(fetchLatestVersion()).resolves.toBeNull();
   });
 });
 
