@@ -1,5 +1,5 @@
 {
-  "name": "@mingyi-atlas/cli",
+  "name": "@mingyilab/mingyi-atlas",
   "version": "0.21.2-alpha.2",
   "description": "Mingyi Atlas command-line coding and security assessment agent.",
   "type": "module",
@@ -10,7 +10,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "mingyi-atlas": "./dist/cli.js"
+    "mingyi-atlas": "dist/cli.js"
   },
   "publishConfig": {
     "access": "public"

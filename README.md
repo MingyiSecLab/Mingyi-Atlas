@@ -2,19 +2,19 @@
 
 Mingyi Atlas is a terminal AI agent for software engineering and authorized security assessment. It provides an interactive TUI, headless automation, persistent project context, built-in skills, browser/container helpers, and a dedicated pentest mode.
 
-The project is published as `@mingyi-atlas/cli` and exposes the `mingyi-atlas` command.
+The project is published as `@mingyilab/mingyi-atlas` and exposes the `mingyi-atlas` command.
 
 ## Installation
 
 ```bash
-npm install -g @mingyi-atlas/cli
+npm install -g @mingyilab/mingyi-atlas
 mingyi-atlas
 ```
 
 Run without global install:
 
 ```bash
-npx @mingyi-atlas/cli
+npx @mingyilab/mingyi-atlas
 ```
 
 Requirements:
@@ -151,7 +151,7 @@ Project data:
 The config directory can be overridden programmatically:
 
 ```ts
-import { createMingyiAtlas } from '@mingyi-atlas/cli';
+import { createMingyiAtlas } from '@mingyilab/mingyi-atlas';
 
 const app = await createMingyiAtlas({
   configDir: '.acme-agent',
@@ -203,7 +203,7 @@ pnpm pack:check
 
 ## Publishing
 
-The package is published as `@mingyi-atlas/cli` and exposes one binary:
+The package is published as `@mingyilab/mingyi-atlas` and exposes one binary:
 
 ```text
 mingyi-atlas -> dist/cli.js
@@ -216,7 +216,7 @@ npm login
 npm publish --access public
 ```
 
-The `@mingyi-atlas` npm scope must exist and your npm account must have publish access.
+The `@mingyilab` npm scope must exist and your npm account must have publish access.
 
 ## License
 

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 declare const MINGYI_ATLAS_VERSION: string | undefined;
 
-const PACKAGE_NAME = '@mingyi-atlas/cli';
+const PACKAGE_NAME = '@mingyilab/mingyi-atlas';
 const NPM_REGISTRY_URL = `https://registry.npmjs.org/${encodeURIComponent(PACKAGE_NAME)}/latest`;
 
 /** Timeout for the npm registry fetch (ms). */

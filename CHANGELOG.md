@@ -20,7 +20,7 @@ Initial Mingyi Atlas branded alpha release.
 - Added target-bucketed pentest artifact storage under `.mingyi-atlas/pentest/targets/<target-slug>/`.
 - Added Docker runner definitions for browser automation and containerized security tools.
 - Added XBow benchmark runner and documentation under `benchmark/xbow/`.
-- Added publish-ready npm package metadata for `@mingyi-atlas/cli`.
+- Added publish-ready npm package metadata for `@mingyilab/mingyi-atlas`.
 
 ### Changed
 
