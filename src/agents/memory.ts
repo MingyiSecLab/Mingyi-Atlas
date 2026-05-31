@@ -5,7 +5,7 @@ import type { MastraVector } from '@mastra/core/vector';
 import { fastembed } from '@mastra/fastembed';
 import { Memory } from '@mastra/memory';
 import { DEFAULT_OM_MODEL_ID, DEFAULT_OBS_THRESHOLD, DEFAULT_REF_THRESHOLD } from '../constants';
-import type { MastraCodeState } from '../schema';
+import type { MingyiAtlasState } from '../schema';
 import { getOmScope } from '../utils/project';
 import { resolveModel } from './model';
 
@@ -16,8 +16,8 @@ let cachedMemoryKey: string | null = null;
  * Read harness state from requestContext.
  * Used by both the memory factory and the OM model functions.
  */
-function getHarnessState(requestContext: RequestContext): MastraCodeState | undefined {
-  return (requestContext.get('harness') as HarnessRequestContext<MastraCodeState> | undefined)?.getState?.();
+function getHarnessState(requestContext: RequestContext): MingyiAtlasState | undefined {
+  return (requestContext.get('harness') as HarnessRequestContext<MingyiAtlasState> | undefined)?.getState?.();
 }
 
 /**

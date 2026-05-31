@@ -15,10 +15,10 @@ const INSTRUCTION_FILES = ['AGENTS.md', 'CLAUDE.md'];
 const PROJECT_LOCATIONS = [
   '', // project root
   '.claude',
-  '.mastracode',
+  '.mingyi-atlas',
 ];
 
-const GLOBAL_LOCATIONS = ['.claude', '.mastracode', '.config/claude', '.config/mastracode'];
+const GLOBAL_LOCATIONS = ['.claude', '.mingyi-atlas', '.config/claude', '.config/mingyi-atlas'];
 
 export interface InstructionSource {
   path: string;
@@ -49,12 +49,12 @@ export function loadAgentInstructions(projectPath: string, configDirName = DEFAU
   const home = homedir();
 
   // Derive location arrays from the base constants, substituting the config dir name
-  const projectLocations = PROJECT_LOCATIONS.map(loc => (loc === '.mastracode' ? configDirName : loc));
+  const projectLocations = PROJECT_LOCATIONS.map(loc => (loc === '.mingyi-atlas' ? configDirName : loc));
   const globalLocations = GLOBAL_LOCATIONS.map(loc => {
-    if (loc === '.mastracode') return configDirName;
+    if (loc === '.mingyi-atlas') return configDirName;
     // XDG-style path (~/.config/<name>): strip the leading dot since the
     // .config/ prefix already signals a hidden/config directory.
-    if (loc === '.config/mastracode') return '.config/' + configDirName.replace(/^\./, '');
+    if (loc === '.config/mingyi-atlas') return '.config/' + configDirName.replace(/^\./, '');
     return loc;
   });
 

@@ -90,7 +90,7 @@ const builtinPacks = [
 ];
 
 function withTempSettingsFile(run: (filePath: string) => void): void {
-  const dir = mkdtempSync(join(tmpdir(), 'mastracode-settings-'));
+  const dir = mkdtempSync(join(tmpdir(), 'mingyi-atlas-settings-'));
   const filePath = join(dir, 'settings.json');
   try {
     run(filePath);
@@ -494,6 +494,7 @@ describe('migrateLegacyVariedPack', () => {
       plan: 'openai/gpt-5.4',
       build: 'anthropic/claude-sonnet-4-5',
       fast: 'anthropic/claude-haiku-4-5',
+      pentest: 'openai/gpt-5.4',
     });
   });
 });

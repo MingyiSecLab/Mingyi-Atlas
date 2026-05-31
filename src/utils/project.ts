@@ -11,6 +11,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { DEFAULT_CONFIG_DIR } from '../constants.js';
+
+export const APP_DATA_DIR_NAME = '.mingyi-atlas';
+export const MAIN_DATABASE_FILENAME = 'mingyi-atlas.db';
+export const VECTOR_DATABASE_FILENAME = 'mingyi-atlas-vectors.db';
+
 export interface ProjectInfo {
   /** Unique resource ID for this project (used for thread grouping) */
   resourceId: string;
@@ -179,25 +184,13 @@ export function getCurrentGitBranchAsync(cwd: string): Promise<string | undefine
 }
 
 /**
- * Get the application data directory for mastracode
- * - macOS: ~/Library/Application Support/mastracode
- * - Linux: ~/.local/share/mastracode
- * - Windows: %APPDATA%/mastracode
+ * Get the application data directory.
+ *
+ * Runtime state is intentionally stored in a single branded directory:
+ *   ~/.mingyi-atlas/
  */
 export function getAppDataDir(): string {
-  const platform = os.platform();
-  let baseDir: string;
-
-  if (platform === 'darwin') {
-    baseDir = path.join(os.homedir(), 'Library', 'Application Support');
-  } else if (platform === 'win32') {
-    baseDir = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-  } else {
-    // Linux and others - follow XDG spec
-    baseDir = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
-  }
-
-  const appDir = path.join(baseDir, 'mastracode');
+  const appDir = path.join(os.homedir(), APP_DATA_DIR_NAME);
 
   // Ensure directory exists
   if (!fs.existsSync(appDir)) {
@@ -207,26 +200,26 @@ export function getAppDataDir(): string {
   return appDir;
 }
 /**
- * Get the database path for mastracode
+ * Get the database path.
  * Can be overridden with the MASTRA_DB_PATH environment variable for debugging.
  */
 export function getDatabasePath(): string {
   if (process.env.MASTRA_DB_PATH) {
     return process.env.MASTRA_DB_PATH;
   }
-  return path.join(getAppDataDir(), 'mastra.db');
+  return path.join(getAppDataDir(), MAIN_DATABASE_FILENAME);
 }
 
 /**
- * Get the vector database path for mastracode.
+ * Get the vector database path.
  * Separate from the main DB to avoid bloating it with embedding data.
  */
 export function getVectorDatabasePath(): string {
-  return path.join(getAppDataDir(), 'mastra-vectors.db');
+  return path.join(getAppDataDir(), VECTOR_DATABASE_FILENAME);
 }
 
 /**
- * Get the observability DuckDB database path for mastracode.
+ * Get the observability DuckDB database path.
  * Separate from the main DB — DuckDB is used for OLAP-style trace/score/feedback queries.
  * Can be overridden with the MASTRA_OBSERVABILITY_DB_PATH environment variable.
  */
@@ -276,7 +269,7 @@ export type StorageConfig = LibSQLStorageConfig | PgStorageConfig;
  * Priority (highest to lowest):
  *   1. Environment variables: MASTRA_STORAGE_BACKEND + backend-specific vars
  *   2. Global settings (from /settings): settings.storage
- *   3. Legacy config files: .mastracode/database.json (LibSQL only)
+ *   3. Legacy config files: .mingyi-atlas/database.json (LibSQL only)
  *   4. Local file database (LibSQL default)
  *
  * For PG, the env vars are:
@@ -318,7 +311,7 @@ export function getStorageConfig(
     };
   }
 
-  // 3. Legacy project/global config files (.mastracode/database.json)
+  // 3. Legacy project/global config files (.mingyi-atlas/database.json)
   if (projectDir) {
     const projectConfig = loadDatabaseConfig(path.join(projectDir, configDirName, 'database.json'));
     if (projectConfig) return projectConfig;
@@ -456,8 +449,8 @@ export type OmScope = 'thread' | 'resource';
  *
  * Priority:
  *   1. MASTRA_OM_SCOPE environment variable ("thread" or "resource")
- *   2. Project config: .mastracode/database.json → omScope
- *   3. Global config: ~/.mastracode/database.json → omScope
+ *   2. Project config: .mingyi-atlas/database.json → omScope
+ *   3. Global config: ~/.mingyi-atlas/database.json → omScope
  *   4. Default: "thread"
  */
 export function getOmScope(projectDir?: string, configDirName = DEFAULT_CONFIG_DIR): OmScope {
@@ -503,8 +496,8 @@ function loadOmScopeFromConfig(filePath: string): OmScope | null {
  *
  * Priority:
  *   1. MASTRA_RESOURCE_ID environment variable
- *   2. Project config: .mastracode/database.json → resourceId
- *   3. Global config: ~/.mastracode/database.json → resourceId
+ *   2. Project config: .mingyi-atlas/database.json → resourceId
+ *   3. Global config: ~/.mingyi-atlas/database.json → resourceId
  *   4. null (use auto-detected value)
  */
 export function getResourceIdOverride(projectDir?: string, configDirName = DEFAULT_CONFIG_DIR): string | null {

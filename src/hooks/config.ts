@@ -1,6 +1,6 @@
 /**
  * Hook configuration loading from filesystem.
- * Loads from global (~/.mastracode/hooks.json) and project (.mastracode/hooks.json).
+ * Loads from global (~/.mingyi-atlas/hooks.json) and project (.mingyi-atlas/hooks.json).
  * Global hooks run first, project hooks append.
  */
 

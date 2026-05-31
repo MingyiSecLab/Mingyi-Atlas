@@ -1,5 +1,5 @@
 /**
- * Terminal theme detection for Mastra Code TUI.
+ * Terminal theme detection for Mingyi Atlas TUI.
  *
  * Detection priority:
  * 1. MASTRA_THEME env var (explicit override)

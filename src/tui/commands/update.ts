@@ -77,7 +77,7 @@ export async function handleUpdateCommand(ctx: SlashCommandContext): Promise<voi
     ctx.showInfo(`Updating to v${latestVersion}…`);
     const ok = await runUpdate(pm, latestVersion);
     if (ok) {
-      ctx.showInfo(`Updated to v${latestVersion}. Please restart Mastra Code.`);
+      ctx.showInfo(`Updated to v${latestVersion}. Please restart Mingyi Atlas.`);
       ctx.stop();
       process.exit(0);
     } else {

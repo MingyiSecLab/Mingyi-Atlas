@@ -47,14 +47,32 @@ const TOOL_CATEGORY_MAP: Record<string, ToolCategory> = {
   'web-search': 'read',
   web_extract: 'read',
   'web-extract': 'read',
+  get_finding: 'read',
+  list_findings: 'read',
+  list_scope: 'read',
+  list_assets: 'read',
+  list_endpoints: 'read',
+  list_retest_queue: 'read',
+  extract_js_endpoints: 'read',
+  validate_discovery: 'read',
   // Edit tools — modify files
   [MC_TOOLS.STRING_REPLACE_LSP]: 'edit',
   [MC_TOOLS.AST_SMART_EDIT]: 'edit',
   [MC_TOOLS.WRITE_FILE]: 'edit',
   subagent: 'edit',
+  report_finding: 'edit',
+  generate_report: 'edit',
+  update_finding: 'edit',
+  record_scope: 'edit',
+  record_asset: 'edit',
+  record_endpoint: 'edit',
+  add_retest_item: 'edit',
+  update_retest_item: 'edit',
 
   // Execute tools — run arbitrary commands
   [MC_TOOLS.EXECUTE_COMMAND]: 'execute',
+  http_request: 'mcp',
+  detect_auth_scheme: 'mcp',
 
   // Interactive / planning tools — always allowed (no category needed)
   // ask_user, task_write, task_update, task_complete, task_check, submit_plan, request_access

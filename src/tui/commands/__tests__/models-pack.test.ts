@@ -18,6 +18,7 @@ function createSettings(overrides?: Partial<GlobalSettings>): GlobalSettings {
       version: 0,
       modePackId: null,
       omPackId: null,
+      quietModePreferenceSelected: true,
     },
     models: {
       activeModelPackId: null,
@@ -31,14 +32,17 @@ function createSettings(overrides?: Partial<GlobalSettings>): GlobalSettings {
       omCavemanObservations: null,
       omObserveAttachments: null,
       subagentModels: {},
+      goalJudgeModel: null,
+      goalMaxTurns: null,
     },
-    preferences: { yolo: null, theme: 'auto', thinkingLevel: 'off', quietMode: false },
+    preferences: { yolo: null, theme: 'auto', thinkingLevel: 'off', quietMode: false, quietModeMaxToolPreviewLines: 2 },
     storage,
     customModelPacks: [],
     customProviders: [],
     modelUseCounts: {},
     updateDismissedVersion: null,
     memoryGateway: {},
+    lsp: undefined,
     browser: {
       enabled: false,
       provider: 'stagehand',
@@ -46,6 +50,8 @@ function createSettings(overrides?: Partial<GlobalSettings>): GlobalSettings {
       viewport: { width: 1280, height: 720 },
       stagehand: { env: 'LOCAL' },
     },
+    signals: { unixSocketPubSub: false },
+    observability: { resources: {}, localTracing: false },
     ...overrides,
   };
 }
@@ -58,6 +64,7 @@ const alphaPack: ModePack = {
     plan: 'openai/gpt-5.3-codex',
     build: 'anthropic/claude-sonnet-4-5',
     fast: 'openai/gpt-5.1-codex-mini',
+    pentest: 'openai/gpt-5.3-codex',
   },
 };
 
@@ -78,7 +85,7 @@ describe('upsertCustomPackInSettings', () => {
       customModelPacks: [
         {
           name: 'Alpha',
-          models: { plan: 'old/plan', build: 'old/build', fast: 'old/fast' },
+          models: { plan: 'old/plan', build: 'old/build', fast: 'old/fast', pentest: 'old/pentest' },
           createdAt: '2026-01-01T00:00:00.000Z',
         },
       ],
@@ -145,6 +152,7 @@ describe('upsertCustomPackInSettings', () => {
       plan: alphaPack.models.plan,
       build: alphaPack.models.build,
       fast: 'anthropic/claude-haiku-4-5',
+      pentest: alphaPack.models.pentest,
     });
   });
 
@@ -194,6 +202,7 @@ describe('upsertCustomPackInSettings', () => {
         plan: 'anthropic/claude-sonnet-4-5',
         build: 'anthropic/claude-sonnet-4-5',
         fast: 'anthropic/claude-haiku-4-5',
+        pentest: 'anthropic/claude-sonnet-4-5',
       },
     };
 
@@ -244,7 +253,7 @@ describe('removeCustomPackFromSettings', () => {
         },
         {
           name: 'Beta',
-          models: { plan: 'beta/plan', build: 'beta/build', fast: 'beta/fast' },
+          models: { plan: 'beta/plan', build: 'beta/build', fast: 'beta/fast', pentest: 'beta/pentest' },
           createdAt: '2026-01-02T00:00:00.000Z',
         },
       ],
@@ -336,6 +345,7 @@ describe('serializePack / deserializePack', () => {
         build: 'anthropic/claude-sonnet-4-5',
         plan: 'anthropic/claude-sonnet-4-5',
         fast: 'anthropic/claude-haiku-4-5',
+        pentest: 'anthropic/claude-sonnet-4-5',
       },
     };
     const serialized = serializePack(builtIn);
@@ -354,7 +364,9 @@ describe('serializePack / deserializePack', () => {
   });
 
   it('returns null when required fields are missing', () => {
-    const noName = Buffer.from(JSON.stringify({ models: { build: 'a', plan: 'b', fast: 'c' } })).toString('base64');
+    const noName = Buffer.from(JSON.stringify({ models: { build: 'a', plan: 'b', fast: 'c', pentest: 'd' } })).toString(
+      'base64',
+    );
     expect(deserializePack(`mastra-pack:${noName}`)).toBeNull();
 
     const noModels = Buffer.from(JSON.stringify({ name: 'Test' })).toString('base64');

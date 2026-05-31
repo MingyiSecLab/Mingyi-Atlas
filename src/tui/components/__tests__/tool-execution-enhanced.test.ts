@@ -77,7 +77,7 @@ describe('ToolExecutionComponentEnhanced quiet display', () => {
   it('does not show raw streamed continuation paths before previous context is available', () => {
     const component = new ToolExecutionComponentEnhanced(
       'view',
-      { path: 'mastracode/src/' },
+      { path: 'mingyi-atlas/src/' },
       { quietDisplayMode: 'quiet', collapsedByDefault: true },
       ui,
     );
@@ -85,34 +85,34 @@ describe('ToolExecutionComponentEnhanced quiet display', () => {
     component.setCompactToolContinuation(true);
 
     const output = stripAnsi(component.render(100).join('\n'));
-    expect(output).not.toContain('mastracode');
+    expect(output).not.toContain('mingyi-atlas');
     expect(output).not.toContain('src');
   });
 
   it('holds partial continuation path segments until a slash streams in', () => {
     const component = new ToolExecutionComponentEnhanced(
       'view',
-      { path: 'mastracode/s' },
+      { path: 'mingyi-atlas/s' },
       { quietDisplayMode: 'quiet', collapsedByDefault: true },
       ui,
     );
 
-    component.setCompactToolContinuation(true, 'mastracode/src/tui/components/tool-execution-enhanced.ts:1-2');
+    component.setCompactToolContinuation(true, 'mingyi-atlas/src/tui/components/tool-execution-enhanced.ts:1-2');
 
     const output = stripAnsi(component.render(100).join('\n'));
     expect(output).toContain('────────────');
-    expect(output).not.toContain('mastracode/s');
+    expect(output).not.toContain('mingyi-atlas/s');
   });
 
   it('holds continuation path segments when previous segment is still incomplete', () => {
     const component = new ToolExecutionComponentEnhanced(
       'view',
-      { path: 'mastracode/src' },
+      { path: 'mingyi-atlas/src' },
       { quietDisplayMode: 'quiet', collapsedByDefault: true },
       ui,
     );
 
-    component.setCompactToolContinuation(true, 'mastracode/s');
+    component.setCompactToolContinuation(true, 'mingyi-atlas/s');
 
     const output = stripAnsi(component.render(100).join('\n'));
     expect(output).toContain('────────────');
@@ -122,61 +122,61 @@ describe('ToolExecutionComponentEnhanced quiet display', () => {
   it('streams divergent path segments immediately', () => {
     const component = new ToolExecutionComponentEnhanced(
       'view',
-      { path: 'mastracode/src' },
+      { path: 'mingyi-atlas/src' },
       { quietDisplayMode: 'quiet', collapsedByDefault: true },
       ui,
     );
 
-    component.setCompactToolContinuation(true, 'mastracode/lib/tool-execution-enhanced.ts:1-2');
+    component.setCompactToolContinuation(true, 'mingyi-atlas/lib/tool-execution-enhanced.ts:1-2');
 
     const output = stripAnsi(component.render(100).join('\n'));
     expect(output).toContain('/src');
-    expect(output).not.toContain('mastracode/src');
+    expect(output).not.toContain('mingyi-atlas/src');
   });
 
   it('streams from the divergent path segment after matching prefixes', () => {
     const component = new ToolExecutionComponentEnhanced(
       'view',
-      { path: 'mastracode/src/tui/comments' },
+      { path: 'mingyi-atlas/src/tui/comments' },
       { quietDisplayMode: 'quiet', collapsedByDefault: true },
       ui,
     );
 
-    component.setCompactToolContinuation(true, 'mastracode/src/tui/components/tool-execution-enhanced.ts:1-2');
+    component.setCompactToolContinuation(true, 'mingyi-atlas/src/tui/components/tool-execution-enhanced.ts:1-2');
 
     const output = stripAnsi(component.render(100).join('\n'));
     expect(output).toContain('/comments');
-    expect(output).not.toContain('mastracode/src/tui/com');
+    expect(output).not.toContain('mingyi-atlas/src/tui/com');
   });
 
   it('preserves the filename when continuation paths are identical', () => {
     const component = new ToolExecutionComponentEnhanced(
       'view',
-      { path: 'mastracode/src/tui/components/tool-execution-enhanced.ts' },
+      { path: 'mingyi-atlas/src/tui/components/tool-execution-enhanced.ts' },
       { quietDisplayMode: 'quiet', collapsedByDefault: true },
       ui,
     );
 
-    component.setCompactToolContinuation(true, 'mastracode/src/tui/components/tool-execution-enhanced.ts');
+    component.setCompactToolContinuation(true, 'mingyi-atlas/src/tui/components/tool-execution-enhanced.ts');
 
     const output = stripAnsi(component.render(120).join('\n'));
     expect(output).toContain('/tool-execution-enhanced.ts');
-    expect(output).not.toContain('mastracode/src/tui/components/tool-execution-enhanced.ts');
+    expect(output).not.toContain('mingyi-atlas/src/tui/components/tool-execution-enhanced.ts');
   });
 
   it('renders matching completed continuation segments as connector chunks', () => {
     const component = new ToolExecutionComponentEnhanced(
       'view',
-      { path: 'mastracode/lib/' },
+      { path: 'mingyi-atlas/lib/' },
       { quietDisplayMode: 'quiet', collapsedByDefault: true },
       ui,
     );
 
-    component.setCompactToolContinuation(true, 'mastracode/lib/tool-execution-enhanced.ts:1-2');
+    component.setCompactToolContinuation(true, 'mingyi-atlas/lib/tool-execution-enhanced.ts:1-2');
 
     const output = stripAnsi(component.render(100).join('\n'));
     expect(output).toContain('────────────────');
-    expect(output).not.toContain('mastracode/lib');
+    expect(output).not.toContain('mingyi-atlas/lib');
     expect(output).not.toContain('/lib/');
   });
 
@@ -605,7 +605,7 @@ describe('ToolExecutionComponentEnhanced quiet display', () => {
   it('renders quiet skill tools with the skill name only', () => {
     const component = new ToolExecutionComponentEnhanced(
       'skill',
-      { name: 'testing-mastracode-tui' },
+      { name: 'testing-mingyi-atlas-tui' },
       { quietDisplayMode: 'quiet', collapsedByDefault: true },
       ui,
     );
@@ -614,7 +614,7 @@ describe('ToolExecutionComponentEnhanced quiet display', () => {
 
     const output = component.render(100).join('\n');
     expect(output).toContain('skill');
-    expect(output).toContain('testing-mastracode-tui');
+    expect(output).toContain('testing-mingyi-atlas-tui');
     expect(output).not.toContain('name=');
     expect(output.split('\n')).toHaveLength(1);
   });
@@ -671,7 +671,7 @@ describe('ToolExecutionComponentEnhanced quiet display', () => {
   });
 
   it('keeps quiet shell box borders aligned for multiline command input', () => {
-    const command = `gh pr create --base main --head fix/mastracode-visible-width-truncation --title "fix(mastracode): use visible width for terminal output" --body "This follows up on the quiet-mode terminal rendering work.
+    const command = `gh pr create --base main --head fix/mingyi-atlas-visible-width-truncation --title "fix(mingyi-atlas): use visible width for terminal output" --body "This follows up on the quiet-mode terminal rendering work.
 
 It makes ANSI truncation and bordered command output measure terminal display width instead of raw string length, so wide characters and ANSI/OSC closers do not throw off alignment.
 
@@ -797,7 +797,7 @@ Test plan:
 
   it('wraps long quiet shell commands in the footer instead of truncating them', () => {
     const command =
-      'pnpm --filter mastracode exec vitest run src/tui/components/__tests__/tool-execution-enhanced.test.ts --bail 1 --reporter=dot';
+      'pnpm --filter mingyi-atlas exec vitest run src/tui/components/__tests__/tool-execution-enhanced.test.ts --bail 1 --reporter=dot';
     const component = new ToolExecutionComponentEnhanced(
       'execute_command',
       { command },
@@ -817,7 +817,7 @@ Test plan:
 
   it('keeps base shell command color on wrapped continuation lines', () => {
     const command =
-      'pnpm --filter mastracode exec vitest run src/tui/components/__tests__/tool-execution-enhanced.test.ts --bail 1 --reporter=dot && pnpm --filter mastracode lint && pnpm --filter mastracode check';
+      'pnpm --filter mingyi-atlas exec vitest run src/tui/components/__tests__/tool-execution-enhanced.test.ts --bail 1 --reporter=dot && pnpm --filter mingyi-atlas lint && pnpm --filter mingyi-atlas check';
     const component = new ToolExecutionComponentEnhanced(
       'execute_command',
       { command },
@@ -934,11 +934,11 @@ Test plan:
   it('does not render connector-only continuation headers when summaries fully overlap', () => {
     const component = new ToolExecutionComponentEnhanced(
       'string_replace_lsp',
-      { path: 'mastracode/src/tui/handlers/tool.ts', new_string: 'reconcileToolBoundaries(ctx);' },
+      { path: 'mingyi-atlas/src/tui/handlers/tool.ts', new_string: 'reconcileToolBoundaries(ctx);' },
       { quietDisplayMode: 'quiet', collapsedByDefault: true },
       ui,
     );
-    component.setCompactToolContinuation(true, 'mastracode/src/tui/handlers/tool.ts');
+    component.setCompactToolContinuation(true, 'mingyi-atlas/src/tui/handlers/tool.ts');
 
     const lines = stripAnsi(component.render(120).join('\n')).split('\n');
     expect(lines[0]).toContain('/handlers/tool.ts');

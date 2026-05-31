@@ -2,7 +2,7 @@
  * Gateway sync utility for keeping the model registry up to date.
  *
  * This is a thin wrapper around `@mastra/core/llm`'s `GatewayRegistry` so
- * mastracode and `mastra dev` share a single implementation for fetching
+ * mingyi-atlas and `mastra dev` share a single implementation for fetching
  * providers, generating types, and writing to the global cache. Keep this
  * file small — provider/registry logic belongs in `@mastra/core`.
  */

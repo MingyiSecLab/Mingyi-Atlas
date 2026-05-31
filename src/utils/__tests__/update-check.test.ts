@@ -1,39 +1,39 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchChangelog, parseChangelog } from '../update-check.js';
 
-describe('parseChangelog', () => {
-  const SAMPLE_CHANGELOG = [
-    '# mastracode',
-    '',
-    '## 0.16.0',
-    '',
-    '### Minor Changes',
-    '',
-    '- Added evals system for MastraCode. ([#15642](https://github.com/mastra-ai/mastra/pull/15642))',
-    '',
-    '### Patch Changes',
-    '',
-    '- Fixed task lists leaking across threads. ([#15749](https://github.com/mastra-ai/mastra/pull/15749))',
-    '',
-    '- Allow typing a custom model string in `/om`. ([#15703](https://github.com/mastra-ai/mastra/pull/15703))',
-    '',
-    '- Updated dependencies [[`28caa5b`](https://github.com/mastra-ai/mastra/commit/28caa5b)]:',
-    '  - @mastra/core@1.29.0',
-    '  - @mastra/memory@1.17.2',
-    '',
-    '## 0.15.2',
-    '',
-    '### Patch Changes',
-    '',
-    '- Old bugfix from previous release. ([#15500](https://github.com/mastra-ai/mastra/pull/15500))',
-  ].join('\n');
+const SAMPLE_CHANGELOG = [
+  '# mingyi-atlas',
+  '',
+  '## 0.16.0',
+  '',
+  '### Minor Changes',
+  '',
+  '- Added evals system for MingyiAtlas. ([#15642](https://github.com/mastra-ai/mastra/pull/15642))',
+  '',
+  '### Patch Changes',
+  '',
+  '- Fixed task lists leaking across threads. ([#15749](https://github.com/mastra-ai/mastra/pull/15749))',
+  '',
+  '- Allow typing a custom model string in `/om`. ([#15703](https://github.com/mastra-ai/mastra/pull/15703))',
+  '',
+  '- Updated dependencies [[`28caa5b`](https://github.com/mastra-ai/mastra/commit/28caa5b)]:',
+  '  - @mastra/core@1.29.0',
+  '  - @mastra/memory@1.17.2',
+  '',
+  '## 0.15.2',
+  '',
+  '### Patch Changes',
+  '',
+  '- Old bugfix from previous release. ([#15500](https://github.com/mastra-ai/mastra/pull/15500))',
+].join('\n');
 
+describe('parseChangelog', () => {
   it('produces the expected exact output for the sample changelog', () => {
     const result = parseChangelog(SAMPLE_CHANGELOG, '0.16.0');
     expect(result).toBe(
       [
-        '  • Added evals system for MastraCode',
+        '  • Added evals system for MingyiAtlas',
         '  • Fixed task lists leaking across threads',
         '  • Allow typing a custom model string in `/om`',
       ].join('\n'),
@@ -95,9 +95,17 @@ describe('parseChangelog', () => {
   });
 });
 
-describe('fetchChangelog (integration)', () => {
-  it('fetches and parses the real changelog for a known published version', async () => {
-    // v0.16.0 is a known published version with real changelog entries
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+describe('fetchChangelog', () => {
+  it('fetches and parses a published changelog response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(SAMPLE_CHANGELOG, { status: 200 })),
+    );
+
     const result = await fetchChangelog('0.16.0');
     expect(result).not.toBeNull();
     expect(typeof result).toBe('string');
@@ -110,9 +118,28 @@ describe('fetchChangelog (integration)', () => {
     }
     // Should contain at least one recognizable entry from v0.16.0
     expect(result).toContain('evals');
-  }, 10_000);
+  });
 
-  it('fetches and preserves full entries for a version with many entries (v0.10.0)', async () => {
+  it('fetches and preserves full entries for a version with many entries', async () => {
+    const changelog = [
+      '## 0.10.0',
+      '',
+      '- Custom response one',
+      '- /thread command two',
+      '- observational memory three',
+      '- Fourth entry',
+      '- Fifth entry',
+      '- Sixth entry',
+      '- Seventh entry',
+      '- Eighth entry',
+      '- Ninth entry',
+      '- Tenth entry',
+    ].join('\n');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(changelog, { status: 200 })),
+    );
+
     const result = await fetchChangelog('0.10.0');
     expect(result).not.toBeNull();
     const lines = result!.split('\n');
@@ -124,10 +151,15 @@ describe('fetchChangelog (integration)', () => {
     for (const line of lines) {
       expect(line).toMatch(/^\s+•\s+/);
     }
-  }, 10_000);
+  });
 
   it('returns null for a non-existent version', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('not found', { status: 404 })),
+    );
+
     const result = await fetchChangelog('0.0.0-does-not-exist');
     expect(result).toBeNull();
-  }, 10_000);
+  });
 });

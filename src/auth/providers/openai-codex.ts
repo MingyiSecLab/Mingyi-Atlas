@@ -254,7 +254,7 @@ async function getRandomBytes() {
 async function createAuthorizationFlow(
   redirectUri: string,
   state: string,
-  originator: string = 'mastracode',
+  originator: string = 'mingyi-atlas',
 ): Promise<{ verifier: string; url: string }> {
   const { verifier, challenge } = await generatePKCE();
 
@@ -425,9 +425,9 @@ async function loginOpenAICodexDevice(options: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'User-Agent': 'mastracode',
+      'User-Agent': 'mingyi-atlas',
     },
-    body: JSON.stringify({ client_id: CLIENT_ID, originator: 'mastracode' }),
+    body: JSON.stringify({ client_id: CLIENT_ID, originator: 'mingyi-atlas' }),
     signal: options.signal,
   });
 
@@ -471,7 +471,7 @@ async function loginOpenAICodexDevice(options: {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'mastracode',
+        'User-Agent': 'mingyi-atlas',
       },
       body: JSON.stringify({
         device_auth_id: deviceData.device_auth_id,
@@ -527,7 +527,7 @@ async function loginOpenAICodexDevice(options: {
  * @param options.onManualCodeInput - Optional promise that resolves with user-pasted code.
  *                                    Races with browser callback - whichever completes first wins.
  *                                    Useful for showing paste input immediately alongside browser flow.
- * @param options.originator - OAuth originator parameter (defaults to "mastracode")
+ * @param options.originator - OAuth originator parameter (defaults to "mingyi-atlas")
  */
 export async function loginOpenAICodex(options: {
   onAuth: (info: { url: string; instructions?: string }) => void;
@@ -539,7 +539,7 @@ export async function loginOpenAICodex(options: {
   mode?: 'browser' | 'device';
 }): Promise<OAuthCredentials> {
   const envMode =
-    typeof process !== 'undefined' && process.env?.MASTRACODE_OPENAI_CODEX_AUTH_MODE === 'device'
+    typeof process !== 'undefined' && process.env?.MINGYI_ATLAS_OPENAI_CODEX_AUTH_MODE === 'device'
       ? 'device'
       : undefined;
   const mode = options.mode ?? envMode ?? 'browser';
@@ -559,7 +559,7 @@ export async function loginOpenAICodex(options: {
   const { verifier, url } = await createAuthorizationFlow(
     server.redirectUri,
     state,
-    options.originator ?? 'mastracode',
+    options.originator ?? 'mingyi-atlas',
   );
 
   options.onAuth({

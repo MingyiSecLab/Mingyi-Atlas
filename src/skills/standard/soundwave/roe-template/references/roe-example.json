@@ -1,0 +1,47 @@
+{
+  "engagement_name": "ACME Corp External Assessment 2026-Q1",
+  "client": "ACME Corporation",
+  "start_date": "2026-03-15",
+  "end_date": "2026-04-15",
+  "engagement_type": "external",
+  "testing_window": "Mon-Fri 09:00-18:00 KST",
+  "in_scope": [
+    {"target": "*.acme.com", "type": "domain", "notes": "All subdomains of primary domain"},
+    {"target": "10.0.1.0/24", "type": "ip-range", "notes": "External DMZ segment"},
+    {"target": "https://app.acme.com", "type": "application", "notes": "Main web application"}
+  ],
+  "out_of_scope": [
+    {"target": "mail.acme.com", "type": "domain", "notes": "Production mail server — shared infrastructure"},
+    {"target": "10.0.2.0/24", "type": "ip-range", "notes": "Internal corporate network"},
+    {"target": "*.acme-partner.com", "type": "domain", "notes": "Partner systems — not authorized"}
+  ],
+  "prohibited_actions": [
+    "Denial of Service (DoS/DDoS)",
+    "Social engineering of employees (unless authorized)",
+    "Physical access attempts (unless authorized)",
+    "Data exfiltration of real customer data",
+    "Modification or deletion of production data"
+  ],
+  "permitted_actions": [
+    "Password spraying against SSO (max 3 attempts/account/hour)",
+    "Subdomain takeover of dangling CNAMEs (proof-of-concept only)"
+  ],
+  "escalation_contacts": [
+    {
+      "name": "Kim Security Lead",
+      "role": "Client CISO",
+      "channel": "phone: +82-10-XXXX-XXXX, email: security@acme.com",
+      "available": "Mon-Fri 09:00-18:00 KST"
+    },
+    {
+      "name": "Park Red Team Lead",
+      "role": "Engagement Lead",
+      "channel": "Signal: @park-rtl, email: park@redteam.com",
+      "available": "24/7"
+    }
+  ],
+  "incident_procedure": "Stop immediately, document the incident (timestamp, target, action), notify engagement lead within 15 minutes.",
+  "authorization_reference": "Contract #ACME-RT-2026-001, signed 2026-03-01",
+  "version": "1.0",
+  "last_updated": "2026-03-13T10:00:00"
+}

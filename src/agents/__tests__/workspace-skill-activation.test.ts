@@ -24,9 +24,9 @@ afterEach(async () => {
   vi.resetModules();
 });
 
-describe('mastracode workspace skill activation', () => {
-  it('activates a symlinked local skill by bare name through the mastracode workspace path', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastracode-workspace-skill-'));
+describe('mingyi-atlas workspace skill activation', () => {
+  it('activates a symlinked local skill by bare name through the mingyi-atlas workspace path', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mingyi-atlas-workspace-skill-'));
 
     try {
       const skillName = 'temp-symlink-skill';

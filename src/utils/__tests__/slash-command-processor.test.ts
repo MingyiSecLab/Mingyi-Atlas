@@ -16,7 +16,7 @@ const createCommand = (template: string): SlashCommandMetadata => ({
 
 describe('slash command processor', () => {
   it('replaces file references that resolve on disk', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'mastracode-command-processor-'));
+    const dir = await mkdtemp(join(tmpdir(), 'mingyi-atlas-command-processor-'));
     await writeFile(join(dir, 'context.md'), 'File context');
 
     const result = await processSlashCommand(createCommand('Read @context.md'), [], dir);
@@ -25,7 +25,7 @@ describe('slash command processor', () => {
   });
 
   it('leaves @ references intact when they do not resolve to files', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'mastracode-command-processor-'));
+    const dir = await mkdtemp(join(tmpdir(), 'mingyi-atlas-command-processor-'));
 
     const result = await processSlashCommand(
       createCommand('gh search prs --involves @me --search "involves:@me sort:updated-asc"'),

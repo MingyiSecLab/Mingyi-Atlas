@@ -117,7 +117,7 @@ describe('ChatBoundarySpacer', () => {
       completeTool(
         new ToolExecutionComponentEnhanced(
           'view',
-          { path: 'mastracode/src/tui/components/tool-execution-enhanced.ts', offset: 301, limit: 84 },
+          { path: 'mingyi-atlas/src/tui/components/tool-execution-enhanced.ts', offset: 301, limit: 84 },
           { quietDisplayMode: 'quiet' },
           ui,
         ),
@@ -125,7 +125,7 @@ describe('ChatBoundarySpacer', () => {
       completeTool(
         new ToolExecutionComponentEnhanced(
           'view',
-          { path: 'mastracode/src/tui/chat-boundary-reconciliation.ts', offset: 1, limit: 45 },
+          { path: 'mingyi-atlas/src/tui/chat-boundary-reconciliation.ts', offset: 1, limit: 45 },
           { quietDisplayMode: 'quiet' },
           ui,
         ),
@@ -133,7 +133,7 @@ describe('ChatBoundarySpacer', () => {
       completeTool(
         new ToolExecutionComponentEnhanced(
           'view',
-          { path: 'mastracode/src/tui/chat-boundary-reconciliation.ts', offset: 50, limit: 10 },
+          { path: 'mingyi-atlas/src/tui/chat-boundary-reconciliation.ts', offset: 50, limit: 10 },
           { quietDisplayMode: 'quiet' },
           ui,
         ),
@@ -141,7 +141,7 @@ describe('ChatBoundarySpacer', () => {
     ]);
 
     expect(lines).not.toContain('');
-    expect(stripAnsi(lines[0]!)).toContain('▐view▌mastracode/src/tui/components/tool-execution-enhanced.ts:301-384');
+    expect(stripAnsi(lines[0]!)).toContain('▐view▌mingyi-atlas/src/tui/components/tool-execution-enhanced.ts:301-384');
     expect(stripAnsi(lines[1]!)).not.toContain('view');
     expect(stripAnsi(lines[1]!)).toContain('/tui/chat-boundary-reconciliation.ts:1-45');
     expect(stripAnsi(lines[2]!)).toContain('/tui/chat-boundary-reconciliation.ts:50-59');

@@ -1,10 +1,8 @@
-# Mastra Code
+# Mingyi Atlas
 
-A coding agent that never compacts. Built with [Mastra](https://mastra.ai) and [pi-tui](https://github.com/badlogic/pi-mono).
+A coding agent and authorized security assessment CLI. Built with [Mastra](https://mastra.ai) and [pi-tui](https://github.com/badlogic/pi-mono).
 
-Learn more in the [documentation](https://code.mastra.ai/) and [announcement post](https://mastra.ai/blog/announcing-mastra-code).
-
-![Screenshot of the Mastra Code TUI. At the top it shows in green letters "Mastra Code". It then displays the version, project, resource ID, and user. The user and assistant message have green borders. At the bottom is a green input field. Below the input is on the left the current mode and model displayed. In the middle the Observational Memory status is shown. On the right is the current directory.](https://res.cloudinary.com/mastra-assets/image/upload/v1778048981/mastracode-init_tny2pb.png)
+Learn more in the project documentation.
 
 ## Features
 
@@ -20,16 +18,17 @@ Learn more in the [documentation](https://code.mastra.ai/) and [announcement pos
 
 ## Installation
 
-Install `mastracode` globally with your package manager of choice.
+Install `@mingyi-atlas/cli` globally with your package manager of choice.
 
 ```bash
-npm install -g mastracode
+npm install -g @mingyi-atlas/cli
+mingyi-atlas
 ```
 
 If you prefer not to install packages globally, you can use `npx`:
 
 ```bash
-npx mastracode
+npx @mingyi-atlas/cli
 ```
 
 On first launch, an interactive onboarding wizard guides you through:
@@ -60,7 +59,7 @@ sudo apt install fd-find
 sudo pacman -S fd
 ```
 
-On Ubuntu/Debian the binary is called `fdfind` — mastracode detects both `fd` and `fdfind` automatically.
+On Ubuntu/Debian the binary is called `fdfind` — Mingyi Atlas detects both `fd` and `fdfind` automatically.
 
 ## Usage
 
@@ -113,7 +112,7 @@ Select a suggestion with arrow keys and press Tab to insert it.
 
 ### Goals
 
-Use `/goal <objective>` to have Mastra Code keep working toward an objective across turns. Goals use a judge model to decide whether the goal is complete, should continue, or should wait for an explicit user checkpoint. Configure defaults with `/judge`.
+Use `/goal <objective>` to have Mingyi Atlas keep working toward an objective across turns. Goals use a judge model to decide whether the goal is complete, should continue, or should wait for an explicit user checkpoint. Configure defaults with `/judge`.
 
 Goal objectives can span multiple lines:
 
@@ -171,16 +170,16 @@ Run goal-enabled skills with `/goal/<skill-name>`. Skill instructions become the
 
 ### Custom config directory
 
-By default, Mastra Code reads and writes project config from `.mastracode/` and global config from `~/.mastracode/` plus `~/.config/mastracode/`.
+By default, Mingyi Atlas reads and writes project config from `.mingyi-atlas/` and global config from `~/.mingyi-atlas/` plus `~/.config/mingyi-atlas/`.
 
-If you embed Mastra Code programmatically, you can override that directory name with `createMastraCode({ configDir: '.your-config-dir' })`.
+If you embed Mingyi Atlas programmatically, you can override that directory name with `createMingyiAtlas({ configDir: '.your-config-dir' })`.
 
-This remaps the project-level and global config locations that Mastra Code uses for MCP server configs, hooks, slash commands, agent instructions, skills, and the legacy `database.json` lookup.
+This remaps the project-level and global config locations that Mingyi Atlas uses for MCP server configs, hooks, slash commands, agent instructions, skills, and the legacy `database.json` lookup.
 
 ```ts
-import { createMastraCode } from 'mastracode';
+import { createMingyiAtlas } from '@mingyi-atlas/cli';
 
-const mastraCode = await createMastraCode({
+const mingyiAtlas = await createMingyiAtlas({
   configDir: '.acme-code',
 });
 ```
@@ -196,17 +195,23 @@ Threads are automatically scoped to your project based on:
 
 This means conversations are shared across clones, worktrees, and SSH/HTTPS URLs of the same repository.
 
-### Database location
+### Data location
 
-The SQLite database is stored in your system's application data directory:
+Runtime data is stored in one branded directory:
 
-- **macOS**: `~/Library/Application Support/mastracode/`
-- **Linux**: `~/.local/share/mastracode/`
-- **Windows**: `%APPDATA%/mastracode/`
+```text
+~/.mingyi-atlas/
+  auth.json
+  settings.json
+  mingyi-atlas.db
+  mingyi-atlas-vectors.db
+  locks/
+  signals/
+```
 
 ### Authentication
 
-For **Anthropic** models, mastracode supports two authentication methods:
+For **Anthropic** models, mingyi-atlas supports two authentication methods:
 
 1. **Claude Max OAuth (primary)**: Use `/login` to authenticate with a Claude Pro/Max subscription.
 2. **API key (fallback)**: Set the `ANTHROPIC_API_KEY` environment variable for direct API access. This is used when not logged in via OAuth.
@@ -232,28 +237,28 @@ Custom providers are stored in `settings.json` in the same app data directory. I
 
 ### macOS sleep prevention
 
-On macOS, Mastra Code starts the built-in `caffeinate` utility while the agent is actively running, then stops it as soon as the run completes, errors, aborts, or the TUI exits. Idle sessions do not keep your machine awake.
+On macOS, Mingyi Atlas starts the built-in `caffeinate` utility while the agent is actively running, then stops it as soon as the run completes, errors, aborts, or the TUI exits. Idle sessions do not keep your machine awake.
 
-To disable this behavior, set `MASTRACODE_DISABLE_CAFFEINATE=1` before launching Mastra Code:
+To disable this behavior, set `MINGYI_ATLAS_DISABLE_CAFFEINATE=1` before launching Mingyi Atlas:
 
 ```bash
-export MASTRACODE_DISABLE_CAFFEINATE=1
+export MINGYI_ATLAS_DISABLE_CAFFEINATE=1
 ```
 
 ### Plan persistence
 
 When you approve a plan (via `submit_plan`) or choose **Use as /goal** from the inline plan approval UI, it is saved as a markdown file in the app data directory:
 
-- **macOS**: `~/Library/Application Support/mastracode/plans/<resourceId>/`
-- **Linux**: `~/.local/share/mastracode/plans/<resourceId>/`
-- **Windows**: `%APPDATA%/mastracode/plans/<resourceId>/`
+```text
+~/.mingyi-atlas/plans/<resourceId>/
+```
 
 Files are named `<timestamp>-<slugified-title>.md` and contain the plan title, approval timestamp, and full plan body.
 
 To save plans to a project-local directory instead, set the `MASTRA_PLANS_DIR` environment variable:
 
 ```bash
-export MASTRA_PLANS_DIR=.mastracode/plans
+export MASTRA_PLANS_DIR=.mingyi-atlas/plans
 ```
 
 ## Architecture

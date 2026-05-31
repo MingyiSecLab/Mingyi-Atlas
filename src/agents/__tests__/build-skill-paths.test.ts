@@ -44,10 +44,10 @@ describe('buildSkillPaths', () => {
     const result = buildSkillPaths(projectPath, DEFAULT_CONFIG_DIR);
 
     expect(result).toEqual([
-      path.join(projectPath, '.mastracode', 'skills'),
+      path.join(projectPath, '.mingyi-atlas', 'skills'),
       path.join(projectPath, '.claude', 'skills'),
       path.join(projectPath, '.agents', 'skills'),
-      path.join(home, '.mastracode', 'skills'),
+      path.join(home, '.mingyi-atlas', 'skills'),
       path.join(home, '.claude', 'skills'),
       path.join(home, '.agents', 'skills'),
     ]);
@@ -90,9 +90,63 @@ describe('buildSkillPaths', () => {
     }
   });
 
+  it('includes nested built-in skill directories when requested', () => {
+    const builtInRoot = '/module/root/skills';
+    const benchmarkSkillDir = path.join(builtInRoot, 'benchmark');
+    const nestedSkillDir = path.join(builtInRoot, 'standard', 'web', 'xss');
+
+    const makeDirent = (name: string, isDirectory: boolean) =>
+      ({
+        name,
+        isSymbolicLink: () => false,
+        isDirectory: () => isDirectory,
+        isFile: () => !isDirectory,
+        isBlockDevice: () => false,
+        isCharacterDevice: () => false,
+        isFIFO: () => false,
+        isSocket: () => false,
+        path: '',
+        parentPath: '',
+      }) as fs.Dirent;
+
+    mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
+      const s = String(p);
+      return (
+        s.startsWith(builtInRoot) &&
+        [
+          builtInRoot,
+          benchmarkSkillDir,
+          path.join(benchmarkSkillDir, 'SKILL.md'),
+          path.join(builtInRoot, 'standard'),
+          path.join(builtInRoot, 'standard', 'web'),
+          nestedSkillDir,
+          path.join(nestedSkillDir, 'SKILL.md'),
+        ].includes(s)
+      );
+    });
+
+    mockedFs.readdirSync.mockImplementation((p: fs.PathLike, _opts?: any) => {
+      const s = String(p);
+      if (s === builtInRoot) return [makeDirent('benchmark', true), makeDirent('standard', true)] as any;
+      if (s === benchmarkSkillDir) return [] as any;
+      if (s === path.join(builtInRoot, 'standard')) return [makeDirent('web', true)] as any;
+      if (s === path.join(builtInRoot, 'standard', 'web')) return [makeDirent('xss', true)] as any;
+      if (s === nestedSkillDir) return [] as any;
+      return [] as any;
+    });
+
+    const result = buildSkillPaths(projectPath, DEFAULT_CONFIG_DIR, {
+      includeBuiltInSkills: true,
+      builtInSkillsRoot: builtInRoot,
+    });
+
+    expect(result).toContain(benchmarkSkillDir);
+    expect(result).toContain(nestedSkillDir);
+  });
+
   describe('symlink resolution', () => {
     it('adds resolved symlink parent directories', () => {
-      const skillsDir = path.join(projectPath, '.mastracode', 'skills');
+      const skillsDir = path.join(projectPath, '.mingyi-atlas', 'skills');
 
       mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
         return String(p) === skillsDir;
@@ -136,7 +190,7 @@ describe('buildSkillPaths', () => {
     });
 
     it('does not add duplicate resolved parents', () => {
-      const skillsDir = path.join(projectPath, '.mastracode', 'skills');
+      const skillsDir = path.join(projectPath, '.mingyi-atlas', 'skills');
 
       mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
         return String(p) === skillsDir;
@@ -178,7 +232,7 @@ describe('buildSkillPaths', () => {
     });
 
     it('ignores symlinks that resolve to files, not directories', () => {
-      const skillsDir = path.join(projectPath, '.mastracode', 'skills');
+      const skillsDir = path.join(projectPath, '.mingyi-atlas', 'skills');
 
       mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
         return String(p) === skillsDir;
@@ -211,7 +265,7 @@ describe('buildSkillPaths', () => {
     });
 
     it('silently handles errors during symlink resolution', () => {
-      const skillsDir = path.join(projectPath, '.mastracode', 'skills');
+      const skillsDir = path.join(projectPath, '.mingyi-atlas', 'skills');
 
       mockedFs.existsSync.mockImplementation((p: fs.PathLike) => {
         return String(p) === skillsDir;

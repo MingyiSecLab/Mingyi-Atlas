@@ -100,7 +100,7 @@ export async function handleFeedbackCommand(ctx: SlashCommandContext, args: stri
       },
       feedback: {
         feedbackType,
-        feedbackSource: 'mastracode',
+        feedbackSource: 'mingyi-atlas',
         feedbackUserId: getUserName(),
         value,
         comment,

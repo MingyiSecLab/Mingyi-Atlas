@@ -9,7 +9,7 @@ import type { HarnessQuestionAnswer, HarnessRequestContext } from '@mastra/core/
 import { createTool } from '@mastra/core/tools';
 import { LocalFilesystem } from '@mastra/core/workspace';
 import { z } from 'zod';
-import type { MastraCodeState } from '../schema.js';
+import type { MingyiAtlasState } from '../schema.js';
 import { isPathAllowed, getAllowedPathsFromContext } from './utils.js';
 
 function expandTilde(p: string): string {
@@ -36,7 +36,7 @@ export const requestSandboxAccessTool = createTool({
   inputSchema: requestSandboxAccessInputSchema,
   execute: async ({ path: requestedPath, reason }: RequestSandboxAccessInput, context: any) => {
     try {
-      const harnessCtx = context?.requestContext?.get('harness') as HarnessRequestContext<MastraCodeState> | undefined;
+      const harnessCtx = context?.requestContext?.get('harness') as HarnessRequestContext<MingyiAtlasState> | undefined;
 
       // Resolve to absolute path (expand ~ first since Node path APIs don't handle it)
       const expanded = expandTilde(requestedPath);

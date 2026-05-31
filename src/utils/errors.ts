@@ -1,5 +1,5 @@
 /**
- * Error handling utilities for the Mastra Code TUI.
+ * Error handling utilities for the Mingyi Atlas TUI.
  * Parses API errors and provides user-friendly messages.
  */
 

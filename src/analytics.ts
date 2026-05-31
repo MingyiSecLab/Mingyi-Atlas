@@ -5,7 +5,7 @@ import { PostHog } from 'posthog-node';
 
 const POSTHOG_API_KEY = 'phc_SBLpZVAB6jmHOct9CABq3PF0Yn5FU3G2FgT4xUr2XrT';
 const POSTHOG_HOST = 'https://us.posthog.com';
-const MASTRA_SOURCE = 'mastracode';
+const MASTRA_SOURCE = 'mingyi-atlas';
 const TRUTHY_DISABLED_VALUES = new Set(['1', 'true', 'yes', 'on']);
 
 export function getMastraAnalyticsDistinctId(hostname = os.hostname()): string {
@@ -13,7 +13,7 @@ export function getMastraAnalyticsDistinctId(hostname = os.hostname()): string {
 }
 
 function isAnalyticsDebugEnabled(): boolean {
-  return TRUTHY_DISABLED_VALUES.has(process.env.MASTRACODE_ANALYTICS_DEBUG?.trim().toLowerCase() ?? '');
+  return TRUTHY_DISABLED_VALUES.has(process.env.MINGYI_ATLAS_ANALYTICS_DEBUG?.trim().toLowerCase() ?? '');
 }
 
 function debugAnalytics(message: string, properties?: Record<string, unknown>): void {
@@ -22,33 +22,33 @@ function debugAnalytics(message: string, properties?: Record<string, unknown>): 
   }
 
   const suffix = properties ? ` ${JSON.stringify(properties)}` : '';
-  process.stderr.write(`[mastracode analytics] ${message}${suffix}\n`);
+  process.stderr.write(`[mingyi-atlas analytics] ${message}${suffix}\n`);
 }
 
-export type MastraCodeAnalyticsEvent =
-  | 'mastracode_session_started'
-  | 'mastracode_prompt_submitted'
-  | 'mastracode_thread_changed'
-  | 'mastracode_model_changed'
-  | 'mastracode_command_used'
-  | 'mastracode_interactive_prompt_shown';
+export type MingyiAtlasAnalyticsEvent =
+  | 'mingyi-atlas_session_started'
+  | 'mingyi-atlas_prompt_submitted'
+  | 'mingyi-atlas_thread_changed'
+  | 'mingyi-atlas_model_changed'
+  | 'mingyi-atlas_command_used'
+  | 'mingyi-atlas_interactive_prompt_shown';
 
-export interface MastraCodeAnalytics {
-  capture(event: MastraCodeAnalyticsEvent, properties?: Record<string, unknown>): void;
+export interface MingyiAtlasAnalytics {
+  capture(event: MingyiAtlasAnalyticsEvent, properties?: Record<string, unknown>): void;
   trackCommand(command: string, properties?: Record<string, unknown>): void;
   trackInteractivePrompt(promptType: string, properties?: Record<string, unknown>): void;
   shutdown(): Promise<void>;
   isEnabled(): boolean;
 }
 
-interface MastraCodeAnalyticsOptions {
+interface MingyiAtlasAnalyticsOptions {
   version: string;
   host?: string;
   apiKey?: string;
 }
 
-class NoopMastraCodeAnalytics implements MastraCodeAnalytics {
-  capture(event: MastraCodeAnalyticsEvent): void {
+class NoopMingyiAtlasAnalytics implements MingyiAtlasAnalytics {
+  capture(event: MingyiAtlasAnalyticsEvent): void {
     debugAnalytics('capture skipped: telemetry disabled', { event });
   }
   trackCommand(command: string): void {
@@ -65,13 +65,13 @@ class NoopMastraCodeAnalytics implements MastraCodeAnalytics {
   }
 }
 
-class PostHogMastraCodeAnalytics implements MastraCodeAnalytics {
+class PostHogMingyiAtlasAnalytics implements MingyiAtlasAnalytics {
   private readonly client: PostHog;
   private readonly distinctId: string;
   private readonly sessionId = randomUUID();
   private readonly version: string;
 
-  constructor({ version, apiKey = POSTHOG_API_KEY, host = POSTHOG_HOST }: MastraCodeAnalyticsOptions) {
+  constructor({ version, apiKey = POSTHOG_API_KEY, host = POSTHOG_HOST }: MingyiAtlasAnalyticsOptions) {
     this.version = version;
     this.distinctId = getMastraAnalyticsDistinctId();
     this.client = new PostHog(apiKey, {
@@ -84,7 +84,7 @@ class PostHogMastraCodeAnalytics implements MastraCodeAnalytics {
     debugAnalytics('enabled', { host, distinctId: this.distinctId, version });
   }
 
-  capture(event: MastraCodeAnalyticsEvent, properties?: Record<string, unknown>): void {
+  capture(event: MingyiAtlasAnalyticsEvent, properties?: Record<string, unknown>): void {
     try {
       const eventProperties = {
         ...this.getBaseProperties(),
@@ -103,11 +103,11 @@ class PostHogMastraCodeAnalytics implements MastraCodeAnalytics {
   }
 
   trackCommand(command: string, properties?: Record<string, unknown>): void {
-    this.capture('mastracode_command_used', { command, ...properties });
+    this.capture('mingyi-atlas_command_used', { command, ...properties });
   }
 
   trackInteractivePrompt(promptType: string, properties?: Record<string, unknown>): void {
-    this.capture('mastracode_interactive_prompt_shown', { promptType, ...properties });
+    this.capture('mingyi-atlas_interactive_prompt_shown', { promptType, ...properties });
   }
 
   async shutdown(): Promise<void> {
@@ -148,11 +148,11 @@ export function isTelemetryDisabled(env: NodeJS.ProcessEnv = process.env): boole
   return TRUTHY_DISABLED_VALUES.has(value.trim().toLowerCase());
 }
 
-export function createMastraCodeAnalytics(options: MastraCodeAnalyticsOptions): MastraCodeAnalytics {
+export function createMingyiAtlasAnalytics(options: MingyiAtlasAnalyticsOptions): MingyiAtlasAnalytics {
   if (isTelemetryDisabled()) {
     debugAnalytics('disabled by MASTRA_TELEMETRY_DISABLED', { value: process.env.MASTRA_TELEMETRY_DISABLED });
-    return new NoopMastraCodeAnalytics();
+    return new NoopMingyiAtlasAnalytics();
   }
 
-  return new PostHogMastraCodeAnalytics(options);
+  return new PostHogMingyiAtlasAnalytics(options);
 }

@@ -38,7 +38,7 @@ describe('getAllowedPathsFromContext', () => {
             return {
               getState: () => ({
                 projectPath: '/test/project',
-                configDir: '.mastracode',
+                configDir: '.mingyi-atlas',
                 sandboxAllowedPaths: ['/user/sandbox/path-1', '/user/sandbox/path-2'],
               }),
             };
@@ -48,7 +48,7 @@ describe('getAllowedPathsFromContext', () => {
       },
     };
     const result = getAllowedPathsFromContext(toolContext);
-    expect(buildSkillPathsMock).toHaveBeenCalledWith('/test/project', '.mastracode');
+    expect(buildSkillPathsMock).toHaveBeenCalledWith('/test/project', '.mingyi-atlas');
     expect(result).toEqual([
       '/mock/skills/dir-a',
       '/mock/skills/dir-b',

@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 
 // Default config directory name used for all project-level and global config paths.
-export const DEFAULT_CONFIG_DIR = '.mastracode';
+export const DEFAULT_CONFIG_DIR = '.mingyi-atlas';
 
 /**
  * Validate that a configDirName is a safe single directory name.

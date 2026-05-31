@@ -1,5 +1,5 @@
 /**
- * MastraCode Efficiency Scorer (Code-based, Agent type, 30% sampling)
+ * MingyiAtlas Efficiency Scorer (Code-based, Agent type, 30% sampling)
  *
  * Measures how efficiently the agent completes work through quantitative ratios.
  * Unlike the Outcome Scorer (which checks *what* happened), this checks
@@ -242,8 +242,8 @@ function hasReadPath(readPaths: Set<string>, editPath: string): boolean {
 
 export function createEfficiencyScorer() {
   return createScorer({
-    id: 'mastracode-efficiency',
-    name: 'MastraCode Efficiency',
+    id: 'mingyi-atlas-efficiency',
+    name: 'MingyiAtlas Efficiency',
     description:
       'Measures coding session efficiency: redundancy, turn count, retry patterns, read-before-edit. 30% sampled.',
     type: 'agent',

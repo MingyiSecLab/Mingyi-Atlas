@@ -1,5 +1,5 @@
 /**
- * MastraCode Outcome Scorer (Code-based, Agent type, always-on)
+ * MingyiAtlas Outcome Scorer (Code-based, Agent type, always-on)
  *
  * Grades the objective outcome of a coding session by checking hard facts:
  * - Did the build/typecheck pass?
@@ -291,8 +291,8 @@ function weightedAverage(dimensions: Record<string, DimensionResult>, weights: R
 
 export function createOutcomeScorer() {
   return createScorer({
-    id: 'mastracode-outcome',
-    name: 'MastraCode Outcome',
+    id: 'mingyi-atlas-outcome',
+    name: 'MingyiAtlas Outcome',
     description:
       'Grades coding session outcomes: build/test pass, tool errors, stuck loops, regressions, autonomy. Always-on.',
     type: 'agent',

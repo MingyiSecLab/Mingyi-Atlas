@@ -1,5 +1,5 @@
 /**
- * Eval Context Builder for MastraCode
+ * Eval Context Builder for MingyiAtlas
  *
  * Converts Harness session data into scorer-compatible format.
  * Supports both agent-type scorers (ScorerRunInputForAgent) and
@@ -13,7 +13,7 @@ import type { Harness } from '@mastra/core/harness';
 import type { CoreMessage, CoreSystemMessage } from '@mastra/core/llm';
 import type { MastraCompositeStore } from '@mastra/core/storage';
 
-export type MastraCodeEvalContext = {
+export type MingyiAtlasEvalContext = {
   /** Scorer-compatible agent input (messages, system prompt, etc.) */
   agentInput: ScorerRunInputForAgent;
   /** Scorer-compatible agent output (response messages) */
@@ -43,7 +43,7 @@ export type BuildContextOptions = {
  * This extracts messages from storage, builds trajectory from trace spans,
  * and packages everything into the format scorers expect.
  */
-export async function buildEvalContext(options: BuildContextOptions): Promise<MastraCodeEvalContext> {
+export async function buildEvalContext(options: BuildContextOptions): Promise<MingyiAtlasEvalContext> {
   const { harness, lastNTurns } = options;
   const threadId = options.threadId ?? harness.getCurrentThreadId();
 

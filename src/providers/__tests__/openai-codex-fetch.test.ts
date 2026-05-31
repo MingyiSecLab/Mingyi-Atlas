@@ -43,7 +43,7 @@ describe('OpenAI Codex OAuth fetch', () => {
     const headers = fetchMock.mock.calls[0]?.[1]?.headers as Headers;
     expect(headers.get('Authorization')).toBe('Bearer oauth-token');
     expect(headers.get('ChatGPT-Account-ID')).toBe('acct-123');
-    expect(headers.get('originator')).toBe('mastracode');
-    expect(headers.get('User-Agent')).toBe('mastracode');
+    expect(headers.get('originator')).toBe('mingyi-atlas');
+    expect(headers.get('User-Agent')).toBe('mingyi-atlas');
   });
 });

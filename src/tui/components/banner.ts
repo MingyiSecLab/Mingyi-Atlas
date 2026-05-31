@@ -1,23 +1,38 @@
 /**
- * ASCII art banner for the Mastra Code TUI header.
- * Renders "MASTRA CODE" or "MASTRA" in block-letter art with a green gradient.
+ * ASCII art banner for the TUI header.
+ * Renders the Mingyi Atlas brand in block-letter art with a green gradient.
  */
 import chalk from 'chalk';
 
 import { theme } from '../theme.js';
 
-// Mastra brand green gradient stops (left → right)
+const DEFAULT_APP_NAME = 'Mingyi Atlas';
+
+// Brand green gradient stops (left to right)
 const GRADIENT_STOPS = ['#085314', '#0d8020', '#16c858', '#62f69d', '#a1fac7'];
 
-// Full "MASTRA CODE" banner (42 chars wide)
+// Full "MINGYI ATLAS" banner.
 const FULL_ART = [
+  '█▀▄▀█ █ █▄  █ █▀▀ █▄█ █   ▄▀█ ▀█▀ █   ▄▀█ █▀',
+  '█ ▀ █ █ █ ▀▄█ █▄█  █  █   █▀█  █  █   █▀█ ▀█',
+  '▀   ▀ ▀ ▀  ▀ ▀▀▀  ▀  ▀   ▀ ▀  ▀  ▀▀▀ ▀ ▀ ▀▀',
+];
+
+// Short "MINGYI" banner.
+const SHORT_ART = [
+  '█▀▄▀█ █ █▄  █ █▀▀ █▄█ █',
+  '█ ▀ █ █ █ ▀▄█ █▄█  █  █',
+  '▀   ▀ ▀ ▀  ▀ ▀▀▀  ▀  ▀',
+];
+
+// Legacy art is retained for embedders that explicitly pass the old app name.
+const LEGACY_MASTRA_CODE_ART = [
   '█▀▄▀█ ▄▀█ █▀ ▀█▀ █▀█ ▄▀█   █▀▀ █▀█ █▀▄ █▀▀',
   '█ ▀ █ █▀█ ▀█  █  █▀▄ █▀█   █   █ █ █ █ █▀▀',
   '▀   ▀ ▀ ▀ ▀▀  ▀  ▀ ▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀',
 ];
 
-// Short "MASTRA" banner (24 chars wide)
-const SHORT_ART = ['█▀▄▀█ ▄▀█ █▀ ▀█▀ █▀█ ▄▀█', '█ ▀ █ █▀█ ▀█  █  █▀▄ █▀█', '▀   ▀ ▀ ▀ ▀▀  ▀  ▀ ▀ ▀ ▀'];
+const LEGACY_MASTRA_ART = ['█▀▄▀█ ▄▀█ █▀ ▀█▀ █▀█ ▄▀█', '█ ▀ █ █▀█ ▀█  █  █▀▄ █▀█', '▀   ▀ ▀ ▀ ▀▀  ▀  ▀ ▀ ▀ ▀'];
 
 /**
  * Interpolate between two hex colors.
@@ -46,7 +61,7 @@ function gradientChar(ch: string, colIdx: number, totalCols: number): string {
 }
 
 /**
- * Apply left-to-right purple gradient to a line of text.
+ * Apply left-to-right gradient to a line of text.
  */
 function colorLine(line: string): string {
   const chars = [...line];
@@ -57,14 +72,17 @@ function colorLine(line: string): string {
  * Render the banner header for the TUI.
  *
  * @param version - App version string (e.g. "0.2.0")
- * @param appName - App name. Block art is only used for "Mastra Code" (default).
+ * @param appName - App name. Block art is used for the default brand.
  * @returns Styled multi-line string ready for display.
  */
 export function renderBanner(version: string, appName?: string): string {
-  const name = appName || 'Mastra Code';
+  const name = appName || DEFAULT_APP_NAME;
 
-  // Custom app names get the simple text format (no Mastra branding)
-  if (name !== 'Mastra Code') {
+  const isDefaultBrand = name === DEFAULT_APP_NAME;
+  const isLegacyBrand = name === 'Mingyi Atlas';
+
+  // Custom app names get the simple text format.
+  if (!isDefaultBrand && !isLegacyBrand) {
     return theme.fg('accent', '◆') + ' ' + theme.bold(theme.fg('accent', name)) + theme.fg('dim', ` v${version}`);
   }
 
@@ -72,13 +90,17 @@ export function renderBanner(version: string, appName?: string): string {
 
   // Narrow terminal — compact single line
   if (cols < 30) {
-    return (
-      theme.fg('accent', '◆') + ' ' + theme.bold(theme.fg('accent', 'Mastra Code')) + theme.fg('dim', ` v${version}`)
-    );
+    return theme.fg('accent', '◆') + ' ' + theme.bold(theme.fg('accent', name)) + theme.fg('dim', ` v${version}`);
   }
 
   // Select art based on available width
-  const art = cols >= 50 ? FULL_ART : SHORT_ART;
+  const art = isLegacyBrand
+    ? cols >= 50
+      ? LEGACY_MASTRA_CODE_ART
+      : LEGACY_MASTRA_ART
+    : cols >= 56
+      ? FULL_ART
+      : SHORT_ART;
   const coloredLines = art.map(line => colorLine(line));
 
   // Append version below the art

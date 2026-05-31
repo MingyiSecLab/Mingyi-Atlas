@@ -1,5 +1,5 @@
 /**
- * Main TUI class for Mastra Code.
+ * Main TUI class for Mingyi Atlas.
  * Wires the Harness to pi-tui components for a full interactive experience.
  */
 import { spawn } from 'node:child_process';
@@ -116,7 +116,7 @@ export async function syncInitialThreadState(state: TUIState): Promise<void> {
 }
 
 function shouldUseCaffeinate(): boolean {
-  return process.platform === 'darwin' && process.env.MASTRACODE_DISABLE_CAFFEINATE !== '1';
+  return process.platform === 'darwin' && process.env.MINGYI_ATLAS_DISABLE_CAFFEINATE !== '1';
 }
 
 export function consumePendingImages(
@@ -372,7 +372,7 @@ export class MastraTUI {
   ): void {
     const send = () => {
       this.clearIdleCounter();
-      this.state.analytics?.capture('mastracode_prompt_submitted', {
+      this.state.analytics?.capture('mingyi-atlas_prompt_submitted', {
         threadId: this.state.harness.getCurrentThreadId(),
         resourceId: this.state.harness.getResourceId(),
         mode: this.state.harness.getCurrentModeId(),
@@ -691,7 +691,7 @@ export class MastraTUI {
     }
 
     if (event.type === 'thread_created') {
-      analytics.capture('mastracode_thread_changed', {
+      analytics.capture('mingyi-atlas_thread_changed', {
         action: 'created',
         threadId: event.thread.id,
         resourceId: event.thread.resourceId,
@@ -702,7 +702,7 @@ export class MastraTUI {
     }
 
     if (event.type === 'thread_changed') {
-      analytics.capture('mastracode_thread_changed', {
+      analytics.capture('mingyi-atlas_thread_changed', {
         action: 'switched',
         threadId: event.threadId,
         previousThreadId: event.previousThreadId,
@@ -713,7 +713,7 @@ export class MastraTUI {
     }
 
     if (event.type === 'model_changed') {
-      analytics.capture('mastracode_model_changed', {
+      analytics.capture('mingyi-atlas_model_changed', {
         modelId: event.modelId,
         scope: event.scope,
         mode: event.modeId ?? this.state.harness.getCurrentModeId(),
@@ -743,7 +743,7 @@ export class MastraTUI {
         correlationContext: { traceId, runId },
         feedback: {
           feedbackType: 'thumbs',
-          feedbackSource: 'mastracode',
+          feedbackSource: 'mingyi-atlas',
           feedbackUserId: 'system',
           value: 0,
           comment: `Stream error: ${comment}`,
@@ -1242,7 +1242,17 @@ export class MastraTUI {
       await harness.switchModel({ modelId: currentModeModel });
     }
 
-    const subagentModeMap: Record<string, string> = { explore: 'fast', plan: 'plan', execute: 'build' };
+    const subagentModeMap: Record<string, string> = {
+      explore: 'fast',
+      plan: 'plan',
+      execute: 'build',
+      'pentest-supervisor': 'pentest',
+      'pentest-recon': 'pentest',
+      'pentest-vuln-analysis': 'pentest',
+      'pentest-validation': 'pentest',
+      'pentest-report': 'pentest',
+      'pentest-remediation': 'pentest',
+    };
     for (const [agentType, modeId] of Object.entries(subagentModeMap)) {
       const saModelId = (modePack.models as Record<string, string>)[modeId];
       if (saModelId) {
@@ -1441,7 +1451,7 @@ export class MastraTUI {
     pm: Awaited<ReturnType<typeof detectPackageManager>>,
     changelog: string | null,
   ): Promise<void> {
-    let question = `A new version of Mastra Code is available: v${latestVersion} (current: v${currentVersion}).`;
+    let question = `A new version of Mingyi Atlas is available: v${latestVersion} (current: v${currentVersion}).`;
     if (changelog) {
       question += `\n\nWhat's new:\n${changelog}`;
     }
@@ -1478,7 +1488,7 @@ export class MastraTUI {
       showInfo(this.state, `Updating to v${latestVersion}…`);
       const ok = await runUpdate(pm, latestVersion);
       if (ok) {
-        showInfo(this.state, `Updated to v${latestVersion}. Please restart Mastra Code.`);
+        showInfo(this.state, `Updated to v${latestVersion}. Please restart Mingyi Atlas.`);
         this.stop();
         process.exit(0);
       } else {

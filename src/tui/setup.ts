@@ -221,7 +221,7 @@ function abortActiveGoalJudge(state: TUIState): boolean {
 
 export function buildLayout(state: TUIState, refreshModelAuthStatus: () => Promise<void>): void {
   // Add header
-  const appName = state.options.appName || 'Mastra Code';
+  const appName = state.options.appName || 'Mingyi Atlas';
   const version = state.options.version || '0.1.0';
 
   const banner = renderBanner(version, appName);
@@ -342,7 +342,7 @@ export function setupAutocomplete(state: TUIState): void {
       description: 'Toggle YOLO mode (auto-approve all tools)',
     },
     { name: 'review', description: 'Review a GitHub pull request' },
-    { name: 'report-issue', description: 'Open or browse mastracode issues' },
+    { name: 'report-issue', description: 'Open or browse mingyi-atlas issues' },
     { name: 'setup', description: 'Re-run the setup wizard' },
     { name: 'browser', description: 'Configure browser automation' },
     { name: 'theme', description: 'Switch color theme (auto/dark/light)' },
@@ -529,7 +529,7 @@ export function subscribeToHarness(state: TUIState, handleEvent: (event: any) =>
 // =============================================================================
 
 export function updateTerminalTitle(state: TUIState): void {
-  const appName = state.options.appName || 'Mastra Code';
+  const appName = state.options.appName || 'Mingyi Atlas';
   const cwd = process.cwd().split('/').pop() || '';
   state.ui.terminal.setTitle(`${appName} - ${cwd}`);
 }

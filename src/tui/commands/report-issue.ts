@@ -2,7 +2,7 @@ import { sendSlashCommandMessage } from './send-slash-command-message.js';
 import type { SlashCommandContext } from './types.js';
 
 const MASTRA_REPO = 'mastra-ai/mastra';
-const MASTRA_LABEL = 'mastracode';
+const MASTRA_LABEL = 'mingyi-atlas';
 
 export async function handleReportIssueCommand(ctx: SlashCommandContext, args: string[]): Promise<void> {
   if (!ctx.state.harness.hasModelSelected()) {
@@ -28,7 +28,7 @@ export async function handleReportIssueCommand(ctx: SlashCommandContext, args: s
     `- Steps to reproduce (if applicable)\n\n` +
     `Also gather environment info by running:\n` +
     '```\n' +
-    `mastracode --version 2>/dev/null || echo "unknown"\n` +
+    `mingyi-atlas --version 2>/dev/null || echo "unknown"\n` +
     `node --version\n` +
     `uname -s\n` +
     '```\n\n' +

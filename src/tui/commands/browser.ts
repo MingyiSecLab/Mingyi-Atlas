@@ -143,7 +143,7 @@ export async function handleBrowserCommand(ctx: SlashCommandContext, args: strin
           '  cdpUrl <url>         - CDP WebSocket URL\n\n' +
           'To remove a setting, use: /browser clear <key>\n\n' +
           'Examples:\n' +
-          '  /browser set profile ~/.mastracode/browser-profile-stagehand\n' +
+          '  /browser set profile ~/.mingyi-atlas/browser-profile-stagehand\n' +
           '  /browser set executablePath /Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       );
       return;
@@ -526,7 +526,7 @@ export async function handleBrowserCommand(ctx: SlashCommandContext, args: strin
     if (isBrowserbase) {
       ctx.showInfo(
         'Browserbase requires BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID.\n' +
-          'Set these in your shell profile (~/.zshrc) or pass them when starting MastraCode.',
+          'Set these in your shell profile (~/.zshrc) or pass them when starting MingyiAtlas.',
       );
     }
 
@@ -608,7 +608,7 @@ export async function handleBrowserCommand(ctx: SlashCommandContext, args: strin
       }
 
       if (useProfile === 'Yes') {
-        const defaultProfile = `~/.mastracode/browser-profile-${provider}`;
+        const defaultProfile = `~/.mingyi-atlas/browser-profile-${provider}`;
         const profilePath = await askText(ctx, 'Profile directory path:', profile || defaultProfile);
         if (profilePath === null) {
           ctx.showInfo('Browser setup cancelled.');

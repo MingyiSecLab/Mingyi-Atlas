@@ -8,9 +8,9 @@ import type { Harness, HarnessEvent, HarnessMessage } from '@mastra/core/harness
 
 import { setupDebugLogging } from './utils/debug-log.js';
 import { releaseAllThreadLocks } from './utils/thread-lock.js';
-import { createMastraCode } from './index.js';
+import { createMingyiAtlas } from './index.js';
 
-const VALID_MODES = ['build', 'plan', 'fast'] as const;
+const VALID_MODES = ['build', 'plan', 'fast', 'pentest'] as const;
 const VALID_THINKING_LEVELS = ['off', 'low', 'medium', 'high', 'xhigh'] as const;
 
 export interface HeadlessArgs {
@@ -20,7 +20,7 @@ export interface HeadlessArgs {
   outputFormat?: 'text' | 'json' | 'stream-json';
   continue_: boolean;
   model?: string;
-  mode?: 'build' | 'plan' | 'fast';
+  mode?: 'build' | 'plan' | 'fast' | 'pentest';
   thinkingLevel?: 'off' | 'low' | 'medium' | 'high' | 'xhigh';
   settings?: string;
   thread?: string;
@@ -139,7 +139,7 @@ export function truncate(s: string, max: number): string {
 
 export function printHeadlessUsage(): void {
   process.stdout.write(`
-Usage: mastracode --prompt <text> [options]
+Usage: mingyi-atlas --prompt <text> [options]
 
 Headless (non-interactive) mode options:
   --prompt, -p <text>           The task to execute (required, or pipe via stdin)
@@ -152,7 +152,8 @@ Headless (non-interactive) mode options:
   --format <type>               Output format: "default" or "json" (default: "default")
   --output-format <type>        Automation output: "text", "json", or "stream-json"
   --model, -m <id>              Model override (e.g., "anthropic/claude-sonnet-4-5")
-  --mode {build|plan|fast}      Execution mode — defaults to "build" if omitted
+  --mode {build|plan|fast|pentest}
+                              Execution mode — defaults to "build" if omitted
   --thinking-level <level>      Thinking level: off, low, medium, high, xhigh
   --settings <path>             Path to settings.json file (default: global settings)
 
@@ -172,25 +173,25 @@ Exit codes:
   2  Timeout
 
 Examples:
-  mastracode --prompt "Fix the bug in auth.ts"
-  mastracode --prompt "Add tests" --timeout 300
-  mastracode --prompt "Fix the bug" --mode fast --thinking-level high
-  mastracode --settings ./settings-ci.json --prompt "Run tests"
-  mastracode -c --prompt "Continue where you left off"
-  mastracode -t "feature-auth" --prompt "Keep working on this"
-  mastracode --thread abc123 --clone-thread --prompt "Try a different approach"
-  mastracode --prompt "Refactor utils" --title "utils-refactor"
-  mastracode --prompt "Refactor utils" --format json
-  mastracode --prompt "Run tests and summarize pass/fail counts" --output-format json
-  mastracode --prompt "Find all TODO comments" --output-format stream-json
-  mastracode --resource-id my-project --prompt "Fix the bug"
-  echo "task description" | mastracode --prompt -
+  mingyi-atlas --prompt "Fix the bug in auth.ts"
+  mingyi-atlas --prompt "Add tests" --timeout 300
+  mingyi-atlas --prompt "Fix the bug" --mode fast --thinking-level high
+  mingyi-atlas --settings ./settings-ci.json --prompt "Run tests"
+  mingyi-atlas -c --prompt "Continue where you left off"
+  mingyi-atlas -t "feature-auth" --prompt "Keep working on this"
+  mingyi-atlas --thread abc123 --clone-thread --prompt "Try a different approach"
+  mingyi-atlas --prompt "Refactor utils" --title "utils-refactor"
+  mingyi-atlas --prompt "Refactor utils" --format json
+  mingyi-atlas --prompt "Run tests and summarize pass/fail counts" --output-format json
+  mingyi-atlas --prompt "Find all TODO comments" --output-format stream-json
+  mingyi-atlas --resource-id my-project --prompt "Fix the bug"
+  echo "task description" | mingyi-atlas --prompt -
 
 Piping without --prompt launches the interactive TUI with piped content
 as the first message:
-  cat file.txt | mastracode
-  git diff | mastracode
-  npm test 2>&1 | mastracode
+  cat file.txt | mingyi-atlas
+  git diff | mingyi-atlas
+  npm test 2>&1 | mingyi-atlas
 
 Run without --prompt for the interactive TUI.
 `);
@@ -406,9 +407,45 @@ export async function runHeadless<TState extends Record<string, unknown>>(
   // --- Resolve model ---
   if (args.model && args.mode) {
     if (emit) {
-      emit({ type: 'warning', message: '--model overrides --mode, ignoring --mode' });
+      emit({ type: 'warning', message: '--model overrides --mode default model; using requested mode' });
     } else {
-      process.stderr.write('Warning: --model overrides --mode, ignoring --mode\n');
+      process.stderr.write('Warning: --model overrides --mode default model; using requested mode\n');
+    }
+  }
+
+  if (args.mode) {
+    const mode = harness.listModes().find(m => m.id === args.mode);
+    if (!mode) {
+      return failEarly(`Unknown mode: "${args.mode}"`);
+    }
+
+    const modeModelId = effectiveDefaults?.[args.mode] ?? mode.defaultModelId;
+    if (!args.model && modeModelId) {
+      const available = await harness.listAvailableModels();
+      const match = available.find(m => m.id === modeModelId);
+      if (!match) {
+        return failEarly(`Unknown model "${modeModelId}" configured for mode "${args.mode}"`);
+      }
+      if (!match.hasApiKey) {
+        const keyHint = match.apiKeyEnvVar ? ` Set ${match.apiKeyEnvVar} to use this model.` : '';
+        return failEarly(`Model "${modeModelId}" (mode: ${args.mode}) has no API key configured.${keyHint}`);
+      }
+    }
+
+    await harness.switchMode({ modeId: args.mode });
+    if (!emit) process.stderr.write(`[mode] ${args.mode}\n`);
+
+    if (!args.model) {
+      if (modeModelId) {
+        if (harness.getCurrentModelId() !== modeModelId) {
+          await harness.switchModel({ modelId: modeModelId });
+        }
+        if (!emit) process.stderr.write(`[model] ${modeModelId} (mode: ${args.mode})\n`);
+      } else {
+        const warnMsg = `--mode ${args.mode} has no configured model, using default`;
+        if (emit) emit({ type: 'warning', message: warnMsg });
+        else process.stderr.write(`Warning: ${warnMsg}\n`);
+      }
     }
   }
 
@@ -425,26 +462,6 @@ export async function runHeadless<TState extends Record<string, unknown>>(
     }
     await harness.switchModel({ modelId: args.model });
     if (!emit) process.stderr.write(`[model] ${args.model}\n`);
-  } else if (args.mode) {
-    // --mode flag: look up model from effectiveDefaults (resolved from settings at startup)
-    const modelId = effectiveDefaults?.[args.mode];
-    if (modelId) {
-      const available = await harness.listAvailableModels();
-      const match = available.find(m => m.id === modelId);
-      if (!match) {
-        return failEarly(`Unknown model "${modelId}" configured for mode "${args.mode}"`);
-      }
-      if (!match.hasApiKey) {
-        const keyHint = match.apiKeyEnvVar ? ` Set ${match.apiKeyEnvVar} to use this model.` : '';
-        return failEarly(`Model "${modelId}" (mode: ${args.mode}) has no API key configured.${keyHint}`);
-      }
-      await harness.switchModel({ modelId });
-      if (!emit) process.stderr.write(`[model] ${modelId} (mode: ${args.mode})\n`);
-    } else {
-      const warnMsg = `--mode ${args.mode} has no configured model, using default`;
-      if (emit) emit({ type: 'warning', message: warnMsg });
-      else process.stderr.write(`Warning: ${warnMsg}\n`);
-    }
   }
 
   // --- Resolve thinking level ---
@@ -573,7 +590,7 @@ export async function runHeadless<TState extends Record<string, unknown>>(
 
 /**
  * Headless mode main entry point: parse arguments, read stdin, initialize
- * MastraCode, and run headless mode.
+ * MingyiAtlas, and run headless mode.
  */
 export async function headlessMain(predrainedInput?: string | null): Promise<never> {
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
@@ -612,7 +629,7 @@ export async function headlessMain(predrainedInput?: string | null): Promise<nev
     process.exit(1);
   }
 
-  const result = await createMastraCode({ settingsPath: args.settings });
+  const result = await createMingyiAtlas({ settingsPath: args.settings });
   const { harness, mcpManager, effectiveDefaults } = result;
 
   if (mcpManager?.hasServers()) {

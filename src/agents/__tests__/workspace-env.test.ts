@@ -32,16 +32,16 @@ afterEach(() => {
   vi.resetModules();
 });
 
-describe('mastracode workspace sandbox environment', () => {
+describe('mingyi-atlas workspace sandbox environment', () => {
   it('passes arbitrary parent environment variables to local subprocesses', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastracode-workspace-env-'));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mingyi-atlas-workspace-env-'));
 
     try {
-      process.env.MASTRACODE_TEST_ENV = 'works';
+      process.env.MINGYI_ATLAS_TEST_ENV = 'works';
       const { getDynamicWorkspace } = await import('../workspace.js');
       const workspace = getDynamicWorkspace({ requestContext: createRequestContext(tempDir) as any });
 
-      const result = await workspace.sandbox!.executeCommand!('node -e "console.log(process.env.MASTRACODE_TEST_ENV)"');
+      const result = await workspace.sandbox!.executeCommand!('node -e "console.log(process.env.MINGYI_ATLAS_TEST_ENV)"');
 
       expect(result.success).toBe(true);
       expect(result.stdout.trim()).toBe('works');

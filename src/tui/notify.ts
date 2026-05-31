@@ -48,7 +48,7 @@ export function sendNotification(
 
 function sendSystemNotification(reason: NotificationReason, message?: string): void {
   if (process.platform === 'darwin') {
-    const title = 'Mastra Code';
+    const title = 'Mingyi Atlas';
     const body = message || reasonToMessage(reason);
     const escaped = body.replace(/"/g, '\\"');
     exec(`osascript -e 'display notification "${escaped}" with title "${title}"'`);

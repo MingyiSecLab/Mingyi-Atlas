@@ -476,13 +476,7 @@ async function indexObservationGroupsFromMessages(
 // -- Main --
 
 function getAppDataDir(): string {
-  const platform = os.platform();
-  if (platform === 'darwin') {
-    return path.join(os.homedir(), 'Library', 'Application Support', 'mastracode');
-  } else if (platform === 'win32') {
-    return path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'mastracode');
-  }
-  return path.join(process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share'), 'mastracode');
+  return path.join(os.homedir(), '.mingyi-atlas');
 }
 
 function isProcessAlive(pid: number) {
@@ -748,8 +742,9 @@ const HASH_ONLY_MODE = process.env.OM_INDEX_HASH_ONLY === '1' || process.argv.in
 const scriptPath = fileURLToPath(import.meta.url);
 const workerExecArgv = process.execArgv.filter(arg => arg !== scriptPath && arg !== RESOURCE_ID && arg !== THREAD_ID);
 const appDataDir = getAppDataDir();
-const storageDbPath = `file:${path.join(appDataDir, 'mastra.db')}`;
-const vectorDbPath = `file:${path.join(appDataDir, 'mastra-vectors.db')}`;
+fs.mkdirSync(appDataDir, { recursive: true });
+const storageDbPath = `file:${path.join(appDataDir, 'mingyi-atlas.db')}`;
+const vectorDbPath = `file:${path.join(appDataDir, 'mingyi-atlas-vectors.db')}`;
 const progressPath = path.join(appDataDir, `om-index-${RESOURCE_ID}.progress.json`);
 const MAX_THREAD_ATTEMPTS = Number(process.env.OM_INDEX_MAX_ATTEMPTS || '3');
 const RETRY_BACKOFF_MS = Number(process.env.OM_INDEX_RETRY_BACKOFF_MS || '2000');

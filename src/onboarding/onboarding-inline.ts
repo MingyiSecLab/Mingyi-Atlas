@@ -4,7 +4,7 @@
  * Walks the user through a multi-step wizard:
  *  1. Welcome
  *  2. Auth / Login prompt
- *  3. Mode pack selection (build / plan / fast model preset)
+ *  3. Mode pack selection (build / plan / fast / pentest model preset)
  *  4. OM pack selection (observational memory model)
  *  5. YOLO mode toggle
  *
@@ -205,7 +205,7 @@ export class OnboardingInlineComponent extends Box implements Focusable {
 
   private renderWelcome(): void {
     const box = this.makeBox();
-    box.addChild(new Text(theme.bold(theme.fg('accent', '👋 Welcome to Mastra Code')), 0, 0));
+    box.addChild(new Text(theme.bold(theme.fg('accent', '👋 Welcome to Mingyi Atlas')), 0, 0));
     box.addChild(new Spacer(1));
     box.addChild(new Text(theme.fg('text', "Let's configure your models and preferences."), 0, 0));
     box.addChild(new Text(chalk.white('You can re-run this anytime with /setup.'), 0, 0));
@@ -301,7 +301,7 @@ export class OnboardingInlineComponent extends Box implements Focusable {
     if (!this.options.hasProviderAccess) {
       box.addChild(new Text(theme.bold(theme.fg('warning', 'No model providers configured')), 0, 0));
       box.addChild(new Spacer(1));
-      box.addChild(new Text(theme.fg('text', 'To use Mastra Code you need at least one API key or OAuth login'), 0, 0));
+      box.addChild(new Text(theme.fg('text', 'To use Mingyi Atlas you need at least one API key or OAuth login'), 0, 0));
       box.addChild(new Text(theme.fg('text', 'for Anthropic, OpenAI, or another supported provider.'), 0, 0));
       box.addChild(new Spacer(1));
       box.addChild(
@@ -316,7 +316,7 @@ export class OnboardingInlineComponent extends Box implements Focusable {
 
     box.addChild(new Text(theme.bold(theme.fg('accent', 'Model Packs')), 0, 0));
     box.addChild(new Spacer(1));
-    box.addChild(new Text(theme.fg('text', 'Choose default models for each mode (build / plan / fast):'), 0, 0));
+    box.addChild(new Text(theme.fg('text', 'Choose default models for each mode (build / plan / fast / pentest):'), 0, 0));
     box.addChild(new Spacer(1));
 
     const prevId = this.options.previous?.modePackId ?? null;
@@ -375,6 +375,7 @@ export class OnboardingInlineComponent extends Box implements Focusable {
         `  ${chalk.hex(mastra.blue)('plan')}  → ${theme.fg('text', pack.models.plan)}`,
         `  ${chalk.hex(mastra.purple)('build')} → ${theme.fg('text', pack.models.build)}`,
         `  ${chalk.hex(mastra.green)('fast')}  → ${theme.fg('text', pack.models.fast)}`,
+        `  ${chalk.hex(mastra.orange)('pentest')} → ${theme.fg('text', pack.models.pentest)}`,
       ].join('\n');
       this.modePackDetail.setText(detail);
     }
@@ -427,13 +428,14 @@ export class OnboardingInlineComponent extends Box implements Focusable {
 
     this.collapseStep(`Model pack → Custom (${packName})`);
 
-    const modes: Array<{ id: 'plan' | 'build' | 'fast'; label: string; color: string }> = [
+    const modes: Array<{ id: 'plan' | 'build' | 'fast' | 'pentest'; label: string; color: string }> = [
       { id: 'plan', label: 'plan', color: mastra.purple },
       { id: 'build', label: 'build', color: mastra.green },
       { id: 'fast', label: 'fast', color: mastra.orange },
+      { id: 'pentest', label: 'pentest', color: mastra.blue },
     ];
 
-    const models: Record<string, string> = { build: '', plan: '', fast: '' };
+    const models: Record<string, string> = { build: '', plan: '', fast: '', pentest: '' };
 
     for (const mode of modes) {
       const title = `Select model for ${mode.label} mode`;
@@ -456,14 +458,15 @@ export class OnboardingInlineComponent extends Box implements Focusable {
       id: `custom:${packName}`,
       name: packName,
       description: 'Saved custom pack',
-      models: { build: models.build!, plan: models.plan!, fast: models.fast! },
+      models: { build: models.build!, plan: models.plan!, fast: models.fast!, pentest: models.pentest! },
     };
 
     this.collapseStep(
       `Model pack → ${theme.bold(packName)}  ` +
         `${chalk.hex(mastra.blue)('plan')} ${models.plan}  ` +
         `${chalk.hex(mastra.purple)('build')} ${models.build}  ` +
-        `${chalk.hex(mastra.green)('fast')} ${models.fast}`,
+        `${chalk.hex(mastra.green)('fast')} ${models.fast}  ` +
+        `${chalk.hex(mastra.orange)('pentest')} ${models.pentest}`,
     );
     this.renderStep('omPack');
     this.tui.requestRender();
@@ -605,6 +608,7 @@ export class OnboardingInlineComponent extends Box implements Focusable {
       `  ${chalk.hex(mastra.blue)('plan')}  → ${this.selectedModePack.models.plan}`,
       `  ${chalk.hex(mastra.purple)('build')} → ${this.selectedModePack.models.build}`,
       `  ${chalk.hex(mastra.green)('fast')}  → ${this.selectedModePack.models.fast}`,
+      `  ${chalk.hex(mastra.orange)('pentest')} → ${this.selectedModePack.models.pentest}`,
       `Observational memory: ${theme.bold(this.selectedOmPack.name)}`,
       `YOLO mode: ${theme.bold(this.selectedYolo ? 'enabled' : 'disabled')}`,
     ];

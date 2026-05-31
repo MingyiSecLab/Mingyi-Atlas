@@ -5,7 +5,7 @@ export default defineConfig({
     projects: [
       {
         test: {
-          name: 'unit:mastracode',
+          name: 'unit:mingyi-atlas',
           environment: 'node',
           include: ['src/**/*.test.ts'],
           exclude: ['**/node_modules/**', '**/dist/**'],

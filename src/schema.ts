@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG_DIR, DEFAULT_OM_MODEL_ID } from './constants';
 
 export type PermissionPolicy = 'allow' | 'ask' | 'deny';
 
-export interface MastraCodeState {
+export interface MingyiAtlasState {
   [key: string]: unknown;
   [key: `subagentModelId_${string}`]: string | undefined;
   projectPath?: string;
@@ -20,6 +20,8 @@ export interface MastraCodeState {
   cavemanObservations: boolean;
   observeAttachments: 'auto' | boolean;
   omScope?: 'thread' | 'resource';
+  pentestTarget?: string;
+  pentestTargetSlug?: string;
   thinkingLevel: 'off' | 'low' | 'medium' | 'high' | 'xhigh';
   yolo: boolean;
   permissionRules: {
@@ -82,6 +84,9 @@ export const stateSchema = z.object({
   observeAttachments: z.union([z.literal('auto'), z.boolean()]).default('auto'),
   // Observational Memory scope — 'thread' (per-conversation) or 'resource' (shared across threads)
   omScope: z.enum(['thread', 'resource']).optional(),
+  // Active pentest target bucket for per-target artifacts.
+  pentestTarget: z.string().optional(),
+  pentestTargetSlug: z.string().optional(),
   // Thinking level for model reasoning effort
   thinkingLevel: z.enum(['off', 'low', 'medium', 'high', 'xhigh']).default('off'),
   // YOLO mode — auto-approve all tool calls

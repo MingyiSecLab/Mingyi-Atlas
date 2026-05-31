@@ -93,7 +93,7 @@ describe('validateConfig', () => {
           url: 'https://mcp.example.com/sse',
           oauth: {
             redirectUrl: 'http://localhost:3000/oauth/callback',
-            clientName: 'Mastra Code',
+            clientName: 'Mingyi Atlas',
             scopes: ['mcp:read', 'mcp:write'],
             clientId: 'client-id',
             clientSecret: 'client-secret',
@@ -107,7 +107,7 @@ describe('validateConfig', () => {
       headers: undefined,
       oauth: {
         redirectUrl: 'http://localhost:3000/oauth/callback',
-        clientName: 'Mastra Code',
+        clientName: 'Mingyi Atlas',
         scopes: ['mcp:read', 'mcp:write'],
         clientId: 'client-id',
         clientSecret: 'client-secret',

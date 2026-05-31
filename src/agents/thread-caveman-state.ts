@@ -30,7 +30,7 @@ async function findThread(
 }
 
 /**
- * Restores MastraCode-owned per-thread OM settings for the given thread:
+ * Restores MingyiAtlas-owned per-thread OM settings for the given thread:
  * - If the thread already has a valid value in metadata, mirror it into harness state.
  * - Otherwise, persist the current harness-state value to the thread so future
  *   sessions see the user's last-selected setting.
@@ -68,11 +68,11 @@ async function restoreSettingsForThread(harness: Harness<Record<string, unknown>
 }
 
 /**
- * Wires MastraCode-owned OM settings into harness thread events so they persist
+ * Wires MingyiAtlas-owned OM settings into harness thread events so they persist
  * per-thread and new threads inherit the most recent value.
  *
- * This is intentionally implemented in mastracode rather than core: these
- * settings are mastracode-specific OM concepts, so persistence stays scoped to
+ * This is intentionally implemented in mingyi-atlas rather than core: these
+ * settings are mingyi-atlas-specific OM concepts, so persistence stays scoped to
  * the host.
  */
 export function attachOMThreadStatePersistence(harness: Harness<Record<string, unknown>>): void {
@@ -87,7 +87,7 @@ export function attachOMThreadStatePersistence(harness: Harness<Record<string, u
 }
 
 /**
- * Eagerly restores MastraCode-owned OM settings for the currently-selected
+ * Eagerly restores MingyiAtlas-owned OM settings for the currently-selected
  * thread. Called once at TUI startup after the initial thread is selected,
  * since the subscription set up later misses the startup `thread_changed` event.
  */

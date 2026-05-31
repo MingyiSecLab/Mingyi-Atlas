@@ -54,6 +54,10 @@ vi.mock('@mastra/core/events', () => ({
   UnixSocketPubSub: mocks.MockUnixSocketPubSub,
 }));
 
+vi.mock('../project.js', () => ({
+  getAppDataDir: () => '/tmp/mingyi-atlas-test',
+}));
+
 const event = { type: 'test', data: {}, runId: 'run-id' };
 
 const threadTopic = (resourceId: string, threadId: string) =>
@@ -75,7 +79,7 @@ describe('SignalsPubSub', () => {
     vi.resetModules();
   });
 
-  it('routes thread-stream topics to /tmp/mc/<resourceId>/<threadId>.sock', async () => {
+  it('routes thread-stream topics to <appDataDir>/signals/<resourceId>/<threadId>.sock', async () => {
     const { createSignalsPubSub } = await import('../signals-pubsub.js');
     const resourceId = '11111111-1111-4111-8111-111111111111';
     const threadId = '22222222-2222-4222-8222-222222222222';
@@ -84,9 +88,14 @@ describe('SignalsPubSub', () => {
     const pubsub = createSignalsPubSub(resourceId);
     await pubsub.publish(topic, event);
 
-    expect(mocks.mkdir).toHaveBeenCalledWith(`/tmp/mc/${resourceId}`, { recursive: true });
+    expect(mocks.mkdir).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/tmp\/mingyi-atlas-test\/signals\/11111111-111-[a-f0-9]{8}$/),
+      { recursive: true },
+    );
     expect(mocks.instances).toHaveLength(1);
-    expect(mocks.instances[0]?.socketPath).toBe(`/tmp/mc/${resourceId}/${threadId}.sock`);
+    expect(mocks.instances[0]?.socketPath).toMatch(
+      /^\/tmp\/mingyi-atlas-test\/signals\/11111111-111-[a-f0-9]{8}\/22222222-222-[a-f0-9]{8}\.sock$/,
+    );
   });
 
   it('falls back to a sanitized topic when thread-stream decoding fails', async () => {
@@ -98,7 +107,26 @@ describe('SignalsPubSub', () => {
     await expect(pubsub.publish(topic, event)).resolves.toBeUndefined();
 
     expect(mocks.instances).toHaveLength(1);
-    expect(mocks.instances[0]?.socketPath).toBe(`/tmp/mc/${resourceId}/agent_thread-stream__E0_A4_A.sock`);
+    expect(mocks.instances[0]?.socketPath).toMatch(
+      /^\/tmp\/mingyi-atlas-test\/signals\/11111111-111-[a-f0-9]{8}\/agent_thread-[a-f0-9]{8}\.sock$/,
+    );
+  });
+
+  it('shortens long socket path segments to avoid Unix socket path limits', async () => {
+    const { createSignalsPubSub } = await import('../signals-pubsub.js');
+    const resourceId = `resource-${'a'.repeat(80)}`;
+    const threadId = `thread-${'b'.repeat(80)}`;
+    const topic = threadTopic(resourceId, threadId);
+
+    const pubsub = createSignalsPubSub(resourceId);
+    await pubsub.publish(topic, event);
+
+    expect(mocks.instances).toHaveLength(1);
+    const socketPath = mocks.instances[0]?.socketPath ?? '';
+    expect(socketPath).toMatch(
+      /^\/tmp\/mingyi-atlas-test\/signals\/resource-aaa-[a-f0-9]{8}\/thread-bbbbb-[a-f0-9]{8}\.sock$/,
+    );
+    expect(socketPath.length).toBeLessThan(104);
   });
 
   it('deduplicates concurrent first-time access for the same topic', async () => {

@@ -8,7 +8,7 @@ import { parseCommandFile, scanCommandDirectory } from '../slash-command-loader.
 
 describe('slash command loader', () => {
   it('parses goal metadata from frontmatter', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'mastracode-command-'));
+    const dir = await mkdtemp(join(tmpdir(), 'mingyi-atlas-command-'));
     const file = join(dir, 'ship.md');
     await writeFile(file, '---\nname: ship\ndescription: Ship work\ngoal: true\n---\nShip $ARGUMENTS\n');
 
@@ -23,7 +23,7 @@ describe('slash command loader', () => {
   });
 
   it('preserves goal metadata while scanning directories', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'mastracode-commands-'));
+    const dir = await mkdtemp(join(tmpdir(), 'mingyi-atlas-commands-'));
     await writeFile(join(dir, 'review.md'), '---\ndescription: Review code\ngoal: true\n---\nReview the code\n');
 
     const commands = await scanCommandDirectory(dir);

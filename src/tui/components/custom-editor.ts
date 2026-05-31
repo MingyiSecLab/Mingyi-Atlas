@@ -1,5 +1,5 @@
 /**
- * Custom editor that handles app-level keybindings for Mastra Code.
+ * Custom editor that handles app-level keybindings for Mingyi Atlas.
  */
 
 import { readFileSync, statSync } from 'node:fs';

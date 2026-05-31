@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createMastraCodeAnalytics, getMastraAnalyticsDistinctId, isTelemetryDisabled } from '../analytics.js';
+import { createMingyiAtlasAnalytics, getMastraAnalyticsDistinctId, isTelemetryDisabled } from '../analytics.js';
 
 afterEach(() => {
   vi.restoreAllMocks();
-  delete process.env.MASTRACODE_ANALYTICS_DEBUG;
+  delete process.env.MINGYI_ATLAS_ANALYTICS_DEBUG;
 });
 
 describe('analytics telemetry disable', () => {
@@ -30,10 +30,10 @@ describe('analytics telemetry disable', () => {
     process.env.MASTRA_TELEMETRY_DISABLED = '1';
 
     try {
-      const analytics = createMastraCodeAnalytics({ version: 'test-version' });
+      const analytics = createMingyiAtlasAnalytics({ version: 'test-version' });
 
       expect(analytics.isEnabled()).toBe(false);
-      expect(() => analytics.capture('mastracode_session_started')).not.toThrow();
+      expect(() => analytics.capture('mingyi-atlas_session_started')).not.toThrow();
       expect(() => analytics.trackCommand('models')).not.toThrow();
       expect(() => analytics.trackInteractivePrompt('ask_user')).not.toThrow();
       await expect(analytics.shutdown()).resolves.toBeUndefined();
@@ -49,12 +49,12 @@ describe('analytics telemetry disable', () => {
   it('writes debug logs for disabled analytics when requested', () => {
     const original = process.env.MASTRA_TELEMETRY_DISABLED;
     process.env.MASTRA_TELEMETRY_DISABLED = '1';
-    process.env.MASTRACODE_ANALYTICS_DEBUG = '1';
+    process.env.MINGYI_ATLAS_ANALYTICS_DEBUG = '1';
     const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
     try {
-      const analytics = createMastraCodeAnalytics({ version: 'test-version' });
-      analytics.capture('mastracode_session_started');
+      const analytics = createMingyiAtlasAnalytics({ version: 'test-version' });
+      analytics.capture('mingyi-atlas_session_started');
 
       expect(stderr).toHaveBeenCalledWith(expect.stringContaining('disabled by MASTRA_TELEMETRY_DISABLED'));
       expect(stderr).toHaveBeenCalledWith(expect.stringContaining('capture skipped: telemetry disabled'));

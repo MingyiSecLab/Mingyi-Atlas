@@ -138,7 +138,7 @@ describe('uncaughtException handler integration', () => {
       // Trigger a real uncaught ERR_STREAM_DESTROYED:
       // Emitting 'error' on a destroyed stream with no error listener causes
       // the error to bubble up as an uncaughtException — this is the same
-      // mechanism that crashes mastracode in issues #13548 and #13549.
+      // mechanism that crashes mingyi-atlas in issues #13548 and #13549.
       const w = new Writable({ write(c, e, cb) { cb(); } });
       w.destroy();
       const err = new Error('Cannot call write after a stream was destroyed');

@@ -180,7 +180,7 @@ describe('MastraTUI hook wiring', () => {
   });
 
   it('does not start caffeinate when disabled by env var', async () => {
-    vi.stubGlobal('process', { platform: 'darwin', env: { MASTRACODE_DISABLE_CAFFEINATE: '1' } });
+    vi.stubGlobal('process', { platform: 'darwin', env: { MINGYI_ATLAS_DISABLE_CAFFEINATE: '1' } });
     const tui = createBareTui();
 
     await tui.handleEvent({ type: 'agent_start' });

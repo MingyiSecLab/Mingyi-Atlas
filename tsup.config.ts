@@ -18,7 +18,7 @@ export default defineConfig({
     preset: 'smallest',
   },
   define: {
-    MASTRACODE_VERSION: JSON.stringify(pkg.version),
+    MINGYI_ATLAS_VERSION: JSON.stringify(pkg.version),
   },
   sourcemap: true,
 });

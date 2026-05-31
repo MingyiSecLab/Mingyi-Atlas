@@ -581,6 +581,7 @@ const LEGACY_VARIED_MODELS: Record<string, string> = {
   plan: 'openai/gpt-5.4',
   build: 'anthropic/claude-sonnet-4-5',
   fast: 'anthropic/claude-haiku-4-5',
+  pentest: 'openai/gpt-5.4',
 };
 
 export function migrateLegacyVariedPack(settings: GlobalSettings): boolean {

@@ -9,7 +9,7 @@ import { Workspace, LocalFilesystem, LocalSandbox } from '@mastra/core/workspace
 import type { LSPConfig } from '@mastra/core/workspace';
 import { DEFAULT_CONFIG_DIR } from '../constants.js';
 import { loadSettings } from '../onboarding/settings.js';
-import type { MastraCodeState } from '../schema';
+import type { MingyiAtlasState } from '../schema';
 import { TOOL_NAME_OVERRIDES } from '../tool-names.js';
 
 // =============================================================================
@@ -34,15 +34,22 @@ function buildSandboxEnv(): NodeJS.ProcessEnv {
 // =============================================================================
 
 // We support multiple skill locations for compatibility:
-// 1. Project-local: <configDir>/skills (project-specific mastracode skills)
+// 1. Project-local: <configDir>/skills (project-specific mingyi-atlas skills)
 // 2. Project-local: .claude/skills (Claude Code compatible skills)
 // 3. Project-local: .agents/skills (Agent Skills spec compatible)
-// 4. Global: ~/<configDir>/skills (user-wide mastracode skills)
+// 4. Global: ~/<configDir>/skills (user-wide mingyi-atlas skills)
 // 5. Global: ~/.claude/skills (user-wide Claude Code skills)
 // 6. Global: ~/.agents/skills (user-wide Agent Skills spec compatible)
+// 7. Built-in: <moduleRoot>/skills (bundled pentest skills)
 
 const claudeGlobalSkillsPath = path.join(os.homedir(), '.claude', 'skills');
 const agentSkillsGlobalPath = path.join(os.homedir(), '.agents', 'skills');
+const mcModulePath = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+export interface BuildSkillPathsOptions {
+  includeBuiltInSkills?: boolean;
+  builtInSkillsRoot?: string;
+}
 
 // Mastra's LocalSkillSource.readdir uses Node's Dirent.isDirectory() which
 // returns false for symlinks. Tools like `npx skills add` install skills as
@@ -85,12 +92,42 @@ function collectSkillPaths(skillsDirs: string[]): string[] {
   return paths;
 }
 
+function collectBuiltInSkillPaths(skillsRoot: string): string[] {
+  const paths: string[] = [];
+
+  function walk(dir: string) {
+    if (!fs.existsSync(dir)) return;
+
+    if (fs.existsSync(path.join(dir, 'SKILL.md'))) {
+      paths.push(dir);
+    }
+
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      walk(path.join(dir, entry.name));
+    }
+  }
+
+  walk(skillsRoot);
+  return paths;
+}
+
 // Build skill paths dynamically based on configDir and projectPath
-export function buildSkillPaths(projectPath: string, configDir: string): string[] {
+export function buildSkillPaths(projectPath: string, configDir: string, options: BuildSkillPathsOptions = {}): string[] {
   const mastraCodeLocalSkillsPath = path.join(projectPath, configDir, 'skills');
   const claudeLocalSkillsPath = path.join(projectPath, '.claude', 'skills');
   const agentSkillsLocalPath = path.join(projectPath, '.agents', 'skills');
   const mastraCodeGlobalSkillsPath = path.join(os.homedir(), configDir, 'skills');
+  const builtInSkillPaths = options.includeBuiltInSkills
+    ? collectBuiltInSkillPaths(options.builtInSkillsRoot ?? path.join(mcModulePath, 'skills'))
+    : [];
 
   return collectSkillPaths([
     mastraCodeLocalSkillsPath,
@@ -99,6 +136,7 @@ export function buildSkillPaths(projectPath: string, configDir: string): string[
     mastraCodeGlobalSkillsPath,
     claudeGlobalSkillsPath,
     agentSkillsGlobalPath,
+    ...builtInSkillPaths,
   ]);
 }
 
@@ -128,7 +166,7 @@ function detectPackageRunner(projectPath: string): string | undefined {
 }
 
 export function getDynamicWorkspace({ requestContext, mastra }: { requestContext: RequestContext; mastra?: Mastra }) {
-  const ctx = requestContext.get('harness') as HarnessRequestContext<MastraCodeState> | undefined;
+  const ctx = requestContext.get('harness') as HarnessRequestContext<MingyiAtlasState> | undefined;
   const state = ctx?.getState();
   const modeId = ctx?.modeId ?? 'build';
   const rawProjectPath = state?.projectPath;
@@ -139,7 +177,7 @@ export function getDynamicWorkspace({ requestContext, mastra }: { requestContext
 
   const projectPath = path.resolve(rawProjectPath);
   const configDir = state?.configDir ?? DEFAULT_CONFIG_DIR;
-  const skillPaths = buildSkillPaths(projectPath, configDir);
+  const skillPaths = buildSkillPaths(projectPath, configDir, { includeBuiltInSkills: modeId === 'pentest' });
   const workspaceId = `${WORKSPACE_ID_PREFIX}-${projectPath}`;
   const sandboxPaths = state?.sandboxAllowedPaths ?? [];
   const allowedPaths = [...skillPaths, ...DEFAULT_ALLOWED_PATHS, ...sandboxPaths.map((p: string) => path.resolve(p))];
@@ -166,7 +204,6 @@ export function getDynamicWorkspace({ requestContext, mastra }: { requestContext
   }
 
   const userLsp = loadSettings().lsp ?? {};
-  const mcModulePath = join(dirname(fileURLToPath(import.meta.url)), '..');
   const lspConfig: LSPConfig = {
     ...userLsp,
     packageRunner: userLsp.packageRunner || detectPackageRunner(projectPath), // Detected runner is the fallback — user's packageRunner always wins
@@ -176,7 +213,7 @@ export function getDynamicWorkspace({ requestContext, mastra }: { requestContext
   // First call for this project — create the workspace
   return new Workspace({
     id: workspaceId,
-    name: 'Mastra Code Workspace',
+    name: 'Mingyi Atlas Workspace',
     filesystem: new LocalFilesystem({
       basePath: projectPath,
       allowedPaths,

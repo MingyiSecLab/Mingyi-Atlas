@@ -29,13 +29,13 @@ const SHARE_PREFIX = 'mastra-pack:';
 
 interface SharedPackPayload {
   name: string;
-  models: { build: string; plan: string; fast: string };
+  models: { build: string; plan: string; fast: string; pentest?: string };
 }
 
 export function serializePack(pack: ModePack): string {
   const payload: SharedPackPayload = {
     name: pack.name,
-    models: { build: pack.models.build, plan: pack.models.plan, fast: pack.models.fast },
+    models: { build: pack.models.build, plan: pack.models.plan, fast: pack.models.fast, pentest: pack.models.pentest },
   };
   return SHARE_PREFIX + Buffer.from(JSON.stringify(payload), 'utf-8').toString('base64');
 }
@@ -56,13 +56,14 @@ export function deserializePack(input: string): ModePack | null {
     const build = typeof models.build === 'string' ? models.build : '';
     const plan = typeof models.plan === 'string' ? models.plan : '';
     const fast = typeof models.fast === 'string' ? models.fast : '';
+    const pentest = typeof models.pentest === 'string' ? models.pentest : plan;
     if (!build || !plan || !fast) return null;
 
     return {
       id: `custom:${name}`,
       name,
       description: 'Imported custom pack',
-      models: { build, plan, fast },
+      models: { build, plan, fast, pentest },
     };
   } catch {
     return null;
@@ -151,7 +152,7 @@ async function askCustomPackAction(
     const detailText = new Text('', 0, 0);
     const detailById: Record<string, string> = {
       activate: getPackDetail(pack),
-      edit: theme.fg('dim', '  Edit one setting at a time (Rename, plan, build, fast).'),
+      edit: theme.fg('dim', '  Edit one setting at a time (Rename, plan, build, fast, pentest).'),
       share: theme.fg('dim', '  Copy shareable config to clipboard. Paste it to import elsewhere.'),
       delete: theme.fg('error', '  Permanently removes this custom pack from settings.'),
     };
@@ -192,7 +193,7 @@ async function askCustomPackAction(
 async function askCustomPackEditTarget(
   ctx: SlashCommandContext,
   pack: ModePack,
-): Promise<'rename' | 'plan' | 'build' | 'fast' | 'save' | null> {
+): Promise<'rename' | 'plan' | 'build' | 'fast' | 'pentest' | 'save' | null> {
   return new Promise(resolve => {
     const container = new Box(4, 2, text => theme.bg('overlayBg', text));
     container.addChild(new Text(theme.bold(theme.fg('accent', `Edit custom pack: ${pack.name}`)), 0, 0));
@@ -204,9 +205,10 @@ async function askCustomPackEditTarget(
         { value: 'plan', label: `  ${chalk.hex(mastra.purple)('plan')} → ${theme.fg('text', pack.models.plan)}` },
         { value: 'build', label: `  ${chalk.hex(mastra.green)('build')} → ${theme.fg('text', pack.models.build)}` },
         { value: 'fast', label: `  ${chalk.hex(mastra.orange)('fast')} → ${theme.fg('text', pack.models.fast)}` },
+        { value: 'pentest', label: `  ${chalk.hex(mastra.blue)('pentest')} → ${theme.fg('text', pack.models.pentest)}` },
         { value: 'save', label: `  ${theme.fg('success', 'Save')}` },
       ],
-      5,
+      6,
       getSelectListTheme(),
     );
 
@@ -217,7 +219,7 @@ async function askCustomPackEditTarget(
 
     selectList.onSelect = item => {
       closeOverlay();
-      resolve(item.value as 'rename' | 'plan' | 'build' | 'fast' | 'save');
+      resolve(item.value as 'rename' | 'plan' | 'build' | 'fast' | 'pentest' | 'save');
     };
 
     selectList.onCancel = () => {
@@ -239,10 +241,11 @@ async function runCustomFlow(
   ctx: SlashCommandContext,
   options?: { name?: string; models?: ModePack['models']; skipNamePrompt?: boolean },
 ): Promise<ModePack | null> {
-  const modes: Array<{ id: 'plan' | 'build' | 'fast'; label: string; color: string }> = [
+  const modes: Array<{ id: 'plan' | 'build' | 'fast' | 'pentest'; label: string; color: string }> = [
     { id: 'plan', label: 'plan', color: mastra.purple },
     { id: 'build', label: 'build', color: mastra.green },
     { id: 'fast', label: 'fast', color: mastra.orange },
+    { id: 'pentest', label: 'pentest', color: mastra.blue },
   ];
 
   const name = options?.skipNamePrompt
@@ -250,11 +253,12 @@ async function runCustomFlow(
     : await askCustomPackName(ctx, options?.name && options.name !== 'Custom' ? options.name : undefined);
   if (!name) return null;
 
-  const existing = options?.models ?? { build: '', plan: '', fast: '' };
+  const existing = options?.models ?? { build: '', plan: '', fast: '', pentest: '' };
   const models: Record<string, string> = {
     build: existing.build ?? '',
     plan: existing.plan ?? '',
     fast: existing.fast ?? '',
+    pentest: existing.pentest ?? existing.plan ?? '',
   };
 
   for (const mode of modes) {
@@ -301,10 +305,11 @@ async function runCustomPackEditFlow(
       continue;
     }
 
-    const modeColors: Record<'plan' | 'build' | 'fast', string> = {
+    const modeColors: Record<'plan' | 'build' | 'fast' | 'pentest', string> = {
       plan: mastra.purple,
       build: mastra.green,
       fast: mastra.orange,
+      pentest: mastra.blue,
     };
 
     const modelId = await selectModel(
@@ -362,7 +367,8 @@ export function removeCustomPackFromSettings(settings: GlobalSettings, packId: s
     !!removedPack &&
     settings.models.modeDefaults.plan === removedPack.models.plan &&
     settings.models.modeDefaults.build === removedPack.models.build &&
-    settings.models.modeDefaults.fast === removedPack.models.fast;
+    settings.models.modeDefaults.fast === removedPack.models.fast &&
+    settings.models.modeDefaults.pentest === removedPack.models.pentest;
 
   if (settings.models.activeModelPackId === packId) {
     settings.models.activeModelPackId = null;
@@ -394,7 +400,17 @@ async function applyPack(ctx: SlashCommandContext, pack: ModePack, previousPackI
     await harness.switchModel({ modelId: currentModeModel });
   }
 
-  const subagentModeMap: Record<string, string> = { explore: 'fast', plan: 'plan', execute: 'build' };
+  const subagentModeMap: Record<string, string> = {
+    explore: 'fast',
+    plan: 'plan',
+    execute: 'build',
+    'pentest-supervisor': 'pentest',
+    'pentest-recon': 'pentest',
+    'pentest-vuln-analysis': 'pentest',
+    'pentest-validation': 'pentest',
+    'pentest-report': 'pentest',
+    'pentest-remediation': 'pentest',
+  };
   for (const [agentType, modeId] of Object.entries(subagentModeMap)) {
     const saModelId = (pack.models as Record<string, string>)[modeId];
     if (saModelId) {
@@ -439,6 +455,7 @@ function getPackDetail(pack: ModePack): string {
     `  ${chalk.hex(mastra.purple)('plan')}  → ${theme.fg('text', pack.models.plan)}`,
     `  ${chalk.hex(mastra.green)('build')} → ${theme.fg('text', pack.models.build)}`,
     `  ${chalk.hex(mastra.orange)('fast')}  → ${theme.fg('text', pack.models.fast)}`,
+    `  ${chalk.hex(mastra.blue)('pentest')} → ${theme.fg('text', pack.models.pentest)}`,
   ].join('\n');
 }
 
@@ -455,6 +472,7 @@ async function saveCustomPackEdits(ctx: SlashCommandContext, pack: ModePack, pre
     plan: pack.models.plan,
     build: pack.models.build,
     fast: pack.models.fast,
+    pentest: pack.models.pentest,
   };
 
   upsertCustomPackInSettings(settings, pack, modeDefaults, previousPackId, false);

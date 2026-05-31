@@ -2,8 +2,8 @@
  * MCP server configuration loading from filesystem.
  * Loads from:
  *   1. .claude/settings.local.json  (Claude Code compat — lowest priority)
- *   2. ~/.mastracode/mcp.json       (global)
- *   3. .mastracode/mcp.json         (project — highest priority)
+ *   2. ~/.mingyi-atlas/mcp.json       (global)
+ *   3. .mingyi-atlas/mcp.json         (project — highest priority)
  *
  * Project overrides global by server name. Claude Code config is lowest priority.
  */

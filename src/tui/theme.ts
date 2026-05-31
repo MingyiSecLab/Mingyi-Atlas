@@ -1,5 +1,5 @@
 /**
- * Theme system for the Mastra Code TUI.
+ * Theme system for the Mingyi Atlas TUI.
  * Simplified from pi-mono's theme system.
  */
 

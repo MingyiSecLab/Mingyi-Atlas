@@ -8,7 +8,7 @@ import { Container, TUI, ProcessTerminal } from '@mariozechner/pi-tui';
 import type { CombinedAutocompleteProvider, Component, Text } from '@mariozechner/pi-tui';
 import type { Harness, HarnessMessage } from '@mastra/core/harness';
 import type { SkillMetadata, Workspace } from '@mastra/core/workspace';
-import type { MastraCodeAnalytics } from '../analytics.js';
+import type { MingyiAtlasAnalytics } from '../analytics.js';
 import type { AuthStorage } from '../auth/storage.js';
 import type { HookManager } from '../hooks/index.js';
 import type { McpManager } from '../mcp/manager.js';
@@ -54,7 +54,7 @@ export interface MastraTUIOptions {
   hookManager?: HookManager;
 
   /** Analytics client for product telemetry */
-  analytics?: MastraCodeAnalytics;
+  analytics?: MingyiAtlasAnalytics;
 
   /** Auth storage for OAuth login/logout */
   authStorage?: AuthStorage;
@@ -94,7 +94,7 @@ export interface TUIState {
   harness: Harness<any>;
   options: MastraTUIOptions;
   hookManager?: HookManager;
-  analytics?: MastraCodeAnalytics;
+  analytics?: MingyiAtlasAnalytics;
   authStorage?: AuthStorage;
   mcpManager?: McpManager;
   workspace?: Workspace;

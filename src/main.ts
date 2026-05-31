@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Main entry point for Mastra Code TUI.
+ * Main entry point for the Mingyi Atlas TUI.
  */
 import fs from 'node:fs';
 
-import { createMastraCodeAnalytics } from './analytics.js';
+import { createMingyiAtlasAnalytics } from './analytics.js';
 import { isStreamDestroyedError } from './error-classification.js';
 import { hasHeadlessFlag, headlessMain } from './headless.js';
 import { createBrowserFromSettings, loadSettings } from './onboarding/settings.js';
@@ -15,14 +15,14 @@ import { setupDebugLogging } from './utils/debug-log.js';
 import { drainPipedStdin, reopenStdinFromTTY } from './utils/stdin-pipe.js';
 import { releaseAllThreadLocks } from './utils/thread-lock.js';
 import { getCurrentVersion } from './utils/update-check.js';
-import { createMastraCode } from './index.js';
+import { createMingyiAtlas } from './index.js';
 
-let harness: Awaited<ReturnType<typeof createMastraCode>>['harness'];
-let mcpManager: Awaited<ReturnType<typeof createMastraCode>>['mcpManager'];
-let hookManager: Awaited<ReturnType<typeof createMastraCode>>['hookManager'];
-let authStorage: Awaited<ReturnType<typeof createMastraCode>>['authStorage'];
-let signalsPubSub: Awaited<ReturnType<typeof createMastraCode>>['signalsPubSub'];
-let analytics: ReturnType<typeof createMastraCodeAnalytics> | undefined;
+let harness: Awaited<ReturnType<typeof createMingyiAtlas>>['harness'];
+let mcpManager: Awaited<ReturnType<typeof createMingyiAtlas>>['mcpManager'];
+let hookManager: Awaited<ReturnType<typeof createMingyiAtlas>>['hookManager'];
+let authStorage: Awaited<ReturnType<typeof createMingyiAtlas>>['authStorage'];
+let signalsPubSub: Awaited<ReturnType<typeof createMingyiAtlas>>['signalsPubSub'];
+let analytics: ReturnType<typeof createMingyiAtlasAnalytics> | undefined;
 
 // Global safety nets — catch any uncaught errors from storage init, etc.
 process.on('uncaughtException', error => {
@@ -44,7 +44,7 @@ async function tuiMain(pipedInput?: string | null) {
     return browserPromise;
   };
 
-  const result = await createMastraCode({ unixSocketPubSub: true });
+  const result = await createMingyiAtlas({ unixSocketPubSub: true });
   harness = result.harness;
   mcpManager = result.mcpManager;
   hookManager = result.hookManager;
@@ -84,8 +84,8 @@ async function tuiMain(pipedInput?: string | null) {
   }
   applyThemeMode(themeMode, detectedBgHex);
 
-  analytics = createMastraCodeAnalytics({ version: getCurrentVersion() });
-  analytics.capture('mastracode_session_started', {
+  analytics = createMingyiAtlasAnalytics({ version: getCurrentVersion() });
+  analytics.capture('mingyi-atlas_session_started', {
     mode: harness.getCurrentModeId(),
     resourceId: harness.getResourceId(),
     hasAuthStorage: Boolean(authStorage),
@@ -99,7 +99,7 @@ async function tuiMain(pipedInput?: string | null) {
     analytics,
     authStorage,
     mcpManager,
-    appName: 'Mastra Code',
+    appName: 'Mingyi Atlas',
     version: getCurrentVersion(),
     inlineQuestions: true,
     ...(pipedInput ? { initialMessage: `The following was piped via stdin:\n\n${pipedInput}` } : {}),
@@ -189,7 +189,7 @@ async function main() {
     return headlessMain();
   }
 
-  // When stdin is piped (e.g. `cat foo | mastracode`), drain the pipe fully
+  // When stdin is piped (e.g. `cat foo | mingyi-atlas`), drain the pipe fully
   // before starting the TUI.  The drain blocks until the sender process exits
   // and closes its stdout, so we never see partial output.
   let pipedInput: string | null = null;

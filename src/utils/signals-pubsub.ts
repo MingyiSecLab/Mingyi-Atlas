@@ -1,15 +1,17 @@
+import { createHash } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { PubSub, UnixSocketPubSub } from '@mastra/core/events';
 import type { PubSubDeliveryMode, Event, EventCallback, SubscribeOptions } from '@mastra/core/events';
+import { getAppDataDir } from './project.js';
 
 /**
  * A PubSub that manages one Unix socket per thread for cross-process signal
- * coordination within a mastracode resource.
+ * coordination within a mingyi-atlas resource.
  *
- * Socket paths use `/tmp/mc/<resourceId>/<threadId>.sock` for inspectability
- * and automatic OS cleanup. Each thread gets its own isolated socket so
+ * Socket paths use `<appDataDir>/signals/<resourceId>/<threadId>.sock`
+ * for inspectability. Each thread gets its own isolated socket so
  * processes on different threads never exchange data. A solo process on a
  * thread has zero serialization overhead.
  */
@@ -90,9 +92,9 @@ class SignalsPubSub extends PubSub {
     // Extract threadId from the topic. Topics follow the format:
     // agent.thread-stream.<encoded key> where key = resourceId\0threadId
     const threadId = this.#extractThreadId(topic);
-    const dir = join('/tmp/mc', this.#resourceId);
+    const dir = join(getAppDataDir(), 'signals', this.#sanitizePathSegment(this.#resourceId));
     await mkdir(dir, { recursive: true });
-    return join(dir, `${threadId}.sock`);
+    return join(dir, `${this.#sanitizePathSegment(threadId)}.sock`);
   }
 
   #extractThreadId(topic: string): string {
@@ -111,14 +113,21 @@ class SignalsPubSub extends PubSub {
       }
     }
     // Fallback: use the topic directly (sanitized for filesystem)
-    return topic.replace(/[^a-zA-Z0-9_-]/g, '_');
+    return topic;
+  }
+
+  #sanitizePathSegment(value: string): string {
+    const sanitized = value.replace(/[^a-zA-Z0-9_-]/g, '_');
+    if (sanitized.length <= 20) return sanitized;
+    const hash = createHash('sha256').update(value).digest('hex').slice(0, 8);
+    return `${sanitized.slice(0, 12)}-${hash}`;
   }
 }
 
 /**
  * Creates a per-thread PubSub for cross-process signal coordination.
  *
- * Each thread gets its own Unix socket under `/tmp/mc/<resourceId>/`.
+ * Each thread gets its own Unix socket under `<appDataDir>/signals/<resourceId>/`.
  * Processes on different threads never exchange data. A solo process on a
  * thread has zero serialization overhead — the broker only serializes when
  * another process joins the same thread's socket.

@@ -1,5 +1,5 @@
 /**
- * Check for newer versions of mastracode on npm.
+ * Check for newer versions of Mingyi Atlas on npm.
  */
 
 import { execFile } from 'node:child_process';
@@ -7,10 +7,10 @@ import { readFileSync, realpathSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-declare const MASTRACODE_VERSION: string | undefined;
+declare const MINGYI_ATLAS_VERSION: string | undefined;
 
-const PACKAGE_NAME = 'mastracode';
-const NPM_REGISTRY_URL = `https://registry.npmjs.org/${PACKAGE_NAME}/latest`;
+const PACKAGE_NAME = '@mingyi-atlas/cli';
+const NPM_REGISTRY_URL = `https://registry.npmjs.org/${encodeURIComponent(PACKAGE_NAME)}/latest`;
 
 /** Timeout for the npm registry fetch (ms). */
 const FETCH_TIMEOUT_MS = 5_000;
@@ -27,7 +27,7 @@ function matchPM(str: string): PackageManager | null {
 }
 
 /**
- * Detect which package manager was used to install mastracode globally.
+ * Detect which package manager was used to install Mingyi Atlas globally.
  *
  * Uses a multi-tier approach:
  * 1. npm_config_user_agent env var (set when run via `pnpm run`, `npm run`, etc.)
@@ -103,10 +103,10 @@ export function getInstallCommand(pm: PackageManager, version?: string): string 
  * Falls back to reading package.json at runtime (e.g. when running from source with tsx).
  */
 export function getCurrentVersion(): string {
-  if (typeof MASTRACODE_VERSION !== 'undefined') {
-    return MASTRACODE_VERSION;
+  if (typeof MINGYI_ATLAS_VERSION !== 'undefined') {
+    return MINGYI_ATLAS_VERSION;
   }
-  // Fallback for running from source (e.g. pnpx tsx mastracode/src/main.ts)
+  // Fallback for running from source (e.g. pnpx tsx mingyi-atlas/src/main.ts)
   const dir = dirname(fileURLToPath(import.meta.url));
   const pkgPath = resolve(dir, '../../package.json');
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
@@ -231,7 +231,7 @@ export function parseChangelog(markdown: string, version: string): string | null
 }
 
 /**
- * Run the appropriate global install command to update mastracode.
+ * Run the appropriate global install command to update Mingyi Atlas.
  * Returns true on success, false on failure.
  */
 export function runUpdate(pm: PackageManager, targetVersion: string): Promise<boolean> {

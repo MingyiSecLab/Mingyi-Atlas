@@ -4,8 +4,24 @@ import type { HarnessRequestContext } from '@mastra/core/harness';
 import type { RequestContext } from '@mastra/core/request-context';
 import type { HookManager } from '../hooks';
 import type { McpManager } from '../mcp';
-import type { MastraCodeState } from '../schema';
-import { createWebSearchTool, createWebExtractTool, hasTavilyKey, requestSandboxAccessTool } from '../tools';
+import type { MingyiAtlasState } from '../schema';
+import {
+  createFindingTools,
+  createContextTools,
+  cveSearchTool,
+  detectAuthSchemeTool,
+  detectCaptchaTool,
+  extractJsEndpointsTool,
+  generateReportTool,
+  createWebSearchTool,
+  createWebExtractTool,
+  hasTavilyKey,
+  httpRequestTool,
+  requestSandboxAccessTool,
+  runBrowserCliTool,
+  runContainerTool,
+  validateDiscoveryTool,
+} from '../tools';
 
 /** Minimal shape for tools passed to createDynamicTools. */
 type ToolLike = {
@@ -52,7 +68,7 @@ export function createDynamicTools(
   disabledTools?: string[],
 ) {
   return function getDynamicTools({ requestContext }: { requestContext: RequestContext }) {
-    const ctx = requestContext.get('harness') as HarnessRequestContext<MastraCodeState> | undefined;
+    const ctx = requestContext.get('harness') as HarnessRequestContext<MingyiAtlasState> | undefined;
     const state = ctx?.getState();
 
     const modelId = state?.currentModelId;
@@ -80,6 +96,20 @@ export function createDynamicTools(
     if (mcpManager) {
       const mcpTools = mcpManager.getTools();
       Object.assign(tools, mcpTools);
+    }
+
+    if (ctx?.modeId === 'pentest') {
+      Object.assign(tools, createContextTools());
+      Object.assign(tools, createFindingTools());
+      tools.http_request = httpRequestTool;
+      tools.run_browser_cli = runBrowserCliTool;
+      tools.run_container_tool = runContainerTool;
+      tools.cve_search = cveSearchTool;
+      tools.detect_auth_scheme = detectAuthSchemeTool;
+      tools.detect_captcha = detectCaptchaTool;
+      tools.extract_js_endpoints = extractJsEndpointsTool;
+      tools.generate_report = generateReportTool;
+      tools.validate_discovery = validateDiscoveryTool;
     }
 
     if (extraTools) {

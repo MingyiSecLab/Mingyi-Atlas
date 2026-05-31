@@ -1,8 +1,8 @@
 /**
- * Mastracode tool name constants.
+ * MingyiAtlas tool name constants.
  *
  * These are the names exposed to the LLM via workspace tool name remapping.
- * Used throughout mastracode for permissions, TUI rendering, tool guidance,
+ * Used throughout mingyi-atlas for permissions, TUI rendering, tool guidance,
  * subagent allowedTools, etc.
  *
  * The workspace tools get remapped from their core names (e.g. `mastra_workspace_read_file`)
@@ -34,11 +34,16 @@ export const MC_TOOLS = {
 
   // Code intelligence
   LSP_INSPECT: 'lsp_inspect',
+
+  // Skills
+  SKILL: 'skill',
+  SKILL_SEARCH: 'skill_search',
+  SKILL_READ: 'skill_read',
 } as const;
 
 /**
  * Workspace tool name remapping config.
- * Maps core workspace tool constants to mastracode's tool names.
+ * Maps core workspace tool constants to mingyi-atlas's tool names.
  * Pass this (or spread it) into `Workspace({ tools: ... })`.
  */
 export const TOOL_NAME_OVERRIDES = {

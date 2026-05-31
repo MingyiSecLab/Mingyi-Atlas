@@ -33,9 +33,18 @@ import {
 import { getDynamicInstructions } from './agents/instructions.js';
 import { getDynamicMemory } from './agents/memory.js';
 import { getDynamicModel, resolveModel } from './agents/model.js';
+import { PentestSkillSearchGate } from './agents/processors/pentest-skill-search-gate.js';
 import { getStaticallyLoadedInstructionPaths } from './agents/prompts/agent-instructions.js';
 import { executeSubagent } from './agents/subagents/execute.js';
 import { exploreSubagent } from './agents/subagents/explore.js';
+import {
+  pentestReconSubagent,
+  pentestRemediationSubagent,
+  pentestReportSubagent,
+  pentestSupervisorSubagent,
+  pentestValidationSubagent,
+  pentestVulnAnalysisSubagent,
+} from './agents/subagents/pentest/index.js';
 import { planSubagent } from './agents/subagents/plan.js';
 import { attachOMThreadStatePersistence, restoreOMThreadStateForCurrentThread } from './agents/thread-caveman-state.js';
 import { createDynamicTools } from './agents/tools.js';
@@ -65,7 +74,7 @@ import { getCopilotModelCatalog, setAuthStorage as setGitHubCopilotAuthStorage }
 import { setAuthStorage as setOpenAIAuthStorage } from './providers/openai-codex.js';
 
 import { stateSchema } from './schema.js';
-import type { MastraCodeState } from './schema.js';
+import type { MingyiAtlasState } from './schema.js';
 
 import { mastra } from './tui/theme.js';
 import { syncGateways } from './utils/gateway-sync.js';
@@ -86,12 +95,12 @@ const PROVIDER_TO_OAUTH_ID: Record<string, string> = {
   'github-copilot': 'github-copilot',
 };
 
-export interface MastraCodeConfig {
+export interface MingyiAtlasConfig {
   /** Working directory for project detection. Default: process.cwd() */
   cwd?: string;
-  /** Override modes (model IDs, colors, which modes exist). Default: build/plan/fast */
-  modes?: HarnessMode<MastraCodeState>[];
-  /** Override or extend subagent definitions. Default: explore/plan/execute */
+  /** Override modes (model IDs, colors, which modes exist). Default: build/plan/fast/pentest */
+  modes?: HarnessMode<MingyiAtlasState>[];
+  /** Override or extend subagent definitions. Default: explore/plan/execute plus pentest specialists */
   subagents?: HarnessSubagent[];
   /** Extra tools merged into the dynamic tool set. Can be a static record or a function that receives requestContext. */
   extraTools?:
@@ -114,12 +123,12 @@ export interface MastraCodeConfig {
   /** Path to a custom settings.json file. Default: global settings */
   settingsPath?: string;
   /** Initial state overrides (yolo, thinkingLevel, etc.) */
-  initialState?: Partial<MastraCodeState>;
+  initialState?: Partial<MingyiAtlasState>;
   /** Override heartbeat handlers. Default: gateway-sync */
   heartbeatHandlers?: HeartbeatHandler[];
   /** Override the workspace. Default: local filesystem + local sandbox based on detected project */
-  workspace?: HarnessConfig<MastraCodeState>['workspace'];
-  /** Override the config directory name. Default: '.mastracode'. Replaces '.mastracode' in all project-level and global config paths (MCP, hooks, commands, database, skills, agent instructions). */
+  workspace?: HarnessConfig<MingyiAtlasState>['workspace'];
+  /** Override the config directory name. Default: '.mingyi-atlas'. Replaces '.mingyi-atlas' in all project-level and global config paths (MCP, hooks, commands, database, skills, agent instructions). */
   configDir?: string;
   /** Programmatic MCP server configurations, merged with (and overriding) file-based configs. */
   mcpServers?: Record<string, McpServerConfig>;
@@ -130,20 +139,20 @@ export interface MastraCodeConfig {
   /**
    * Override the memory instance (or dynamic factory) passed to the Harness.
    * When provided, this replaces the default `getDynamicMemory(storage, vectorStore)` which
-   * uses mastracode's built-in model resolution (Anthropic OAuth, OpenAI Codex,
+   * uses mingyi-atlas's built-in model resolution (Anthropic OAuth, OpenAI Codex,
    * models.dev gateway).
    *
    * Use this when your models are served by a custom provider (e.g. Augment)
-   * that mastracode's `resolveModel` cannot resolve.
+   * that mingyi-atlas's `resolveModel` cannot resolve.
    */
-  memory?: HarnessConfig<MastraCodeState>['memory'];
+  memory?: HarnessConfig<MingyiAtlasState>['memory'];
   /** Browser provider for browser automation tools. When set, the agent gains access to browser tools. */
-  browser?: HarnessConfig<MastraCodeState>['browser'];
+  browser?: HarnessConfig<MingyiAtlasState>['browser'];
   /** PubSub for signal routing. When crossProcessPubSub is true, thread locks are disabled. */
   pubsub?: PubSub;
-  /** Use Mastra Code's built-in Unix socket PubSub for local cross-process signal routing. */
+  /** Use Mingyi Atlas's built-in Unix socket PubSub for local cross-process signal routing. */
   unixSocketPubSub?: boolean;
-  /** Marks the configured PubSub as cross-process-safe, allowing Mastra Code to skip file thread locks. */
+  /** Marks the configured PubSub as cross-process-safe, allowing Mingyi Atlas to skip file thread locks. */
   crossProcessPubSub?: boolean;
 }
 
@@ -178,7 +187,7 @@ function resolveCloudObservabilityConfig(
   };
 }
 
-export async function createMastraCode(config?: MastraCodeConfig) {
+export async function createMingyiAtlas(config?: MingyiAtlasConfig) {
   const cwd = config?.cwd ?? process.cwd();
   const configDir = config?.configDir ?? DEFAULT_CONFIG_DIR;
   if (configDir !== DEFAULT_CONFIG_DIR) {
@@ -277,7 +286,7 @@ export async function createMastraCode(config?: MastraCodeConfig) {
       const isLockError = /lock|locked|busy/i.test(message);
       if (isLockError) {
         observabilityWarning =
-          'Observability unavailable — another MastraCode instance holds the database lock. Traces, scores, and feedback will not be recorded in this session.';
+          'Observability unavailable — another MingyiAtlas instance holds the database lock. Traces, scores, and feedback will not be recorded in this session.';
       } else {
         observabilityWarning = `Observability unavailable — DuckDB initialization failed: ${message}`;
       }
@@ -297,7 +306,7 @@ export async function createMastraCode(config?: MastraCodeConfig) {
   const observability = new Observability({
     configs: {
       default: {
-        serviceName: 'mastracode',
+        serviceName: 'mingyi-atlas',
         // Only these requestContext keys are stored on spans — prevents leaking
         // large objects (harness state, workspace, env vars) into trace data.
         // Use dot-notation because these are nested inside the 'harness' key.
@@ -390,12 +399,24 @@ export async function createMastraCode(config?: MastraCodeConfig) {
       }),
       new ProviderHistoryCompat(),
     ],
+    outputProcessors: [new PentestSkillSearchGate()],
     errorProcessors: [new StreamErrorRetryProcessor(), new PrefillErrorHandler(), new ProviderHistoryCompat()],
+    maxProcessorRetries: 2,
   });
 
-  const defaultSubagents = [exploreSubagent, planSubagent, executeSubagent];
+  const defaultSubagents = [
+    exploreSubagent,
+    planSubagent,
+    executeSubagent,
+    pentestSupervisorSubagent,
+    pentestReconSubagent,
+    pentestVulnAnalysisSubagent,
+    pentestValidationSubagent,
+    pentestReportSubagent,
+    pentestRemediationSubagent,
+  ];
 
-  const defaultModes: HarnessMode<MastraCodeState>[] = [
+  const defaultModes: HarnessMode<MingyiAtlasState>[] = [
     {
       id: 'build',
       name: 'Build',
@@ -416,6 +437,13 @@ export async function createMastraCode(config?: MastraCodeConfig) {
       name: 'Fast',
       defaultModelId: 'cerebras/zai-glm-4.7',
       color: mastra.orange,
+      agent: codeAgent,
+    },
+    {
+      id: 'pentest',
+      name: 'Pentest',
+      defaultModelId: 'openai/gpt-5.2-codex',
+      color: mastra.blue,
       agent: codeAgent,
     },
   ];
@@ -488,8 +516,18 @@ export async function createMastraCode(config?: MastraCodeConfig) {
     return savedModel ? { ...mode, defaultModelId: savedModel } : mode;
   });
 
-  // Map subagent types to mode models: explore→fast, plan→plan, execute→build
-  const subagentModeMap: Record<string, string> = { explore: 'fast', plan: 'plan', execute: 'build' };
+  // Map subagent types to mode models: explore→fast, plan→plan, execute→build, pentest specialists→pentest
+  const subagentModeMap: Record<string, string> = {
+    explore: 'fast',
+    plan: 'plan',
+    execute: 'build',
+    'pentest-supervisor': 'pentest',
+    'pentest-recon': 'pentest',
+    'pentest-vuln-analysis': 'pentest',
+    'pentest-validation': 'pentest',
+    'pentest-report': 'pentest',
+    'pentest-remediation': 'pentest',
+  };
   // Subagents inherit workspace tools from the parent agent's workspace automatically.
   // Apply disabledTools filter to both default and custom subagents.
   const subagents = (config?.subagents ?? defaultSubagents).map(sa => {
@@ -514,7 +552,7 @@ export async function createMastraCode(config?: MastraCodeConfig) {
   });
 
   // Build initial state with global preferences
-  const globalInitialState: Partial<MastraCodeState> = {};
+  const globalInitialState: Partial<MingyiAtlasState> = {};
   if (effectiveObserverModel) {
     globalInitialState.observerModelId = effectiveObserverModel;
   }
@@ -548,8 +586,8 @@ export async function createMastraCode(config?: MastraCodeConfig) {
       globalInitialState[`subagentModelId_${key}`] = modelId;
     }
   }
-  const typedStateSchema = stateSchema as PublicSchema<MastraCodeState>;
-  const harness = new Harness<MastraCodeState>({
+  const typedStateSchema = stateSchema as PublicSchema<MingyiAtlasState>;
+  const harness = new Harness<MingyiAtlasState>({
     id: 'mastra-code',
     resourceId: project.resourceId,
     storage,
@@ -682,7 +720,7 @@ export async function createMastraCode(config?: MastraCodeConfig) {
     });
   }
 
-  // Persist MastraCode-owned /om settings per-thread (mastracode-only concern;
+  // Persist MingyiAtlas-owned /om settings per-thread (mingyi-atlas-only concern;
   // intentionally not in core's harness loadThreadMetadata).
   const omThreadStateHarness = harness as unknown as Harness<Record<string, unknown>>;
   attachOMThreadStatePersistence(omThreadStateHarness);

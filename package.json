@@ -1,25 +1,19 @@
 {
-  "name": "mastracode",
+  "name": "@mingyi-atlas/cli",
   "version": "0.21.2-alpha.2",
-  "description": "",
+  "description": "Mingyi Atlas command-line coding and security assessment agent.",
   "type": "module",
   "files": [
     "dist",
     "CHANGELOG.md"
   ],
-  "homepage": "https://mastra.ai",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mastra-ai/mastra.git",
-    "directory": "mastracode"
-  },
-  "bugs": {
-    "url": "https://github.com/mastra-ai/mastra/issues"
-  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "mastracode": "./dist/cli.js"
+    "mingyi-atlas": "./dist/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "exports": {
     ".": {
@@ -47,13 +41,24 @@
   "scripts": {
     "cli": "tsx src/main.ts",
     "check": "tsc --noEmit",
-    "build:lib": "tsup --silent --config tsup.config.ts",
-    "prepack": "pnpx tsx ../scripts/generate-package-docs.ts",
+    "build": "pnpm build:lib",
+    "build:lib": "tsup --silent --config tsup.config.ts && node scripts/copy-builtin-skills.mjs",
+    "test:run": "vitest run",
+    "test:publish": "vitest run src/__tests__/analytics.test.ts src/utils/__tests__/update-check.test.ts src/tui/components/__tests__/banner.test.ts src/tools/__tests__/detect-captcha.test.ts src/agents/__tests__/tools.test.ts",
+    "prepack": "pnpm build:lib",
+    "pack:check": "pnpm pack --dry-run",
+    "prepublishOnly": "pnpm check && pnpm test:publish && pnpm build:lib",
     "build:watch": "pnpm build --watch",
     "test": "vitest",
     "lint": "eslint ."
   },
-  "keywords": [],
+  "keywords": [
+    "ai",
+    "agent",
+    "cli",
+    "coding-agent",
+    "security"
+  ],
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {

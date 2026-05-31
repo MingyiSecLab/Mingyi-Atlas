@@ -1,5 +1,5 @@
 /**
- * TUI exports for Mastra Code.
+ * TUI exports for Mingyi Atlas.
  */
 
 export { MastraTUI, type MastraTUIOptions } from './mastra-tui.js';

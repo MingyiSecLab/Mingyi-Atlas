@@ -16,8 +16,8 @@ import { AuthStorage } from '../auth/storage.js';
 
 // Codex API endpoint (not standard OpenAI API)
 const CODEX_API_ENDPOINT = 'https://chatgpt.com/backend-api/codex/responses';
-const CODEX_ORIGINATOR = 'mastracode';
-const CODEX_USER_AGENT = 'mastracode';
+const CODEX_ORIGINATOR = 'mingyi-atlas';
+const CODEX_USER_AGENT = 'mingyi-atlas';
 
 // Singleton auth storage instance (shared with claude-max.ts)
 let authStorageInstance: AuthStorage | null = null;

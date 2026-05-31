@@ -18,7 +18,7 @@ export function hasTavilyKey(): boolean {
 }
 
 /**
- * Wraps the @mastra/tavily search tool with mastracode-specific behavior:
+ * Wraps the @mastra/tavily search tool with mingyi-atlas-specific behavior:
  * relevance filtering, markdown string formatting, and token truncation.
  * The underlying Tavily tool handles client init, input validation, and the API call.
  */
@@ -55,7 +55,7 @@ export function createWebSearchTool() {
 }
 
 /**
- * Wraps the @mastra/tavily extract tool with mastracode-specific behavior:
+ * Wraps the @mastra/tavily extract tool with mingyi-atlas-specific behavior:
  * markdown string formatting and token truncation.
  */
 export function createWebExtractTool() {

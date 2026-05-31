@@ -90,7 +90,7 @@ async function handleConnect(ctx: SlashCommandContext): Promise<void> {
     `${theme.fg('success', '✓')} Cloud observability configured.\n` +
       `  Project:  ${projectId}\n` +
       `  Resource: ${resourceId}\n\n` +
-      theme.fg('dim', 'Restart MastraCode for the new configuration to take effect.'),
+      theme.fg('dim', 'Restart MingyiAtlas for the new configuration to take effect.'),
   );
 }
 
@@ -119,14 +119,14 @@ function handleLocal(ctx: SlashCommandContext, args: string[]): void {
   if (enable) {
     ctx.showInfo(
       `${theme.fg('success', '✓')} Local DuckDB tracing enabled.\n` +
-        theme.fg('dim', 'Restart MastraCode for changes to take effect.'),
+        theme.fg('dim', 'Restart MingyiAtlas for changes to take effect.'),
     );
   } else {
     ctx.showInfo(
       `${theme.fg('success', '✓')} Local DuckDB tracing disabled.\n` +
         theme.fg(
           'dim',
-          'Restart MastraCode for changes to take effect.\nExisting data remains at the DuckDB path — delete manually if needed.',
+          'Restart MingyiAtlas for changes to take effect.\nExisting data remains at the DuckDB path — delete manually if needed.',
         ),
     );
   }
@@ -153,7 +153,7 @@ function handleDisconnect(ctx: SlashCommandContext): void {
 
   ctx.showInfo(
     `${theme.fg('success', '✓')} Cloud observability disconnected for resource "${resourceId}".\n` +
-      theme.fg('dim', 'Restart MastraCode for changes to take effect.'),
+      theme.fg('dim', 'Restart MingyiAtlas for changes to take effect.'),
   );
 }
 

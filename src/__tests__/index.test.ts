@@ -187,7 +187,7 @@ vi.mock('../onboarding/settings.js', () => ({
   getCustomProviderId: vi.fn(),
   loadSettings: loadSettingsMock,
   MEMORY_GATEWAY_PROVIDER: 'mastra',
-  resolveModelDefaults: vi.fn(() => ({ build: '', plan: '', fast: '' })),
+  resolveModelDefaults: vi.fn(() => ({ build: '', plan: '', fast: '', pentest: '' })),
   resolveOmModel: vi.fn(() => ''),
   resolveOmRoleModel: vi.fn(() => ''),
   saveSettings: vi.fn(),
@@ -251,7 +251,7 @@ vi.mock('./utils/thread-lock.js', () => ({
   releaseThreadLock: vi.fn(),
 }));
 
-describe('createMastraCode', () => {
+describe('createMingyiAtlas', () => {
   beforeEach(() => {
     vi.resetModules();
     gatewayRegistrySyncGateways.mockReset();
@@ -284,9 +284,9 @@ describe('createMastraCode', () => {
   });
 
   it('enables dynamic provider registry loading before bootstrapping auth and models', async () => {
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode();
+    await createMingyiAtlas();
 
     expect(gatewayRegistryGetInstance).toHaveBeenCalledWith({ useDynamicLoading: true });
   }, 10_000);
@@ -298,18 +298,18 @@ describe('createMastraCode', () => {
         resolveSync = resolve;
       }),
     );
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await expect(createMastraCode()).resolves.toBeTruthy();
+    await expect(createMingyiAtlas()).resolves.toBeTruthy();
 
     expect(gatewayRegistrySyncGateways).toHaveBeenCalledWith(true);
     resolveSync?.();
   });
 
   it('always configures dynamic local memory at startup', async () => {
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode();
+    await createMingyiAtlas();
 
     expect(harnessConstructorMock).toHaveBeenCalled();
     const harnessConfig = harnessConstructorMock.mock.calls[0]?.[0] as { memory?: unknown } | undefined;
@@ -317,18 +317,18 @@ describe('createMastraCode', () => {
   });
 
   it('rejects cross-process PubSub mode without a PubSub instance', async () => {
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await expect(createMastraCode({ crossProcessPubSub: true })).rejects.toThrow(
+    await expect(createMingyiAtlas({ crossProcessPubSub: true })).rejects.toThrow(
       'crossProcessPubSub requires a pubsub instance',
     );
   });
 
   it('keeps thread locks enabled for configured PubSub unless cross-process mode is explicit', async () => {
     const pubsub = {} as any;
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode({ pubsub, unixSocketPubSub: true });
+    await createMingyiAtlas({ pubsub, unixSocketPubSub: true });
 
     const harnessConfig = harnessConstructorMock.mock.calls.at(-1)?.[0] as
       | { pubsub?: unknown; threadLock?: unknown }
@@ -339,9 +339,9 @@ describe('createMastraCode', () => {
 
   it('skips thread locks for configured PubSub when cross-process mode is explicit', async () => {
     const pubsub = {} as any;
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode({ pubsub, crossProcessPubSub: true });
+    await createMingyiAtlas({ pubsub, crossProcessPubSub: true });
 
     const harnessConfig = harnessConstructorMock.mock.calls.at(-1)?.[0] as
       | { pubsub?: unknown; threadLock?: unknown }
@@ -353,9 +353,9 @@ describe('createMastraCode', () => {
   it('restores the current thread caveman observation setting at startup', async () => {
     harnessGetCurrentThreadIdMock.mockReturnValue('thread-1');
     harnessListThreadsMock.mockResolvedValue([{ id: 'thread-1', metadata: { cavemanObservations: true } }]);
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode();
+    await createMingyiAtlas();
 
     expect(harnessSubscribeMock).toHaveBeenCalled();
     expect(harnessListThreadsMock).toHaveBeenCalledWith({ allResources: true });
@@ -366,9 +366,9 @@ describe('createMastraCode', () => {
     harnessStateMock = { cavemanObservations: true };
     harnessGetCurrentThreadIdMock.mockReturnValue('thread-1');
     harnessListThreadsMock.mockResolvedValue([{ id: 'thread-1', metadata: { cavemanObservations: false } }]);
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode();
+    await createMingyiAtlas();
 
     expect(harnessSubscribeMock).toHaveBeenCalled();
     expect(harnessListThreadsMock).toHaveBeenCalledWith({ allResources: true });
@@ -379,9 +379,9 @@ describe('createMastraCode', () => {
     const settings = createMockSettings();
     (settings.models as { omObserveAttachments: boolean | null }).omObserveAttachments = false;
     loadSettingsMock.mockReturnValue(settings);
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode();
+    await createMingyiAtlas();
 
     const harnessCall = harnessConstructorMock.mock.calls[0]?.[0] as
       | { initialState?: Record<string, unknown> }
@@ -390,9 +390,9 @@ describe('createMastraCode', () => {
   });
 
   it('defaults observeAttachments to auto when global setting is null', async () => {
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode();
+    await createMingyiAtlas();
 
     const harnessCall = harnessConstructorMock.mock.calls[0]?.[0] as
       | { initialState?: Record<string, unknown> }
@@ -404,9 +404,9 @@ describe('createMastraCode', () => {
     harnessStateMock = { observeAttachments: true };
     harnessGetCurrentThreadIdMock.mockReturnValue('thread-1');
     harnessListThreadsMock.mockResolvedValue([{ id: 'thread-1', metadata: { observeAttachments: 'auto' } }]);
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode();
+    await createMingyiAtlas();
 
     expect(harnessSubscribeMock).toHaveBeenCalled();
     expect(harnessListThreadsMock).toHaveBeenCalledWith({ allResources: true });
@@ -414,9 +414,9 @@ describe('createMastraCode', () => {
   });
 
   it('enables OpenAI Responses stream error retries by default', async () => {
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode();
+    await createMingyiAtlas();
 
     expect(agentConstructorMock).toHaveBeenCalled();
     const agentConfig = agentConstructorMock.mock.calls[0]?.[0] as
@@ -426,9 +426,9 @@ describe('createMastraCode', () => {
   });
 
   it('configures ProviderHistoryCompat for prompt and API error compatibility', async () => {
-    const { createMastraCode } = await import('../index.js');
+    const { createMingyiAtlas } = await import('../index.js');
 
-    await createMastraCode();
+    await createMingyiAtlas();
 
     expect(agentConstructorMock).toHaveBeenCalled();
     const agentConfig = agentConstructorMock.mock.calls[0]?.[0] as

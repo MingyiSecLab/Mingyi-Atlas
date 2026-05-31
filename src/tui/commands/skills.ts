@@ -32,10 +32,10 @@ export async function handleSkillsCommand(ctx: SlashCommandContext): Promise<voi
     ctx.showInfo(
       'No skills configured.\n\n' +
         'Add skills to any of these locations:\n' +
-        '  .mastracode/skills/   (project-local)\n' +
+        '  .mingyi-atlas/skills/   (project-local)\n' +
         '  .claude/skills/       (project-local)\n' +
         '  .agents/skills/       (project-local)\n' +
-        '  ~/.mastracode/skills/ (global)\n' +
+        '  ~/.mingyi-atlas/skills/ (global)\n' +
         '  ~/.claude/skills/     (global)\n' +
         '  ~/.agents/skills/     (global)\n\n' +
         'Each skill is a folder with a SKILL.md file.\n' +
