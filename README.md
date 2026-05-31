@@ -1,203 +1,131 @@
 # Mingyi Atlas
 
-A coding agent and authorized security assessment CLI. Built with [Mastra](https://mastra.ai) and [pi-tui](https://github.com/badlogic/pi-mono).
+Mingyi Atlas is a terminal AI agent for software engineering and authorized security assessment. It provides an interactive TUI, headless automation, persistent project context, built-in skills, browser/container helpers, and a dedicated pentest mode.
 
-Learn more in the project documentation.
-
-## Features
-
-- **Observational Memory built-in**: Never deal with compaction again. [Observational Memory](https://mastra.ai/docs/memory/observational-memory) automatically extracts and stores observations from every conversation, then injects relevant context into future requests.
-- **Multi-model support**: Use Claude, GPT, Gemini, and thousands of other models via Mastra's unified model router
-- **OAuth login**: Authenticate with Anthropic (Claude Max) and OpenAI (ChatGPT Plus/Codex)
-- **Persistent conversations**: Threads are saved per-project and resume automatically
-- **Coding tools**: View files, edit code, run shell commands
-- **Goals**: Pursue longer-running objectives with configurable judge models and goal-enabled commands/skills
-- **Plan persistence**: Approved plans are saved as markdown files for future reference
-- **Token tracking**: Monitor usage with persistent token counts per thread
-- **Beautiful TUI**: Polished terminal interface with streaming responses
+The project is published as `@mingyi-atlas/cli` and exposes the `mingyi-atlas` command.
 
 ## Installation
-
-Install `@mingyi-atlas/cli` globally with your package manager of choice.
 
 ```bash
 npm install -g @mingyi-atlas/cli
 mingyi-atlas
 ```
 
-If you prefer not to install packages globally, you can use `npx`:
+Run without global install:
 
 ```bash
 npx @mingyi-atlas/cli
 ```
 
-On first launch, an interactive onboarding wizard guides you through:
+Requirements:
 
-1. **Authentication**: Log in with your AI provider (Anthropic, OpenAI, etc.)
-2. **Model packs**: Choose default models for each mode (build / plan / fast)
-3. **Observational Memory**: Pick a model for OM (learns about you over time)
-4. **YOLO mode**: Auto-approve tool calls, or require manual confirmation
+- Node.js `>=22.13.0`
+- `fd` or `fdfind` is optional, but recommended for fast `@file` autocomplete
+- Docker is optional, but required for container-backed pentest browser/tool runners
 
-You can re-run setup anytime with `/setup`.
+Supported runtime targets are macOS, Linux, and Windows on modern x64 or arm64 Node.js builds. Native optional dependencies are resolved by the package manager for the current platform.
 
-## Prerequisites
+## Quick Start
 
-### Optional: `fd` for file autocomplete
-
-The `@` file autocomplete feature uses [`fd`](https://github.com/sharkdp/fd), a fast file finder that respects `.gitignore`. Without it, `@` autocomplete silently does nothing.
-
-Install with your package manager:
+Start the interactive TUI:
 
 ```bash
-# macOS
-brew install fd
-
-# Ubuntu/Debian
-sudo apt install fd-find
-
-# Arch
-sudo pacman -S fd
+mingyi-atlas
 ```
 
-On Ubuntu/Debian the binary is called `fdfind` — Mingyi Atlas detects both `fd` and `fdfind` automatically.
+Run one headless task:
 
-## Usage
+```bash
+mingyi-atlas --prompt "Review the auth module and summarize risks"
+```
 
-### Starting a conversation
+Use pentest mode in headless automation:
 
-Type your message and press Enter. If the agent is already working, Enter queues your next message and sends it after the current run finishes.
+```bash
+mingyi-atlas --mode pentest --prompt "Start an authorized assessment of https://example.test"
+```
 
-### `@` file references
+## Core Features
 
-Type `@` followed by a partial filename to fuzzy-search project files and reference them in your message. This requires `fd` to be installed (see [Prerequisites](#prerequisites)).
+- Interactive terminal UI with persistent threads and project-scoped state.
+- Build, plan, fast, and pentest modes.
+- Multi-provider model support through configured model packs.
+- OAuth and API-key authentication for supported providers.
+- Project and global configuration under `.mingyi-atlas/` and `~/.mingyi-atlas/`.
+- Built-in skill loading with explicit skill search/read activation.
+- Goal mode for longer-running objectives.
+- Browser automation configuration through `/browser`.
+- Structured security context, findings, reports, and tool artifacts for pentest workflows.
 
-- `@setup` — fuzzy-matches files like `setup.ts`, `setup.py`, etc.
-- `@src/tui` — scoped search within a directory
-- `@"path with spaces"` — quoted form for paths containing spaces
+## Authentication
 
-Select a suggestion with arrow keys and press Tab to insert it.
+Use `/login` for supported OAuth providers, or set provider API keys in the environment before launching the CLI.
 
-### Slash commands
+Common API-key variables:
 
-| Command             | Description                                                                 |
-| ------------------- | --------------------------------------------------------------------------- |
-| `/new`              | Start a new conversation thread                                             |
-| `/threads`          | List and switch between threads with freshness-checked cached lazy previews |
-| `/models`           | Switch/manage model packs (built-in/custom)                                 |
-| `/custom-providers` | Manage custom OpenAI-compatible providers/models                            |
-| `/mode`             | Switch agent mode                                                           |
-| `/subagents`        | Configure subagent model defaults                                           |
-| `/om`               | Configure Observational Memory models                                       |
-| `/think`            | Set thinking level (Anthropic)                                              |
-| `/judge`            | Configure the default judge model and max attempts for goals                |
-| `/goal`             | Start or manage an autonomous goal                                          |
-| `/skills`           | List available skills                                                       |
-| `/diff`             | Show modified files or git diff                                             |
-| `/name`             | Rename current thread                                                       |
-| `/cost`             | Show token usage and estimated costs                                        |
-| `/review`           | Review a GitHub pull request                                                |
-| `/hooks`            | Show/reload configured hooks                                                |
-| `/mcp`              | Show/reload MCP server connections                                          |
-| `/sandbox`          | Manage allowed paths (add/remove dirs)                                      |
-| `/permissions`      | View/manage tool approval permissions                                       |
-| `/settings`         | General settings (notifications, YOLO, etc.)                                |
-| `/yolo`             | Toggle YOLO mode (auto-approve all tools)                                   |
-| `/resource`         | Show/switch resource ID (tag for sharing)                                   |
-| `/thread:tag-dir`   | Tag current thread with this directory                                      |
-| `/login`            | Authenticate with OAuth providers                                           |
-| `/logout`           | Log out from a provider                                                     |
-| `/setup`            | Re-run the interactive setup wizard                                         |
-| `/help`             | Show available commands                                                     |
-| `/exit`             | Exit the TUI                                                                |
+```bash
+export ANTHROPIC_API_KEY=...
+export OPENAI_API_KEY=...
+export GOOGLE_GENERATIVE_AI_API_KEY=...
+```
 
-### Goals
+Credentials are stored locally in `~/.mingyi-atlas/auth.json`.
 
-Use `/goal <objective>` to have Mingyi Atlas keep working toward an objective across turns. Goals use a judge model to decide whether the goal is complete, should continue, or should wait for an explicit user checkpoint. Configure defaults with `/judge`.
+## Pentest Mode
 
-Goal objectives can span multiple lines:
+Pentest mode is intended for authorized testing only. It gives the agent a security-focused prompt, specialist subagents, persistent target context, and scoped tools.
+
+Security tools include:
+
+- `http_request` for scoped HTTP validation.
+- `detect_auth_scheme` for authentication boundary detection.
+- `detect_captcha` for CAPTCHA and bot-challenge detection plus manual-entry selectors.
+- `extract_js_endpoints` for frontend route/API discovery.
+- `cve_search` for local/remote CVE lookup with cache support.
+- `run_browser_cli` for task-scoped browser automation.
+- `run_container_tool` for containerized tools with captured artifacts.
+- structured finding tools for reporting, updating, and retesting findings.
+
+Runtime pentest data is target-bucketed:
 
 ```text
-/goal Fix the failing release checks
-and open a PR when everything passes.
+.mingyi-atlas/pentest/targets/<target-slug>/
+  context.json
+  findings.json
+  http-responses/
+  browser-runs/
+  tool-runs/
+  reports/
 ```
 
-When a plan is submitted with `submit_plan`, the inline approval UI also includes **Use as /goal**. That saves/approves the plan and starts a goal using the plan text as the objective.
+CAPTCHA handling is detection and manual handoff only. The tool can identify providers, image CAPTCHA fields, input selectors, forms, and submit controls, but it does not solve or bypass CAPTCHA automatically.
 
-Custom slash commands can opt into goal mode with top-level frontmatter:
+## Slash Commands
 
-```md
----
-name: pr-triage
-description: Triage open PRs
-goal: true
----
+Common commands:
 
-Inspect every open PR before pair-reviewing candidates.
-```
+| Command | Purpose |
+| --- | --- |
+| `/setup` | Run onboarding again |
+| `/login` / `/logout` | Manage provider authentication |
+| `/models` | Configure model packs |
+| `/mode` | Switch mode |
+| `/subagents` | Configure subagent model defaults |
+| `/browser` | Enable or configure browser automation |
+| `/skills` | List skills |
+| `/skill/<name>` | Activate a skill explicitly |
+| `/goal` | Start or manage a persistent goal |
+| `/threads` | List and switch threads |
+| `/mcp` | Show or reload MCP server connections |
+| `/hooks` | Show or reload hooks |
+| `/permissions` | Manage tool approvals |
+| `/settings` | Manage general settings |
+| `/diff` | Show local git diff |
+| `/help` | Show command help |
 
-Run goal-enabled commands with `/goal/<command-name>`. The processed command content becomes the goal objective, so `$ARGUMENTS` and other command template features still apply.
+## Data Layout
 
-Skills can opt into goal mode with skill metadata:
-
-```md
----
-name: review-prs
-description: Review pull requests
-metadata:
-  goal: true
----
-
-Review PRs until all relevant candidates have been categorized.
-```
-
-Run goal-enabled skills with `/goal/<skill-name>`. Skill instructions become the goal objective; any extra arguments are included as context.
-
-### Keyboard shortcuts
-
-| Shortcut    | Action                                                          |
-| ----------- | --------------------------------------------------------------- |
-| `Ctrl+C`    | Interrupt current operation or clear input                      |
-| `Ctrl+C` ×2 | Exit (double-tap)                                               |
-| `Ctrl+D`    | Exit (when editor is empty)                                     |
-| `Ctrl+Z`    | Suspend process (`fg` to resume)                                |
-| `Alt+Z`     | Undo last clear                                                 |
-| `Ctrl+T`    | Toggle thinking blocks visibility                               |
-| `Ctrl+E`    | Expand/collapse all tool outputs                                |
-| `Enter`     | Send a message, or queue a follow-up while the agent is running |
-| `Ctrl+Y`    | Toggle YOLO mode                                                |
-
-## Configuration
-
-### Custom config directory
-
-By default, Mingyi Atlas reads and writes project config from `.mingyi-atlas/` and global config from `~/.mingyi-atlas/` plus `~/.config/mingyi-atlas/`.
-
-If you embed Mingyi Atlas programmatically, you can override that directory name with `createMingyiAtlas({ configDir: '.your-config-dir' })`.
-
-This remaps the project-level and global config locations that Mingyi Atlas uses for MCP server configs, hooks, slash commands, agent instructions, skills, and the legacy `database.json` lookup.
-
-```ts
-import { createMingyiAtlas } from '@mingyi-atlas/cli';
-
-const mingyiAtlas = await createMingyiAtlas({
-  configDir: '.acme-code',
-});
-```
-
-`configDir` must be a single directory name. Absolute paths, `.` / `..`, and names containing `/` or `\` are rejected.
-
-### Project-based threads
-
-Threads are automatically scoped to your project based on:
-
-1. Git remote URL (if available)
-2. Absolute path (fallback)
-
-This means conversations are shared across clones, worktrees, and SSH/HTTPS URLs of the same repository.
-
-### Data location
-
-Runtime data is stored in one branded directory:
+Global data:
 
 ```text
 ~/.mingyi-atlas/
@@ -209,110 +137,86 @@ Runtime data is stored in one branded directory:
   signals/
 ```
 
-### Authentication
-
-For **Anthropic** models, mingyi-atlas supports two authentication methods:
-
-1. **Claude Max OAuth (primary)**: Use `/login` to authenticate with a Claude Pro/Max subscription.
-2. **API key (fallback)**: Set the `ANTHROPIC_API_KEY` environment variable for direct API access. This is used when not logged in via OAuth.
-
-When both are available, Claude Max OAuth takes priority.
-
-For **other providers** (OpenAI, Google, etc.), set the corresponding environment variable (e.g., `OPENAI_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`) or use OAuth where supported.
-
-Credentials are stored alongside the database in `auth.json`.
-
-### Custom providers and models
-
-Use `/custom-providers` to manage OpenAI-compatible providers with:
-
-- provider `name`
-- provider `url`
-- optional provider `apiKey`
-- one or more custom model IDs per provider
-
-Once saved, provider models appear in existing selectors like `/models` and `/subagents` and can be selected like built-in models.
-
-Custom providers are stored in `settings.json` in the same app data directory. If you save an API key, it is stored locally in plaintext, so use a machine/user profile you trust.
-
-### macOS sleep prevention
-
-On macOS, Mingyi Atlas starts the built-in `caffeinate` utility while the agent is actively running, then stops it as soon as the run completes, errors, aborts, or the TUI exits. Idle sessions do not keep your machine awake.
-
-To disable this behavior, set `MINGYI_ATLAS_DISABLE_CAFFEINATE=1` before launching Mingyi Atlas:
-
-```bash
-export MINGYI_ATLAS_DISABLE_CAFFEINATE=1
-```
-
-### Plan persistence
-
-When you approve a plan (via `submit_plan`) or choose **Use as /goal** from the inline plan approval UI, it is saved as a markdown file in the app data directory:
+Project data:
 
 ```text
-~/.mingyi-atlas/plans/<resourceId>/
+<project>/.mingyi-atlas/
+  hooks.json
+  mcp.json
+  commands/
+  skills/
+  pentest/
 ```
 
-Files are named `<timestamp>-<slugified-title>.md` and contain the plan title, approval timestamp, and full plan body.
+The config directory can be overridden programmatically:
 
-To save plans to a project-local directory instead, set the `MASTRA_PLANS_DIR` environment variable:
+```ts
+import { createMingyiAtlas } from '@mingyi-atlas/cli';
 
-```bash
-export MASTRA_PLANS_DIR=.mingyi-atlas/plans
+const app = await createMingyiAtlas({
+  configDir: '.acme-agent',
+});
 ```
 
-## Architecture
+## Environment
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                          TUI                                │
-│  (pi-tui components: Editor, Markdown, Loader, etc.)        │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                        Harness                              │
-│  - Mode management (plan, build, review)                    │
-│  - Thread/message persistence                               │
-│  - Event system for TUI updates                             │
-│  - State management with Zod schemas                        │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      Mastra Agent                           │
-│  - Dynamic model selection                                  │
-│  - Tool execution (view, edit, bash)                        │
-│  - Memory integration                                       │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      LibSQL Storage                         │
-│  - Thread persistence                                       │
-│  - Message history                                          │
-│  - Token usage tracking                                     │
-└─────────────────────────────────────────────────────────────┘
-```
+Useful environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | Anthropic API key fallback |
+| `OPENAI_API_KEY` | OpenAI API key |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Google model API key |
+| `MINGYI_ATLAS_DISABLE_CAFFEINATE=1` | Disable macOS sleep prevention |
+| `MINGYI_ATLAS_ANALYTICS_DEBUG=1` | Print analytics debug events |
+| `MINGYI_ATLAS_CVE_CACHE_PATH` | Override CVE cache location |
+| `MASTRA_PLANS_DIR` | Override saved plan directory |
 
 ## Development
 
+Install dependencies:
+
 ```bash
-# Run in development mode (with watch)
-pnpm dev
+pnpm install
+```
 
-# Type check
-pnpm typecheck
+Run from source:
 
-# Build
+```bash
+pnpm cli
+```
+
+Check, test, and build:
+
+```bash
+pnpm check
+pnpm test:run
 pnpm build
 ```
 
-## Credits
+Run the publish gate:
 
-- [Mastra](https://mastra.ai): AI agent framework
-- [pi-mono](https://github.com/badlogic/pi-mono): TUI primitives and inspiration
-- [OpenCode](https://github.com/sst/opencode): OAuth provider patterns
+```bash
+pnpm prepublishOnly
+pnpm pack:check
+```
+
+## Publishing
+
+The package is published as `@mingyi-atlas/cli` and exposes one binary:
+
+```text
+mingyi-atlas -> dist/cli.js
+```
+
+Publish:
+
+```bash
+npm login
+npm publish --access public
+```
+
+The `@mingyi-atlas` npm scope must exist and your npm account must have publish access.
 
 ## License
 
