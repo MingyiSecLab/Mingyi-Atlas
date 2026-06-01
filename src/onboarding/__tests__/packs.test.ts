@@ -51,7 +51,7 @@ describe('getAvailableModePacks', () => {
       plan: 'github-copilot/gemini-2.5-pro',
       build: 'github-copilot/gpt-4.1',
       fast: 'github-copilot/grok-code-fast-1',
-      pentest: 'github-copilot/gemini-2.5-pro',
+      pentest: 'github-copilot/gpt-4.1',
     });
   });
 

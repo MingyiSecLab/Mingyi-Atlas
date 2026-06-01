@@ -494,7 +494,7 @@ describe('migrateLegacyVariedPack', () => {
       plan: 'openai/gpt-5.4',
       build: 'anthropic/claude-sonnet-4-5',
       fast: 'anthropic/claude-haiku-4-5',
-      pentest: 'openai/gpt-5.4',
+      pentest: 'anthropic/claude-sonnet-4-5',
     });
   });
 });

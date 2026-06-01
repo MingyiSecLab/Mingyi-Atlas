@@ -416,12 +416,13 @@ export async function createMingyiAtlas(config?: MingyiAtlasConfig) {
     pentestRemediationSubagent,
   ];
 
+  const defaultBuildModelId = 'anthropic/claude-opus-4-6';
   const defaultModes: HarnessMode<MingyiAtlasState>[] = [
     {
       id: 'build',
       name: 'Build',
       default: true,
-      defaultModelId: 'anthropic/claude-opus-4-6',
+      defaultModelId: defaultBuildModelId,
       color: mastra.green,
       agent: codeAgent,
     },
@@ -442,7 +443,7 @@ export async function createMingyiAtlas(config?: MingyiAtlasConfig) {
     {
       id: 'pentest',
       name: 'Pentest',
-      defaultModelId: 'openai/gpt-5.2-codex',
+      defaultModelId: defaultBuildModelId,
       color: mastra.blue,
       agent: codeAgent,
     },

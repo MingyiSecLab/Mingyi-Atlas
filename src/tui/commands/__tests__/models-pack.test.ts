@@ -376,6 +376,26 @@ describe('serializePack / deserializePack', () => {
     expect(deserializePack(`mastra-pack:${partialModels}`)).toBeNull();
   });
 
+  it('defaults legacy shared packs without pentest to the build model', () => {
+    const legacy = Buffer.from(
+      JSON.stringify({
+        name: 'Legacy',
+        models: {
+          build: 'legacy/build',
+          plan: 'legacy/plan',
+          fast: 'legacy/fast',
+        },
+      }),
+    ).toString('base64');
+
+    expect(deserializePack(`mastra-pack:${legacy}`)?.models).toEqual({
+      build: 'legacy/build',
+      plan: 'legacy/plan',
+      fast: 'legacy/fast',
+      pentest: 'legacy/build',
+    });
+  });
+
   it('trims whitespace from pasted input', () => {
     const serialized = serializePack(alphaPack);
     const padded = `  \n  ${serialized}  \n  `;

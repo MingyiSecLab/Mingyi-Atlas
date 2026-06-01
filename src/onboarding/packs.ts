@@ -102,7 +102,7 @@ export function getAvailableModePacks(
         build: 'github-copilot/gpt-4.1',
         plan: 'github-copilot/gemini-2.5-pro',
         fast: 'github-copilot/grok-code-fast-1',
-        pentest: 'github-copilot/gemini-2.5-pro',
+        pentest: 'github-copilot/gpt-4.1',
       },
     });
   }
@@ -117,7 +117,7 @@ export function getAvailableModePacks(
         build: cp.models.build ?? '',
         plan: cp.models.plan ?? '',
         fast: cp.models.fast ?? '',
-        pentest: cp.models.pentest ?? cp.models.plan ?? '',
+        pentest: cp.models.pentest ?? cp.models.build ?? '',
       },
     });
   }

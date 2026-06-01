@@ -56,7 +56,7 @@ export function deserializePack(input: string): ModePack | null {
     const build = typeof models.build === 'string' ? models.build : '';
     const plan = typeof models.plan === 'string' ? models.plan : '';
     const fast = typeof models.fast === 'string' ? models.fast : '';
-    const pentest = typeof models.pentest === 'string' ? models.pentest : plan;
+    const pentest = typeof models.pentest === 'string' ? models.pentest : build;
     if (!build || !plan || !fast) return null;
 
     return {
@@ -258,7 +258,7 @@ async function runCustomFlow(
     build: existing.build ?? '',
     plan: existing.plan ?? '',
     fast: existing.fast ?? '',
-    pentest: existing.pentest ?? existing.plan ?? '',
+    pentest: existing.pentest ?? existing.build ?? '',
   };
 
   for (const mode of modes) {
