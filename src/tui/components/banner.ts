@@ -79,7 +79,7 @@ export function renderBanner(version: string, appName?: string): string {
   const name = appName || DEFAULT_APP_NAME;
 
   const isDefaultBrand = name === DEFAULT_APP_NAME;
-  const isLegacyBrand = name === 'Mingyi Atlas';
+  const isLegacyBrand = name === 'Mastra Code' || name === 'Mastra';
 
   // Custom app names get the simple text format.
   if (!isDefaultBrand && !isLegacyBrand) {
@@ -95,7 +95,7 @@ export function renderBanner(version: string, appName?: string): string {
 
   // Select art based on available width
   const art = isLegacyBrand
-    ? cols >= 50
+    ? name === 'Mastra Code' && cols >= 50
       ? LEGACY_MASTRA_CODE_ART
       : LEGACY_MASTRA_ART
     : cols >= 56

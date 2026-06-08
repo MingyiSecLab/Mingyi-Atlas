@@ -33,6 +33,14 @@ describe('renderBanner', () => {
     expect(plain).toContain('▀');
   });
 
+  it('uses Mingyi Atlas art for the default brand', () => {
+    setColumns(80);
+    const result = renderBanner('0.2.0', 'Mingyi Atlas');
+    const plain = stripAnsi(result);
+    expect(plain).toContain('█▀▄▀█ █ █▄  █ █▀▀ █▄█ █');
+    expect(plain).not.toContain('█▀▄▀█ ▄▀█ █▀ ▀█▀ █▀█ ▄▀█   █▀▀ █▀█ █▀▄ █▀▀');
+  });
+
   it('includes the version string', () => {
     setColumns(80);
     const result = renderBanner('1.2.3');
@@ -69,11 +77,11 @@ describe('renderBanner', () => {
     expect(plain).not.toContain('█');
   });
 
-  it('keeps legacy Mingyi Atlas art when explicitly requested', () => {
+  it('keeps legacy Mastra Code art when explicitly requested', () => {
     setColumns(80);
-    const result = renderBanner('1.0.0', 'Mingyi Atlas');
+    const result = renderBanner('1.0.0', 'Mastra Code');
     const plain = stripAnsi(result);
-    expect(plain).toContain('█');
+    expect(plain).toContain('█▀▄▀█ ▄▀█ █▀ ▀█▀ █▀█ ▄▀█   █▀▀ █▀█ █▀▄ █▀▀');
     expect(plain).toContain('v1.0.0');
   });
 });
