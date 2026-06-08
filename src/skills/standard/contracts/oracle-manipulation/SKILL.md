@@ -81,7 +81,7 @@ contract Test_oracle is Test {
 }
 ```
 
-Decepticon helper:
+Atlas helper:
 ```
 foundry_oracle_test(target="LendingPool", price_feed="UniV2Pair",
                     token0="WETH", token1="TARGETTOKEN", target_path="src/LendingPool.sol")

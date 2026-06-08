@@ -41,7 +41,7 @@ Drive each dimension through one `ask_user_question` call (per CRITICAL_RULES #8
 
 ### Step 2: Generate roe.json
 
-Use the `RoE` schema from `decepticon.core.schemas`. Write to the engagement directory.
+Use the `RoE` schema from `atlas.core.schemas`. Write to the engagement directory.
 
 See `references/roe-example.json` for a complete example and `../references/schema-quick-reference.md` for all required fields and valid values.
 

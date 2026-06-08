@@ -26,7 +26,7 @@ Before starting any engagement, verify:
 2. **Infrastructure ready**:
    - [ ] Docker sandbox running with required tools
    - [ ] C2 server reachable if post-exploitation is in scope: `nc -z c2-sliver 31337` (gRPC port)
-   - [ ] Operator config exists: `/workspace/.sliver-configs/decepticon.cfg`
+   - [ ] Operator config exists: `/workspace/.sliver-configs/atlas.cfg`
    - [ ] Output directories created (`<engagement>/recon/`, `<engagement>/exploit/`, etc.)
 
 3. **If any document is missing**: Delegate to `soundwave` sub-agent first.

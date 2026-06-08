@@ -1,8 +1,8 @@
 # Schema Quick Reference
 
-All planning documents are defined as Pydantic models in `decepticon/core/schemas.py`. This reference summarizes the required fields and valid values for each schema so skills can generate valid documents without needing to read the source code directly.
+All planning documents are defined as Pydantic models in `atlas/core/schemas.py`. This reference summarizes the required fields and valid values for each schema so skills can generate valid documents without needing to read the source code directly.
 
-> **Source of truth**: `decepticon.core.schemas` — if this reference diverges from the code, the code wins.
+> **Source of truth**: `atlas.core.schemas` — if this reference diverges from the code, the code wins.
 
 ## RoE (Rules of Engagement)
 

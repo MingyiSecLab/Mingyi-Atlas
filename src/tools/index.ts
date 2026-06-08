@@ -3,6 +3,17 @@
  */
 
 export { createContextTools } from './context';
+export { cryptoAnalyzeTool } from './crypto-analyze';
+export { graphqlValidateTool } from './graphql-validate';
+export { hashAnalyzeTool } from './hash-analyze';
+export { jwtAnalyzeTool } from './jwt-analyze';
+export { oauthValidateTool } from './oauth-validate';
+export { requestSmugglingAssessTool } from './request-smuggling-assess';
+export { sqliProbeTool } from './sqli-probe';
+export { ssrfProbeTool } from './ssrf-probe';
+export { sstiProbeTool } from './ssti-probe';
+export { websocketValidateTool } from './websocket-validate';
+export { xxeProbeTool } from './xxe-probe';
 export { runBrowserCliTool } from './browser-runner';
 export { runContainerTool } from './container-runner';
 export { cveSearchTool } from './cve-search';

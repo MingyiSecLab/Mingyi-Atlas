@@ -115,7 +115,7 @@ nxc default (smb) > hosts
 nxc default (smb) > creds
 ```
 
-## 5. Decepticon integration
+## 5. Atlas integration
 
 When agent has any valid AD cred (recon or roast), the **first move
 should be `nxc smb` cred-sweep across the subnet**. It surfaces:
@@ -124,10 +124,10 @@ should be `nxc smb` cred-sweep across the subnet**. It surfaces:
 - Shares accessible (PII / cred farming)
 - OS version + domain membership
 
-Wrap as Decepticon tool:
+Wrap as Atlas tool:
 ```python
-# decepticon/tools/ad/netexec.py — skeleton
-from decepticon.tools.bash import bash_tool
+# atlas/tools/ad/netexec.py — skeleton
+from atlas.tools.bash import bash_tool
 
 def nxc_sweep(protocol: str, targets: str, user: str, pw_or_hash: str, modules: list[str] = None) -> dict:
     """Run nxc across targets; parse JSON output; promote findings to KG."""
@@ -166,7 +166,7 @@ nxc smb 10.0.0.0/24 -u alice -p $PW --local-auth | grep '(Pwn3d!)'
 
 ## Cross-references
 - Upstream: https://github.com/Pennyw0rth/NetExec
-- Decepticon AD overview: `skills/ad/SKILL.md`
+- Atlas AD overview: `skills/ad/SKILL.md`
 - BloodHound: `skills/ad/bloodhound-query/SKILL.md`
 - Kerberoast: `skills/ad/kerberoasting/SKILL.md`
 - ADCS ESC1-15: `skills/ad/adcs-esc1/SKILL.md`

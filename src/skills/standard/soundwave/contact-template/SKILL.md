@@ -79,4 +79,4 @@ Before writing `plan/contact.json`:
 
 ## Output
 
-Write to `plan/contact.json` validating against `decepticon.core.schemas.ContactPlan`.
+Write to `plan/contact.json` validating against `atlas.core.schemas.ContactPlan`.

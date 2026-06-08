@@ -71,4 +71,4 @@ Before writing `plan/abort.json`:
 
 ## Output
 
-Write to `plan/abort.json` validating against `decepticon.core.schemas.AbortPlan`.
+Write to `plan/abort.json` validating against `atlas.core.schemas.AbortPlan`.

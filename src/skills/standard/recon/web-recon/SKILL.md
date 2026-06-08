@@ -31,7 +31,7 @@ When the orchestrator passes challenge tags, skip straight to the matching sub-s
 | Tag | First action | Sub-skill to load |
 |-----|-------------|-------------------|
 | `sqli` | Fire a single error-triggering payload on every form/param | `/skills/standard/exploit/web/sqli/SKILL.md` recon section |
-| `ssti` | Probe every reflection point with `{{7*7}}` | `/skills/standard/exploit/web/ssti-exploitation-exploitation/SKILL.md` recon section |
+| `ssti` | Probe every reflection point with `{{7*7}}` | `/skills/standard/exploit/web/ssti-exploitation/SKILL.md` recon section |
 | `lfi` | Path-traversal probe on every file/path param | discovery.md |
 | `idor` | Enumerate object IDs on every user-data endpoint | api-enumeration.md |
 | `auth` | Map the full auth flow before other recon | auth-mapping.md |

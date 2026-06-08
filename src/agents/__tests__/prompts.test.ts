@@ -115,6 +115,30 @@ describe('buildFullPrompt', () => {
     expect(prompt).toContain('concrete, outcome-focused, verifiable, and bounded');
   });
 
+  it('describes pentest skills-as-workflow routing in pentest mode', () => {
+    const prompt = buildFullPrompt({
+      projectPath: '/tmp/project',
+      projectName: 'test-project',
+      gitBranch: 'main',
+      platform: 'darwin',
+      date: '2026-03-23',
+      mode: 'pentest',
+      activePlan: null,
+      modeId: 'pentest',
+      currentDate: '2026-03-23',
+      workingDir: '/tmp/project',
+      state: {
+        permissionRules: { tools: {} },
+      },
+    });
+
+    expect(prompt).toContain('Treat workflow skills as the first layer of pentest orchestration guidance');
+    expect(prompt).toContain('The agent remains the orchestrator');
+    expect(prompt).toContain('benchmark workflow skill');
+    expect(prompt).toContain('atlas workflow/orchestration/lifecycle skills');
+    expect(prompt).toContain('Do not wait for the harness to select a workflow in interactive TUI pentest mode');
+  });
+
   it('includes goal mode as a submit_plan approval option in plan mode', () => {
     const prompt = buildFullPrompt({
       projectPath: '/tmp/project',

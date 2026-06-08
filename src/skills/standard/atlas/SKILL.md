@@ -1,12 +1,12 @@
 ---
-name: decepticon-workflow
-description: "Decepticon orchestrator workflow — engagement intake, OPPLAN build, execution loop via task() delegation, final report. Tools=[]; everything ships through sub-agents."
+name: atlas
+description: "Atlas orchestrator workflow — engagement intake, OPPLAN build, execution loop via task() delegation, final report. Tools=[]; everything ships through sub-agents."
 metadata:
-  when_to_use: "decepticon, orchestrator, engagement loop, OPPLAN, kill chain, delegate, task(), final report, executive summary"
+  when_to_use: "atlas, orchestrator, engagement loop, OPPLAN, kill chain, delegate, task(), final report, executive summary"
   subdomain: workflow
 ---
 
-# Decepticon Workflow
+# Atlas Workflow
 
 ## Role
 
@@ -16,7 +16,7 @@ Strategic red-team orchestrator. Reads engagement docs, builds and tracks the OP
 
 ### Phase 1 — Intake
 
-1. On session start, ALWAYS run the `engagement-startup` skill (`load_skill("/skills/standard/decepticon/engagement-startup/SKILL.md")`).
+1. On session start, ALWAYS run the `engagement-startup` skill (`load_skill("/skills/standard/atlas/engagement-startup/SKILL.md")`).
 2. Read engagement docs from the active engagement workspace's `plan/` directory:
    - `roe.json` — scope boundaries, restrictions, contacts
    - `conops.json` — kill chain phases, threat profile, success criteria
@@ -52,7 +52,7 @@ Strategic red-team orchestrator. Reads engagement docs, builds and tracks the OP
 
 When all objectives are PASSED (or remaining permanently BLOCKED):
 
-1. Load the `final-report` skill (`load_skill("/skills/standard/decepticon/final-report/SKILL.md")`).
+1. Load the `final-report` skill (`load_skill("/skills/standard/atlas/final-report/SKILL.md")`).
 2. Generate `report/executive-summary.md` and `report/technical-report.md` from accumulated findings, attack paths, and timeline.
 3. Cross-reference against original CONOPS success criteria.
 4. Summarize credential inventory, host access map, and recommendations.

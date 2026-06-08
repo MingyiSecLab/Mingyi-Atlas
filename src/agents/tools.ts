@@ -8,19 +8,30 @@ import type { MingyiAtlasState } from '../schema';
 import {
   createFindingTools,
   createContextTools,
+  cryptoAnalyzeTool,
   cveSearchTool,
   detectAuthSchemeTool,
   detectCaptchaTool,
   extractJsEndpointsTool,
   generateReportTool,
+  graphqlValidateTool,
+  hashAnalyzeTool,
   createWebSearchTool,
   createWebExtractTool,
   hasTavilyKey,
   httpRequestTool,
+  jwtAnalyzeTool,
+  oauthValidateTool,
+  requestSmugglingAssessTool,
   requestSandboxAccessTool,
   runBrowserCliTool,
   runContainerTool,
+  sqliProbeTool,
+  ssrfProbeTool,
+  sstiProbeTool,
   validateDiscoveryTool,
+  websocketValidateTool,
+  xxeProbeTool,
 } from '../tools';
 
 /** Minimal shape for tools passed to createDynamicTools. */
@@ -80,6 +91,8 @@ export function createDynamicTools(
     // Only tools without a workspace equivalent remain here.
     const tools: Record<string, ToolLike> = {
       request_access: requestSandboxAccessTool,
+      crypto_analyze: cryptoAnalyzeTool,
+      hash_analyze: hashAnalyzeTool,
     };
 
     if (hasTavilyKey()) {
@@ -102,6 +115,15 @@ export function createDynamicTools(
       Object.assign(tools, createContextTools());
       Object.assign(tools, createFindingTools());
       tools.http_request = httpRequestTool;
+      tools.graphql_validate = graphqlValidateTool;
+      tools.websocket_validate = websocketValidateTool;
+      tools.jwt_analyze = jwtAnalyzeTool;
+      tools.oauth_validate = oauthValidateTool;
+      tools.sqli_probe = sqliProbeTool;
+      tools.ssti_probe = sstiProbeTool;
+      tools.ssrf_probe = ssrfProbeTool;
+      tools.xxe_probe = xxeProbeTool;
+      tools.request_smuggling_assess = requestSmugglingAssessTool;
       tools.run_browser_cli = runBrowserCliTool;
       tools.run_container_tool = runContainerTool;
       tools.cve_search = cveSearchTool;

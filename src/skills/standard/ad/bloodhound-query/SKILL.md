@@ -20,7 +20,7 @@ bloodhound-python -u USER -p 'PASS' -d DOMAIN -c all --zip --dns-tcp \
 If `bloodhound-python` errors on TLS, add `-gc gc.domain.local` for the
 global catalog FQDN.
 
-## 2. Ingest into Decepticon KG
+## 2. Ingest into Atlas KG
 ```
 bh_ingest_zip("/workspace/bh.zip")
 ```

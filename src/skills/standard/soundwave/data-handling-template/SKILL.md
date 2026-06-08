@@ -45,7 +45,7 @@ Default `"/workspace/<engagement>/evidence/"` works for sandbox-isolated engagem
 
 Set `compliance_frameworks` from the interview. Common entries: GDPR, HIPAA, PCI-DSS, SOC2, NIST 800-53, FedRAMP, ISO 27001.
 
-The orchestrator (Decepticon) reads this list and refuses to start objectives that violate the matching framework's evidence-handling rules.
+The orchestrator (Atlas) reads this list and refuses to start objectives that violate the matching framework's evidence-handling rules.
 
 ### Step 5: Purge Hard Cap
 
@@ -69,4 +69,4 @@ Before writing `plan/data-handling.json`:
 
 ## Output
 
-Write to `plan/data-handling.json` validating against `decepticon.core.schemas.DataHandlingPlan`.
+Write to `plan/data-handling.json` validating against `atlas.core.schemas.DataHandlingPlan`.

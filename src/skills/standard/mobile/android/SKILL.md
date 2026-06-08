@@ -213,7 +213,7 @@ tar xvf backup.tar
 - Custom SSL pinning (not via system trust store)
 
 ## Cross-references
-- Operator's `android-re` global skill (Decepticon-external)
+- Operator's `android-re` global skill (Atlas-external)
 - Reverser binary triage: `skills/reverser/triage/SKILL.md`
 - Cipher/key extraction: `skills/exploit/crypto-decode/SKILL.md`
 

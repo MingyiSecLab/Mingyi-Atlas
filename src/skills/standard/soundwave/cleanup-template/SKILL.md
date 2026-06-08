@@ -69,4 +69,4 @@ Before writing `plan/cleanup.json`:
 
 ## Output
 
-Write to `plan/cleanup.json` validating against `decepticon.core.schemas.CleanupPlan`.
+Write to `plan/cleanup.json` validating against `atlas.core.schemas.CleanupPlan`.

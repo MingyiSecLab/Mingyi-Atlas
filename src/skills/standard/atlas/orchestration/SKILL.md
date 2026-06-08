@@ -1,6 +1,6 @@
 ---
 name: orchestration
-description: "Decepticon orchestrator patterns — delegation, state management, adaptive re-planning, context handoff protocols."
+description: "Atlas orchestrator patterns — delegation, state management, adaptive re-planning, context handoff protocols."
 allowed-tools: Read
 metadata:
   subdomain: orchestration
@@ -9,7 +9,7 @@ metadata:
   mitre_attack: []
 ---
 
-# Decepticon Orchestration Patterns
+# Atlas Orchestration Patterns
 
 ## Delegation Protocol
 

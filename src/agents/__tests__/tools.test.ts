@@ -18,6 +18,7 @@ vi.mock('../../tools/index.js', () => ({
     get_finding: { description: 'get finding' },
     update_finding: { description: 'update finding' },
   }),
+  cryptoAnalyzeTool: { description: 'crypto analyze' },
   cveSearchTool: { description: 'cve search' },
   detectAuthSchemeTool: { description: 'detect auth scheme' },
   detectCaptchaTool: { description: 'detect captcha' },
@@ -25,12 +26,22 @@ vi.mock('../../tools/index.js', () => ({
   createWebExtractTool: () => ({ description: 'web extract' }),
   extractJsEndpointsTool: { description: 'extract js endpoints' },
   generateReportTool: { description: 'generate report' },
+  graphqlValidateTool: { description: 'graphql validate' },
+  hashAnalyzeTool: { description: 'hash analyze' },
   hasTavilyKey: () => false,
   httpRequestTool: { description: 'http request' },
+  jwtAnalyzeTool: { description: 'jwt analyze' },
+  oauthValidateTool: { description: 'oauth validate' },
+  requestSmugglingAssessTool: { description: 'request smuggling assess' },
   requestSandboxAccessTool: { description: 'request sandbox access' },
   runBrowserCliTool: { description: 'run browser cli' },
   runContainerTool: { description: 'run container tool' },
+  sqliProbeTool: { description: 'sqli probe' },
+  ssrfProbeTool: { description: 'ssrf probe' },
+  sstiProbeTool: { description: 'ssti probe' },
   validateDiscoveryTool: { description: 'validate discovery' },
+  websocketValidateTool: { description: 'websocket validate' },
+  xxeProbeTool: { description: 'xxe probe' },
 }));
 
 import { createDynamicTools } from '../tools.js';
@@ -75,6 +86,8 @@ describe('createDynamicTools', () => {
       requestContext: createRequestContext({ projectPath: process.cwd() }, 'build'),
     });
     expect(buildTools.report_finding).toBeUndefined();
+    expect(buildTools.crypto_analyze).toBeDefined();
+    expect(buildTools.hash_analyze).toBeDefined();
 
     const pentestTools = getDynamicTools({
       requestContext: createRequestContext({ projectPath: process.cwd() }, 'pentest'),
@@ -84,6 +97,17 @@ describe('createDynamicTools', () => {
     expect(pentestTools.get_finding).toBeDefined();
     expect(pentestTools.update_finding).toBeDefined();
     expect(pentestTools.http_request).toBeDefined();
+    expect(pentestTools.crypto_analyze).toBeDefined();
+    expect(pentestTools.hash_analyze).toBeDefined();
+    expect(pentestTools.graphql_validate).toBeDefined();
+    expect(pentestTools.websocket_validate).toBeDefined();
+    expect(pentestTools.jwt_analyze).toBeDefined();
+    expect(pentestTools.oauth_validate).toBeDefined();
+    expect(pentestTools.sqli_probe).toBeDefined();
+    expect(pentestTools.ssti_probe).toBeDefined();
+    expect(pentestTools.ssrf_probe).toBeDefined();
+    expect(pentestTools.xxe_probe).toBeDefined();
+    expect(pentestTools.request_smuggling_assess).toBeDefined();
     expect(pentestTools.run_browser_cli).toBeDefined();
     expect(pentestTools.run_container_tool).toBeDefined();
     expect(pentestTools.cve_search).toBeDefined();

@@ -28,5 +28,5 @@ Run through every item before presenting the RoE to the user.
 - [ ] `authorization_reference` is not empty
 
 ## Final
-- [ ] JSON validates against `decepticon.core.schemas.RoE`
+- [ ] JSON validates against `atlas.core.schemas.RoE`
 - [ ] Human-readable summary presented to user for confirmation
