@@ -2,6 +2,8 @@
 
 中文 | [English](README.en.md)
 
+![Mingyi Atlas](assets/logo_banner.png)
+
 Mingyi Atlas 是一个面向软件工程和授权安全评估的终端 AI Agent。它提供交互式 TUI、无头自动化、持久化项目上下文、内置技能、浏览器/容器辅助能力，以及专用的渗透测试模式。
 
 本项目发布为 `@mingyilab/mingyi-atlas`，并提供 `mingyi-atlas` 命令。
@@ -47,6 +49,16 @@ mingyi-atlas --prompt "Review the auth module and summarize risks"
 mingyi-atlas --mode pentest --prompt "Start an authorized assessment of https://example.test"
 ```
 
+## 界面预览
+
+![Mingyi Atlas 测试结果预览](assets/cli-0.png)
+
+![Mingyi Atlas 模式与工具](assets/cli-1.png)
+
+![Mingyi Atlas 渗透测试工作流](assets/cli-2.png)
+
+![Mingyi Atlas 任务执行结果](assets/cli-3.png)
+
 ## 核心特性
 
 - 交互式终端 UI，支持持久线程和项目级状态。
@@ -81,20 +93,22 @@ export GOOGLE_GENERATIVE_AI_API_KEY=...
 
 系统提供监督、侦察、漏洞分析、验证、报告和修复等专用子 Agent。侦察和漏洞分析子 Agent 可以使用离线/API/认证辅助工具进行发现和证据审查。验证子 Agent 可以使用有边界、非破坏性的探测工具进行范围内检查。报告和修复子 Agent 默认不会获得主动探测工具。
 
-安全工具包括：
+安全工具包：
 
-- `http_request`：用于范围内 HTTP 验证。
-- `crypto_analyze` 和 `hash_analyze`：用于离线编码/解码、摘要计算和哈希格式识别；不会破解哈希或恢复密钥。
-- `graphql_validate`、`websocket_validate`、`jwt_analyze` 和 `oauth_validate`：用于 API 与认证验证。
-- `sqli_probe`、`ssti_probe`、`ssrf_probe` 和 `xxe_probe`：用于有边界、非破坏性的漏洞信号检查。
-- `request_smuggling_assess`：用于被动/低风险的请求走私信号评估；不会发送畸形 TE/CL payload。
-- `detect_auth_scheme`：用于识别认证边界。
-- `detect_captcha`：用于检测 CAPTCHA 和机器人挑战，并提取人工输入相关选择器。
-- `extract_js_endpoints`：用于前端路由/API 发现。
-- `cve_search`：用于带缓存的本地/远程 CVE 查询。
-- `run_browser_cli`：用于任务范围内的浏览器自动化。
-- `run_container_tool`：用于容器化工具执行并捕获产物。
-- 结构化发现工具：用于报告、更新和复测发现。
+| 类别 | 工具 | 用途 | 安全边界 |
+| --- | --- | --- | --- |
+| HTTP 验证 | `http_request` | 范围内 HTTP 请求验证 | 仅面向授权目标和任务范围 |
+| 离线分析 | `crypto_analyze`、`hash_analyze` | 编码/解码、摘要计算、哈希格式识别 | 不破解哈希，不恢复密钥 |
+| API 与认证 | `graphql_validate`、`websocket_validate`、`jwt_analyze`、`oauth_validate` | API、协议和认证配置验证 | 以配置审查和低风险验证为主 |
+| 漏洞信号检查 | `sqli_probe`、`ssti_probe`、`ssrf_probe`、`xxe_probe` | SQL 注入、模板注入、SSRF、XXE 信号检查 | 有边界、非破坏性探测 |
+| 请求走私评估 | `request_smuggling_assess` | 被动/低风险请求走私信号评估 | 不发送畸形 TE/CL payload |
+| 认证边界识别 | `detect_auth_scheme` | 识别登录、认证和访问控制边界 | 仅做检测和归类 |
+| CAPTCHA 检测 | `detect_captcha` | 检测 CAPTCHA 和机器人挑战，提取人工输入相关选择器 | 不自动求解或绕过 CAPTCHA |
+| 前端发现 | `extract_js_endpoints` | 从前端资源提取路由和 API 端点 | 用于发现和审查，不执行攻击 |
+| CVE 查询 | `cve_search` | 带缓存的本地/远程 CVE 查询 | 只读查询 |
+| 浏览器自动化 | `run_browser_cli` | 任务范围内的浏览器自动化 | 遵循授权目标和工具审批 |
+| 容器工具 | `run_container_tool` | 容器化工具执行并捕获产物 | 隔离运行，保留执行产物 |
+| 发现管理 | 结构化发现工具 | 报告、更新和复测发现 | 面向证据整理和复核 |
 
 运行时渗透测试数据会按目标分桶保存：
 
@@ -239,4 +253,6 @@ npm publish --access public
 
 ## 许可证
 
-Apache-2.0
+Mingyi Atlas 社区版代码基于 [Apache License 2.0](LICENSE) 开源。
+
+Mingyi Atlas 名称、Logo 和相关品牌资产属于 MingyiLab，不随 Apache-2.0 授权。

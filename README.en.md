@@ -2,6 +2,8 @@
 
 [中文](README.md) | English
 
+![Mingyi Atlas](assets/logo_banner.png)
+
 Mingyi Atlas is a terminal AI agent for software engineering and authorized security assessment. It provides an interactive TUI, headless automation, persistent project context, built-in skills, browser/container helpers, and a dedicated pentest mode.
 
 The project is published as `@mingyilab/mingyi-atlas` and exposes the `mingyi-atlas` command.
@@ -47,6 +49,16 @@ Use pentest mode in headless automation:
 mingyi-atlas --mode pentest --prompt "Start an authorized assessment of https://example.test"
 ```
 
+## Preview
+
+![Mingyi Atlas test result preview](assets/cli-0.png)
+
+![Mingyi Atlas modes and tools](assets/cli-1.png)
+
+![Mingyi Atlas pentest workflow](assets/cli-2.png)
+
+![Mingyi Atlas task execution result](assets/cli-3.png)
+
 ## Core Features
 
 - Interactive terminal UI with persistent threads and project-scoped state.
@@ -81,20 +93,22 @@ Pentest mode uses skills as workflow guidance. For benchmark, CTF, and flag-capt
 
 Specialist subagents are available for supervision, recon, vulnerability analysis, validation, reporting, and remediation. Recon and vulnerability-analysis subagents can use offline/API/auth helpers for discovery and evidence review. The validation subagent can use the bounded probe tools for scoped, non-destructive checks. Reporting and remediation subagents do not receive active probe tools by default.
 
-Security tools include:
+Security toolkit:
 
-- `http_request` for scoped HTTP validation.
-- `crypto_analyze` and `hash_analyze` for offline encoding/decoding, digest calculation, and hash format identification. They do not crack hashes or recover keys.
-- `graphql_validate`, `websocket_validate`, `jwt_analyze`, and `oauth_validate` for API and authentication validation.
-- `sqli_probe`, `ssti_probe`, `ssrf_probe`, and `xxe_probe` for bounded, non-destructive vulnerability indicators.
-- `request_smuggling_assess` for passive/low-risk request-smuggling signal assessment. It does not send malformed TE/CL payloads.
-- `detect_auth_scheme` for authentication boundary detection.
-- `detect_captcha` for CAPTCHA and bot-challenge detection plus manual-entry selectors.
-- `extract_js_endpoints` for frontend route/API discovery.
-- `cve_search` for local/remote CVE lookup with cache support.
-- `run_browser_cli` for task-scoped browser automation.
-- `run_container_tool` for containerized tools with captured artifacts.
-- structured finding tools for reporting, updating, and retesting findings.
+| Category | Tools | Purpose | Safety boundary |
+| --- | --- | --- | --- |
+| HTTP validation | `http_request` | Scoped HTTP request validation | Authorized targets and task scope only |
+| Offline analysis | `crypto_analyze`, `hash_analyze` | Encoding/decoding, digest calculation, and hash format identification | Does not crack hashes or recover keys |
+| API and authentication | `graphql_validate`, `websocket_validate`, `jwt_analyze`, `oauth_validate` | API, protocol, and authentication configuration validation | Focused on configuration review and low-risk validation |
+| Vulnerability signal checks | `sqli_probe`, `ssti_probe`, `ssrf_probe`, `xxe_probe` | SQL injection, template injection, SSRF, and XXE signal checks | Bounded, non-destructive probes |
+| Request smuggling assessment | `request_smuggling_assess` | Passive/low-risk request-smuggling signal assessment | Does not send malformed TE/CL payloads |
+| Authentication boundary detection | `detect_auth_scheme` | Identify login, authentication, and access-control boundaries | Detection and classification only |
+| CAPTCHA detection | `detect_captcha` | Detect CAPTCHA and bot challenges, plus manual-entry selectors | Does not solve or bypass CAPTCHA |
+| Frontend discovery | `extract_js_endpoints` | Extract routes and API endpoints from frontend assets | Discovery and review only, no attack execution |
+| CVE lookup | `cve_search` | Cached local/remote CVE lookup | Read-only lookup |
+| Browser automation | `run_browser_cli` | Task-scoped browser automation | Follows authorized targets and tool approval |
+| Container tools | `run_container_tool` | Run containerized tools and capture artifacts | Isolated execution with retained artifacts |
+| Finding management | Structured finding tools | Report, update, and retest findings | Evidence organization and review |
 
 Runtime pentest data is target-bucketed:
 
@@ -239,4 +253,6 @@ The `@mingyilab` npm scope must exist and your npm account must have publish acc
 
 ## License
 
-Apache-2.0
+The Mingyi Atlas Community Edition code is open source under the [Apache License 2.0](LICENSE).
+
+The Mingyi Atlas name, logo, and related brand assets are owned by MingyiLab and are not licensed under Apache-2.0.
