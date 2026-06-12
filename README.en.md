@@ -71,6 +71,11 @@ mingyi-atlas --mode pentest --prompt "Start an authorized assessment of https://
 - Browser automation configuration through `/browser`.
 - Structured security context, findings, reports, and tool artifacts for pentest workflows.
 
+## Roadmap
+
+- Reverse Engineering Agent mode: assisted analysis workflows for binaries, firmware, mobile apps, and protocol samples.
+- APK Pentest Agent mode: authorized Android APK security assessment covering static analysis, exposed component review, sensitive configuration review, and report generation.
+
 ## Authentication
 
 Use `/login` for supported OAuth providers, or set provider API keys in the environment before launching the CLI.

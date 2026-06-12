@@ -71,6 +71,11 @@ mingyi-atlas --mode pentest --prompt "Start an authorized assessment of https://
 - 通过 `/browser` 配置浏览器自动化。
 - 为渗透测试工作流提供结构化安全上下文、发现、报告和工具产物。
 
+## 下一步计划
+
+- 逆向分析 Agent 模式：面向二进制、固件、移动应用和协议样本的辅助分析工作流。
+- APK 渗透 Agent 模式：面向授权 Android APK 安全评估，覆盖静态分析、组件暴露面梳理、敏感配置审查和报告生成。
+
 ## 认证
 
 可以使用 `/login` 登录支持 OAuth 的提供商，也可以在启动 CLI 前通过环境变量设置提供商 API Key。

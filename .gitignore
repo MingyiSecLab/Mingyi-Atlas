@@ -8,3 +8,4 @@ docs/
 dist/
 tests/
 node_modules/
+openspec/
