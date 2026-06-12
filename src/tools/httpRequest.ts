@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 import { getPentestContextPath, readPentestContext } from '../security/pentest/context.js';
 import { getPentestFindingsPath } from '../security/pentest/findings.js';
-import { resolvePentestProjectContext } from './pentest-target.js';
+import { resolvePentestProjectContext } from './pentestTarget.js';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 const MAX_TIMEOUT_MS = 30_000;

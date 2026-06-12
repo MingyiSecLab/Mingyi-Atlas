@@ -73,6 +73,8 @@ mingyi-atlas --mode pentest --prompt "Start an authorized assessment of https://
 
 ## Roadmap
 
+- Mastra Workflow integration: introduce reusable workflow orchestration for deterministic security-assessment flows such as recon, validation, report generation, and cleanup.
+- Workflow Tool integration: expose key workflows as clear, task-specific model tools so pentest mode and specialist subagents can choose them when the context fits.
 - Reverse Engineering Agent mode: assisted analysis workflows for binaries, firmware, mobile apps, and protocol samples.
 - APK Pentest Agent mode: authorized Android APK security assessment covering static analysis, exposed component review, sensitive configuration review, and report generation.
 

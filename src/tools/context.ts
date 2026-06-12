@@ -19,7 +19,7 @@ import {
   recordPentestScopeQueued,
   updatePentestRetestItemQueued,
 } from '../security/pentest/context.js';
-import { resolvePentestProjectContext, setActivePentestTarget } from './pentest-target.js';
+import { resolvePentestProjectContext, setActivePentestTarget } from './pentestTarget.js';
 
 function resolveContextPath(context: any, targets: Array<string | undefined> = []): string {
   const { projectRoot, configDir, targetSlug } = resolvePentestProjectContext(context, targets);

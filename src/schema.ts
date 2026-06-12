@@ -11,6 +11,7 @@ export interface MingyiAtlasState {
   configDir: string;
   gitBranch?: string;
   lastCommand?: string;
+  modeId?: string;
   currentModelId: string;
   subagentModelId?: string;
   observerModelId: string;
@@ -65,6 +66,7 @@ export const stateSchema = z.object({
   configDir: z.string().default(DEFAULT_CONFIG_DIR),
   gitBranch: z.string().optional(),
   lastCommand: z.string().optional(),
+  modeId: z.string().optional(),
   currentModelId: z.string().default(''),
   // Subagent model settings (per-thread/per-mode)
   subagentModelId: z.string().optional(), // Thread-level default for subagents

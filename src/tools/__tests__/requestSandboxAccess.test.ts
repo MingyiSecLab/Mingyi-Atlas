@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import { LocalFilesystem } from '@mastra/core/workspace';
 import { describe, expect, it, vi } from 'vitest';
 
-import { requestSandboxAccessTool } from '../request-sandbox-access.js';
+import { requestSandboxAccessTool } from '../requestSandboxAccess.js';
 
 function createMockLocalFilesystem() {
   const tmpDir = os.tmpdir();
@@ -13,15 +13,34 @@ function createMockLocalFilesystem() {
 }
 
 describe('request_access', () => {
+  it('suspends with sandbox access payload before approval is available', async () => {
+    const suspend = vi.fn();
+    const context = {
+      requestContext: {
+        get: () => undefined,
+      },
+      agent: {
+        suspend,
+      },
+    };
+
+    const result = await (requestSandboxAccessTool as any).execute(
+      { path: '/outside/project/dir', reason: 'need to read config' },
+      context,
+    );
+
+    expect(result).toBeUndefined();
+    expect(suspend).toHaveBeenCalledWith({
+      kind: 'sandbox_access_request',
+      path: '/outside/project/dir',
+      reason: 'need to read config',
+    }, undefined);
+  });
+
   it('calls setAllowedPaths on workspace filesystem when access is approved', async () => {
     const { fs, setAllowedPaths } = createMockLocalFilesystem();
 
     const mockHarnessCtx = {
-      emitEvent: vi.fn(),
-      registerQuestion: vi.fn(({ resolve }: { questionId: string; resolve: (answer: string) => void }) => {
-        // Simulate immediate user approval
-        resolve('yes');
-      }),
       getState: () => ({ sandboxAllowedPaths: [] }),
       setState: vi.fn(),
     };
@@ -33,6 +52,9 @@ describe('request_access', () => {
       workspace: {
         filesystem: fs,
       },
+      agent: {
+        resumeData: 'yes',
+      },
     };
 
     const result = await (requestSandboxAccessTool as any).execute(
@@ -42,6 +64,7 @@ describe('request_access', () => {
 
     expect(result.isError).toBe(false);
     expect(result.content).toContain('Access granted');
+    expect(mockHarnessCtx.setState).toHaveBeenCalledWith({ sandboxAllowedPaths: ['/outside/project/dir'] });
 
     // The key assertion: setAllowedPaths must be called mid-turn
     expect(setAllowedPaths).toHaveBeenCalledTimes(1);
@@ -57,10 +80,6 @@ describe('request_access', () => {
     const { fs, setAllowedPaths } = createMockLocalFilesystem();
 
     const mockHarnessCtx = {
-      emitEvent: vi.fn(),
-      registerQuestion: vi.fn(({ resolve }: { questionId: string; resolve: (answer: string) => void }) => {
-        resolve('no');
-      }),
       getState: () => ({ sandboxAllowedPaths: [] }),
       setState: vi.fn(),
     };
@@ -72,6 +91,9 @@ describe('request_access', () => {
       workspace: {
         filesystem: fs,
       },
+      agent: {
+        resumeData: 'no',
+      },
     };
 
     const result = await (requestSandboxAccessTool as any).execute(
@@ -81,14 +103,11 @@ describe('request_access', () => {
 
     expect(result.content).toContain('Access denied');
     expect(setAllowedPaths).not.toHaveBeenCalled();
+    expect(mockHarnessCtx.setState).not.toHaveBeenCalled();
   });
 
   it('works when workspace has no filesystem', async () => {
     const mockHarnessCtx = {
-      emitEvent: vi.fn(),
-      registerQuestion: vi.fn(({ resolve }: { questionId: string; resolve: (answer: string) => void }) => {
-        resolve('yes');
-      }),
       getState: () => ({ sandboxAllowedPaths: [] }),
       setState: vi.fn(),
     };
@@ -98,6 +117,9 @@ describe('request_access', () => {
         get: (key: string) => (key === 'harness' ? mockHarnessCtx : undefined),
       },
       workspace: {},
+      agent: {
+        resumeData: 'yes',
+      },
     };
 
     const result = await (requestSandboxAccessTool as any).execute(
@@ -114,10 +136,6 @@ describe('request_access', () => {
     const { fs, setAllowedPaths } = createMockLocalFilesystem();
 
     const mockHarnessCtx = {
-      emitEvent: vi.fn(),
-      registerQuestion: vi.fn(({ resolve }: { questionId: string; resolve: (answer: string) => void }) => {
-        resolve('yes');
-      }),
       getState: () => ({ sandboxAllowedPaths: [] }),
       setState: vi.fn(),
     };
@@ -128,6 +146,9 @@ describe('request_access', () => {
       },
       workspace: {
         filesystem: fs,
+      },
+      agent: {
+        resumeData: 'yes',
       },
     };
 
@@ -152,10 +173,6 @@ describe('request_access', () => {
 
   it('works when filesystem lacks setAllowedPaths method', async () => {
     const mockHarnessCtx = {
-      emitEvent: vi.fn(),
-      registerQuestion: vi.fn(({ resolve }: { questionId: string; resolve: (answer: string) => void }) => {
-        resolve('yes');
-      }),
       getState: () => ({ sandboxAllowedPaths: [] }),
       setState: vi.fn(),
     };
@@ -166,6 +183,9 @@ describe('request_access', () => {
       },
       workspace: {
         filesystem: {}, // no setAllowedPaths
+      },
+      agent: {
+        resumeData: 'yes',
       },
     };
 

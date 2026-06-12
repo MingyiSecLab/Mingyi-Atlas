@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateDiscoveryCoverage } from '../validate-discovery.js';
+import { validateDiscoveryCoverage } from '../validateDiscovery.js';
 
 describe('validateDiscoveryCoverage', () => {
   it('returns complete when discovery coverage has no major gaps', () => {

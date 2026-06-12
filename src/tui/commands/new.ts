@@ -3,6 +3,10 @@ import type { SlashCommandContext } from './types.js';
 export async function handleNewCommand(ctx: SlashCommandContext): Promise<void> {
   const { state } = ctx;
 
+  // Abort any in-flight stream so events from the old thread do not leak
+  // into the new conversation.
+  state.harness.abort();
+
   state.pendingNewThread = true;
   state.chatContainer.clear();
   state.pendingTools.clear();

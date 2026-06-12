@@ -12,6 +12,9 @@ const SELECTED_PREFIX = '→ ';
 const UNSELECTED_PREFIX = '  ';
 const CONTINUATION_PREFIX = '↳ ';
 const PREFIX_WIDTH = 2;
+const CHECKBOX_CHECKED = '[x] ';
+const CHECKBOX_UNCHECKED = '[ ] ';
+const CHECKBOX_WIDTH = 4;
 
 export class WrappingSelectList implements Component {
   private items: SelectItem[];
@@ -19,16 +22,20 @@ export class WrappingSelectList implements Component {
   private selectedIndex = 0;
   private maxVisible: number;
   private theme: SelectListTheme;
+  private multiSelect: boolean;
+  private checkedValues = new Set<string>();
 
   onSelect?: (item: SelectItem) => void;
   onCancel?: () => void;
   onSelectionChange?: (item: SelectItem) => void;
+  onConfirmMulti?: (items: SelectItem[]) => void;
 
-  constructor(items: SelectItem[], maxVisible: number, theme: SelectListTheme) {
+  constructor(items: SelectItem[], maxVisible: number, theme: SelectListTheme, multiSelect = false) {
     this.items = items;
     this.filteredItems = items;
     this.maxVisible = maxVisible;
     this.theme = theme;
+    this.multiSelect = multiSelect;
   }
 
   setFilter(filter: string): void {
@@ -85,7 +92,21 @@ export class WrappingSelectList implements Component {
     } else if (kb.matches(keyData, 'tui.select.down')) {
       this.selectedIndex = this.selectedIndex === this.filteredItems.length - 1 ? 0 : this.selectedIndex + 1;
       this.notifySelectionChange();
+    } else if (this.multiSelect && keyData === ' ') {
+      const current = this.filteredItems[this.selectedIndex];
+      if (current) {
+        if (this.checkedValues.has(current.value)) {
+          this.checkedValues.delete(current.value);
+        } else {
+          this.checkedValues.add(current.value);
+        }
+      }
     } else if (kb.matches(keyData, 'tui.select.confirm')) {
+      if (this.multiSelect) {
+        const checked = this.items.filter(item => this.checkedValues.has(item.value));
+        this.onConfirmMulti?.(checked);
+        return;
+      }
       const selected = this.filteredItems[this.selectedIndex];
       if (selected && this.onSelect) this.onSelect(selected);
     } else if (kb.matches(keyData, 'tui.select.cancel')) {
@@ -95,18 +116,25 @@ export class WrappingSelectList implements Component {
 
   private renderItem(item: SelectItem, isSelected: boolean, width: number): string[] {
     const labelText = this.getDisplayValue(item);
-    const labelWidth = Math.max(1, width - PREFIX_WIDTH);
+    const checkboxWidth = this.multiSelect ? CHECKBOX_WIDTH : 0;
+    const labelWidth = Math.max(1, width - PREFIX_WIDTH - checkboxWidth);
     const wrapped = wrapTextWithAnsi(labelText, labelWidth);
+    const checkbox = this.multiSelect
+      ? this.checkedValues.has(item.value)
+        ? CHECKBOX_CHECKED
+        : CHECKBOX_UNCHECKED
+      : '';
 
     if (wrapped.length === 0) {
       const prefix = isSelected ? SELECTED_PREFIX : UNSELECTED_PREFIX;
-      const rendered = `${prefix}`;
+      const rendered = `${prefix}${checkbox}`;
       return [isSelected ? this.theme.selectedText(rendered) : rendered];
     }
 
     return wrapped.map((chunk, index) => {
       const prefix = index === 0 ? (isSelected ? SELECTED_PREFIX : UNSELECTED_PREFIX) : CONTINUATION_PREFIX;
-      const rendered = `${prefix}${chunk}`;
+      const boxPart = index === 0 ? checkbox : ' '.repeat(checkbox.length);
+      const rendered = `${prefix}${boxPart}${chunk}`;
       if (isSelected) return this.theme.selectedText(rendered);
       if (prefix === CONTINUATION_PREFIX) return this.theme.description(rendered);
       return rendered;

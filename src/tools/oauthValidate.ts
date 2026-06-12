@@ -1,7 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 
-import { responseSummary, scopedFetch, scopeInput } from './api-validation-utils.js';
+import { responseSummary, scopedFetch, scopeInput } from './apiValidationUtils.js';
 
 const oauthInputSchema = z
   .object({

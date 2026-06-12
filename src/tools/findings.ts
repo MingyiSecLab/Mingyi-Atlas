@@ -13,7 +13,7 @@ import {
   reportPentestFindingQueued,
   updatePentestFindingQueued,
 } from '../security/pentest/findings.js';
-import { resolvePentestProjectContext } from './pentest-target.js';
+import { resolvePentestProjectContext } from './pentestTarget.js';
 
 function resolveFindingsPath(context: any, targets: Array<string | undefined> = []): string {
   const { projectRoot, configDir, targetSlug } = resolvePentestProjectContext(context, targets);

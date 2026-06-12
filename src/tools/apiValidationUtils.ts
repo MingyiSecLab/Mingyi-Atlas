@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks';
 import { z } from 'zod';
 
-import { getRecordedScopeHosts, isHostInScope } from './http-request.js';
+import { getRecordedScopeHosts, isHostInScope } from './httpRequest.js';
 
 export const DEFAULT_TIMEOUT_MS = 8_000;
 export const MAX_TIMEOUT_MS = 20_000;

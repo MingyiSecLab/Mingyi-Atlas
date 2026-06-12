@@ -1,7 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 
-import { isHttpUrl, MAX_QUERY_CHARS, responseSummary, scopedFetch, scopeInput } from './api-validation-utils.js';
+import { isHttpUrl, MAX_QUERY_CHARS, responseSummary, scopedFetch, scopeInput } from './apiValidationUtils.js';
 
 const graphqlInputSchema = z.object({
   endpoint: z.string().url().refine(isHttpUrl, 'Endpoint must be http:// or https://.'),

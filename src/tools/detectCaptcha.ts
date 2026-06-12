@@ -2,7 +2,7 @@ import { performance } from 'node:perf_hooks';
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 
-import { getRecordedScopeHosts, isHostInScope } from './http-request.js';
+import { getRecordedScopeHosts, isHostInScope } from './httpRequest.js';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 const MAX_TIMEOUT_MS = 30_000;

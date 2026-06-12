@@ -73,6 +73,8 @@ mingyi-atlas --mode pentest --prompt "Start an authorized assessment of https://
 
 ## 下一步计划
 
+- Mastra Workflow 接入：为侦察、验证、报告生成、清理等确定性安全评估流程引入可复用工作流编排。
+- Workflow Tool 接入：将关键工作流封装为语义清晰的模型工具，使 pentest mode 和专用子 Agent 能在合适上下文中自主选择调用。
 - 逆向分析 Agent 模式：面向二进制、固件、移动应用和协议样本的辅助分析工作流。
 - APK 渗透 Agent 模式：面向授权 Android APK 安全评估，覆盖静态分析、组件暴露面梳理、敏感配置审查和报告生成。
 

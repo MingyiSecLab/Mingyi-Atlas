@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractJsEndpointsFromContent } from '../extract-js-endpoints.js';
+import { extractJsEndpointsFromContent } from '../extractJsEndpoints.js';
 
 describe('extractJsEndpointsFromContent', () => {
   it('extracts endpoints from common JavaScript and HTML patterns', () => {

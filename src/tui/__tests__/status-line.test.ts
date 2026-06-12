@@ -1,8 +1,9 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
-const { visibleWidthMock, chalkRgbMock } = vi.hoisted(() => ({
+const { visibleWidthMock, chalkRgbMock, applyGradientSweepMock } = vi.hoisted(() => ({
   visibleWidthMock: vi.fn((value: string) => value.length),
   chalkRgbMock: vi.fn(),
+  applyGradientSweepMock: vi.fn((value: string) => value),
 }));
 
 vi.mock('@earendil-works/pi-tui', () => ({
@@ -32,7 +33,7 @@ vi.mock('chalk', () => {
 });
 
 vi.mock('../components/obi-loader.js', () => ({
-  applyGradientSweep: (value: string) => value,
+  applyGradientSweep: applyGradientSweepMock,
 }));
 
 vi.mock('../components/om-progress.js', () => ({
@@ -50,6 +51,9 @@ vi.mock('../theme.js', () => ({
     purple: '#8b5cf6',
     blue: '#3b82f6',
     specialGray: '#6b7280',
+  },
+  extendedColors: {
+    skyBlue: '#0ea5e9',
   },
   tintHex: (_color: string, _amount: number) => '#111111',
   getThemeMode: () => 'dark',
@@ -84,12 +88,15 @@ function createState() {
     memoryStatusLine: { setText: memorySetText },
     editor: {},
     gradientAnimator: undefined,
+    githubPrGradientAnimator: undefined,
+    githubPrPollingActive: false,
     modelAuthStatus: { hasAuth: true, apiKeyEnvVar: undefined },
     projectInfo: {
       rootPath: '/Users/tylerbarnes/code/mastra-ai/mastra--feat-mc-queueing-ux',
       gitBranch: 'feat/mc-queueing-ux',
     },
     pendingQueuedActions: [],
+    activeGithubPrSubscriptions: [],
     goalManager: { getGoal: vi.fn(() => null) },
     ui: { requestRender: vi.fn() },
   } as any;
@@ -101,6 +108,7 @@ describe('updateStatusLine', () => {
   beforeEach(() => {
     visibleWidthMock.mockClear();
     chalkRgbMock.mockClear();
+    applyGradientSweepMock.mockClear();
     process.stdout.columns = 200;
   });
 
@@ -128,6 +136,60 @@ describe('updateStatusLine', () => {
 
     const rendered = state.statusLine.setText.mock.calls[0]?.[0];
     expect(rendered).not.toContain('queued');
+  });
+
+  it('shows the active GitHub PR subscription beside the thread path', () => {
+    const state = createState();
+    state.activeGithubPrSubscriptions = [{ prNumber: 17439, lastNotificationPriority: 'medium' }];
+
+    updateStatusLine(state);
+
+    const rendered = state.statusLine.setText.mock.calls[0]?.[0];
+    expect(rendered).toContain('PR#17439');
+    expect(rendered).not.toContain('polling');
+  });
+
+  it('does not animate the GitHub PR subscription during unrelated agent activity', () => {
+    const state = createState();
+    state.activeGithubPrSubscriptions = [{ prNumber: 17439 }];
+    state.gradientAnimator = {
+      isRunning: vi.fn(() => true),
+      getOffset: vi.fn(() => 0.5),
+      getFadeProgress: vi.fn(() => 0),
+    };
+
+    updateStatusLine(state);
+
+    expect(applyGradientSweepMock).not.toHaveBeenCalledWith(
+      'PR#17439',
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    );
+  });
+
+  it('animates the GitHub PR subscription while GitHub polling is running', () => {
+    const state = createState();
+    state.activeGithubPrSubscriptions = [{ prNumber: 17439 }];
+    state.githubPrPollingActive = true;
+    state.githubPrGradientAnimator = {
+      isRunning: vi.fn(() => true),
+      getOffset: vi.fn(() => 0.5),
+      getFadeProgress: vi.fn(() => 0),
+    };
+
+    updateStatusLine(state);
+
+    expect(applyGradientSweepMock).toHaveBeenCalledWith('PR#17439', 0.5, '#0ea5e9', 0);
+  });
+
+  it('does not show GitHub PR status for unsubscribed threads', () => {
+    const state = createState();
+
+    updateStatusLine(state);
+
+    const rendered = state.statusLine.setText.mock.calls[0]?.[0];
+    expect(rendered).not.toContain('PR#');
   });
 
   it('preserves the gateway prefix when compacting gateway-backed model ids', () => {

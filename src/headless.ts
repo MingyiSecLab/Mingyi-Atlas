@@ -205,29 +205,43 @@ function autoResolve<TState extends Record<string, unknown>>(
   harness: Harness<TState>,
   event: HarnessEvent,
 ): { resolved: true; label: string; json: Record<string, unknown> } | { resolved: false } {
+  const respondToSuspension = (toolCallId: string, resumeData: unknown) => {
+    const responder = harness.respondToToolSuspension as (args: {
+      toolCallId: string;
+      resumeData: unknown;
+    }) => Promise<void>;
+    void responder({ toolCallId, resumeData });
+  };
+
   switch (event.type) {
-    case 'sandbox_access_request': {
-      harness.respondToQuestion({ questionId: event.questionId, answer: 'Yes' });
-      return { resolved: true, label: `[auto-approved sandbox] ${event.path}`, json: { ...event, autoApproved: true } };
+    case 'tool_suspended': {
+      const payload = (event.suspendPayload ?? {}) as Record<string, unknown>;
+      if (event.toolName === 'request_access' || payload.kind === 'sandbox_access_request') {
+        respondToSuspension(event.toolCallId, 'Yes');
+        return {
+          resolved: true,
+          label: `[auto-approved sandbox] ${String(payload.path ?? '')}`,
+          json: { ...event, autoApproved: true },
+        };
+      }
+      if (event.toolName === 'submit_plan') {
+        respondToSuspension(event.toolCallId, { action: 'approved' });
+        return {
+          resolved: true,
+          label: `[auto-approved plan] ${String(payload.title ?? '')}`,
+          json: { ...event, autoApproved: true },
+        };
+      }
+      respondToSuspension(event.toolCallId, 'Proceed with your best judgment. Do not ask further questions.');
+      return {
+        resolved: true,
+        label: `[auto-answered] ${truncate(String(payload.question ?? ''), 100)}`,
+        json: { ...event, autoAnswered: true },
+      };
     }
     case 'tool_approval_required': {
       harness.respondToToolApproval({ decision: 'approve' });
       return { resolved: true, label: `[auto-approved] ${event.toolName}`, json: { ...event, autoApproved: true } };
-    }
-    case 'ask_question': {
-      harness.respondToQuestion({
-        questionId: event.questionId,
-        answer: 'Proceed with your best judgment. Do not ask further questions.',
-      });
-      return {
-        resolved: true,
-        label: `[auto-answered] ${truncate(event.question, 100)}`,
-        json: { ...event, autoAnswered: true },
-      };
-    }
-    case 'plan_approval_required': {
-      void harness.respondToPlanApproval({ planId: event.planId, response: { action: 'approved' } });
-      return { resolved: true, label: `[auto-approved plan] ${event.title}`, json: { ...event, autoApproved: true } };
     }
     default:
       return { resolved: false };

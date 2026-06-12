@@ -7,11 +7,14 @@
 import { Box, getKeybindings, Input, SelectList, Spacer, Text } from '@earendil-works/pi-tui';
 import type { Focusable, SelectItem, Component, TUI } from '@earendil-works/pi-tui';
 import { theme, getSelectListTheme, getEditorTheme } from '../theme.js';
+import type { AskQuestionSelectionMode } from './ask-question-inline.js';
 import { MultilineInput } from './multiline-input.js';
+import { WrappingSelectList } from './wrapping-select-list.js';
 
 export interface AskQuestionDialogOptions {
   question: string;
   options?: Array<{ label: string; description?: string }>;
+  selectionMode?: AskQuestionSelectionMode;
   /**
    * Use a multiline editor for free-text input (Shift+Enter / \+Enter for new lines).
    * Defaults to false. Enable for prompts that legitimately want paragraph-length replies.
@@ -23,21 +26,24 @@ export interface AskQuestionDialogOptions {
   selectedOptionLabel?: string;
   tui?: TUI;
   onSubmit: (answer: string) => void;
+  onSubmitMulti?: (answers: string[]) => void;
   onCancel: () => void;
 }
 
 export class AskQuestionDialogComponent extends Box implements Focusable {
   private static readonly CUSTOM_RESPONSE_VALUE = '__custom_response__';
 
-  private selectList?: SelectList;
+  private selectList?: SelectList | WrappingSelectList;
   private input?: Input | MultilineInput;
   private tui?: TUI;
   private multiline = false;
+  private multiSelect = false;
   private allowEmptyInput = false;
   private defaultValue?: string;
   private allowCustomResponse = true;
   private selectedOptionLabel?: string;
   private onSubmit: (answer: string) => void;
+  private onSubmitMulti?: (answers: string[]) => void;
   private onCancel: () => void;
 
   /** Children added by buildSelectMode/buildInputMode, tracked for removal on mode switch */
@@ -56,9 +62,11 @@ export class AskQuestionDialogComponent extends Box implements Focusable {
     super(2, 1, text => theme.bg('overlayBg', text));
 
     this.onSubmit = options.onSubmit;
+    this.onSubmitMulti = options.onSubmitMulti;
     this.onCancel = options.onCancel;
     this.tui = options.tui;
     this.multiline = Boolean(options.multiline);
+    this.multiSelect = options.selectionMode === 'multi_select';
     this.allowEmptyInput = Boolean(options.allowEmptyInput);
     this.defaultValue = options.defaultValue;
     this.allowCustomResponse = options.allowCustomResponse ?? true;
@@ -87,34 +95,51 @@ export class AskQuestionDialogComponent extends Box implements Focusable {
       label: opt.description ? `  ${opt.label}  ${theme.fg('dim', opt.description)}` : `  ${opt.label}`,
     }));
 
-    if (this.allowCustomResponse) {
+    if (this.allowCustomResponse && !this.multiSelect) {
       items.push({
         value: AskQuestionDialogComponent.CUSTOM_RESPONSE_VALUE,
         label: `  ${theme.fg('dim', '✎ Custom response...')}`,
       });
     }
 
-    this.selectList = new SelectList(items, Math.min(items.length, 8), getSelectListTheme());
-    const selectedIndex = items.findIndex(item => item.value === this.selectedOptionLabel);
-    if (selectedIndex >= 0) this.selectList.setSelectedIndex(selectedIndex);
-
-    this.selectList.onSelect = (item: SelectItem) => {
-      if (item.value === AskQuestionDialogComponent.CUSTOM_RESPONSE_VALUE) {
-        this.switchToCustomInput();
-        return;
-      }
-      this.onSubmit(item.value);
-    };
-    this.selectList.onCancel = this.onCancel;
+    let hintText: string;
+    if (this.multiSelect) {
+      const list = new WrappingSelectList(items, Math.min(items.length, 8), getSelectListTheme(), true);
+      list.onConfirmMulti = (selected: SelectItem[]) => {
+        const values = selected.map(item => item.value);
+        if (this.onSubmitMulti) {
+          this.onSubmitMulti(values);
+        } else {
+          this.onSubmit(values.join(', '));
+        }
+      };
+      list.onCancel = this.onCancel;
+      this.selectList = list;
+      hintText = '  Space to toggle · Enter to confirm · Esc to skip';
+    } else {
+      const list = new SelectList(items, Math.min(items.length, 8), getSelectListTheme());
+      const selectedIndex = items.findIndex(item => item.value === this.selectedOptionLabel);
+      if (selectedIndex >= 0) list.setSelectedIndex(selectedIndex);
+      list.onSelect = (item: SelectItem) => {
+        if (item.value === AskQuestionDialogComponent.CUSTOM_RESPONSE_VALUE) {
+          this.switchToCustomInput();
+          return;
+        }
+        this.onSubmit(item.value);
+      };
+      list.onCancel = this.onCancel;
+      this.selectList = list;
+      hintText = '  ↑↓ to navigate · Enter to select · Esc to skip';
+    }
 
     this.modeChildren = [];
-    const selectChild = this.selectList;
+    const selectChild = this.selectList as Component;
     this.addChild(selectChild);
     this.modeChildren.push(selectChild);
     const spacer = new Spacer(1);
     this.addChild(spacer);
     this.modeChildren.push(spacer);
-    const hint = new Text(theme.fg('dim', '  ↑↓ to navigate · Enter to select · Esc to skip'), 0, 0);
+    const hint = new Text(theme.fg('dim', hintText), 0, 0);
     this.addChild(hint);
     this.modeChildren.push(hint);
   }

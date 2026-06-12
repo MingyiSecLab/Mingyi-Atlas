@@ -1,7 +1,7 @@
 import http from 'node:http';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { analyzeCaptcha, detectCaptchaTool } from '../detect-captcha.js';
+import { analyzeCaptcha, detectCaptchaTool } from '../detectCaptcha.js';
 
 let servers: http.Server[] = [];
 

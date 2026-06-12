@@ -15,9 +15,9 @@ import {
   pruneStaleBrowserContainers,
   type DockerCommandResult,
 } from '../security/shared/browser-container.js';
-import { validateContainerTargets } from './container-runner.js';
-import { getRecordedScopeHosts, scopeTargetsToHosts } from './http-request.js';
-import { resolvePentestProjectContext } from './pentest-target.js';
+import { validateContainerTargets } from './containerRunner.js';
+import { getRecordedScopeHosts, scopeTargetsToHosts } from './httpRequest.js';
+import { resolvePentestProjectContext } from './pentestTarget.js';
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 const MAX_TIMEOUT_MS = 10 * 60_000;

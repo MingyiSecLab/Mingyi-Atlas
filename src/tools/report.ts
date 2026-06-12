@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { getPentestContextPath, readPentestContext } from '../security/pentest/context.js';
 import { getPentestFindingsPath, readPentestFindings } from '../security/pentest/findings.js';
 import { pentestReportFormatSchema, writePentestReport } from '../security/pentest/report.js';
-import { resolvePentestProjectContext } from './pentest-target.js';
+import { resolvePentestProjectContext } from './pentestTarget.js';
 
 const generateReportInputSchema = z.object({
   title: z.string().min(1).optional(),

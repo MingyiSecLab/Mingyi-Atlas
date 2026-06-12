@@ -1,7 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 
-import { isHttpUrl, scopedFetch, scopeInput } from './api-validation-utils.js';
+import { isHttpUrl, scopedFetch, scopeInput } from './apiValidationUtils.js';
 
 const smugglingAssessSchema = z.object({
   url: z.string().url().refine(isHttpUrl, 'URL must be http:// or https://.'),

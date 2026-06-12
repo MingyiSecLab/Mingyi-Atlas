@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core/tools';
 
-import { getBaselineAndProbe, paramProbeSchema, responseSummary } from './api-validation-utils.js';
+import { getBaselineAndProbe, paramProbeSchema, responseSummary } from './apiValidationUtils.js';
 
 export const sstiProbeTool = createTool({
   id: 'ssti_probe',

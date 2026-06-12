@@ -1,9 +1,10 @@
 /**
  * Event handlers for interactive prompt events:
- * ask_question, sandbox_access_request, plan_approval_required.
+ * tool_suspended (ask_user / request_access / submit_plan).
  */
 import { savePlanToDisk } from '../../utils/plans.js';
 import { AskQuestionDialogComponent } from '../components/ask-question-dialog.js';
+import type { AskQuestionSelectionMode } from '../components/ask-question-inline.js';
 import { AskQuestionInlineComponent } from '../components/ask-question-inline.js';
 import { PlanApprovalInlineComponent } from '../components/plan-approval-inline.js';
 import { showModalOverlay } from '../overlay.js';
@@ -23,6 +24,14 @@ function processNextInlineQuestion(state: TUIState): void {
   }
 }
 
+function respondToSuspension(ctx: EventHandlerContext, toolCallId: string, resumeData: unknown): Promise<void> {
+  const responder = ctx.state.harness.respondToToolSuspension as (args: {
+    toolCallId: string;
+    resumeData: unknown;
+  }) => Promise<void>;
+  return responder({ toolCallId, resumeData });
+}
+
 /**
  * Handle an ask_question event from the ask_user tool.
  * Shows a dialog overlay and resolves the tool's pending promise.
@@ -32,9 +41,10 @@ function processNextInlineQuestion(state: TUIState): void {
  */
 export async function handleAskQuestion(
   ctx: EventHandlerContext,
-  questionId: string,
+  toolCallId: string,
   question: string,
   options?: Array<{ label: string; description?: string }>,
+  selectionMode?: AskQuestionSelectionMode,
 ): Promise<void> {
   const { state } = ctx;
 
@@ -42,7 +52,8 @@ export async function handleAskQuestion(
     if (state.options.inlineQuestions) {
       // Capture the current ask_user component reference now, before it can be
       // overwritten by a subsequent parallel tool call.
-      const askUserComponent = state.lastAskUserComponent;
+      const askUserComponent = state.pendingAskUserComponents?.get(toolCallId) ?? state.lastAskUserComponent;
+      state.pendingAskUserComponents?.delete(toolCallId);
 
       const activate = () => {
         try {
@@ -55,17 +66,24 @@ export async function handleAskQuestion(
             askUserComponent.activate({
               question,
               options,
+              selectionMode,
               multiline: true,
               tui: state.ui,
               onSubmit: answer => {
                 state.activeInlineQuestion = undefined;
-                state.harness.respondToQuestion({ questionId, answer });
+                void respondToSuspension(ctx, toolCallId, answer);
+                resolve();
+                processNextInlineQuestion(state);
+              },
+              onSubmitMulti: (answers: string[]) => {
+                state.activeInlineQuestion = undefined;
+                void respondToSuspension(ctx, toolCallId, answers);
                 resolve();
                 processNextInlineQuestion(state);
               },
               onCancel: () => {
                 state.activeInlineQuestion = undefined;
-                state.harness.respondToQuestion({ questionId, answer: '(skipped)' });
+                void respondToSuspension(ctx, toolCallId, '(skipped)');
                 resolve();
                 processNextInlineQuestion(state);
               },
@@ -78,16 +96,23 @@ export async function handleAskQuestion(
               {
                 question,
                 options,
+                selectionMode,
                 multiline: true,
                 onSubmit: answer => {
                   state.activeInlineQuestion = undefined;
-                  state.harness.respondToQuestion({ questionId, answer });
+                  void respondToSuspension(ctx, toolCallId, answer);
+                  resolve();
+                  processNextInlineQuestion(state);
+                },
+                onSubmitMulti: (answers: string[]) => {
+                  state.activeInlineQuestion = undefined;
+                  void respondToSuspension(ctx, toolCallId, answers);
                   resolve();
                   processNextInlineQuestion(state);
                 },
                 onCancel: () => {
                   state.activeInlineQuestion = undefined;
-                  state.harness.respondToQuestion({ questionId, answer: '(skipped)' });
+                  void respondToSuspension(ctx, toolCallId, '(skipped)');
                   resolve();
                   processNextInlineQuestion(state);
                 },
@@ -110,7 +135,7 @@ export async function handleAskQuestion(
         } catch {
           // Don't let ask_user errors crash the process — skip the question
           state.activeInlineQuestion = undefined;
-          state.harness.respondToQuestion({ questionId, answer: '(skipped)' });
+          void respondToSuspension(ctx, toolCallId, '(skipped)');
           resolve();
           processNextInlineQuestion(state);
         }
@@ -127,16 +152,22 @@ export async function handleAskQuestion(
       const dialog = new AskQuestionDialogComponent({
         question,
         options,
+        selectionMode,
         multiline: true,
         tui: state.ui,
         onSubmit: answer => {
           state.ui.hideOverlay();
-          state.harness.respondToQuestion({ questionId, answer });
+          void respondToSuspension(ctx, toolCallId, answer);
+          resolve();
+        },
+        onSubmitMulti: (answers: string[]) => {
+          state.ui.hideOverlay();
+          void respondToSuspension(ctx, toolCallId, answers);
           resolve();
         },
         onCancel: () => {
           state.ui.hideOverlay();
-          state.harness.respondToQuestion({ questionId, answer: '(skipped)' });
+          void respondToSuspension(ctx, toolCallId, '(skipped)');
           resolve();
         },
       });
@@ -157,7 +188,7 @@ export async function handleAskQuestion(
  */
 export async function handleSandboxAccessRequest(
   ctx: EventHandlerContext,
-  questionId: string,
+  toolCallId: string,
   requestedPath: string,
   reason: string,
 ): Promise<void> {
@@ -173,13 +204,13 @@ export async function handleSandboxAccessRequest(
           ],
           onSubmit: answer => {
             state.activeInlineQuestion = undefined;
-            state.harness.respondToQuestion({ questionId, answer });
+            void respondToSuspension(ctx, toolCallId, answer);
             resolve();
             processNextInlineQuestion(state);
           },
           onCancel: () => {
             state.activeInlineQuestion = undefined;
-            state.harness.respondToQuestion({ questionId, answer: 'No' });
+            void respondToSuspension(ctx, toolCallId, 'No');
             resolve();
             processNextInlineQuestion(state);
           },
@@ -217,7 +248,7 @@ export async function handleSandboxAccessRequest(
  * Handle a plan_approval_required event from the submit_plan tool.
  * Shows the plan inline with Approve/Reject/Request Changes options.
  */
-async function approvePlan(ctx: EventHandlerContext, planId: string, title: string, plan: string): Promise<void> {
+async function approvePlan(ctx: EventHandlerContext, toolCallId: string, title: string, plan: string): Promise<void> {
   const { state } = ctx;
   await state.harness.setState({
     activePlan: {
@@ -231,10 +262,7 @@ async function approvePlan(ctx: EventHandlerContext, planId: string, title: stri
     plan,
     resourceId: state.harness.getResourceId(),
   }).catch(() => {});
-  await state.harness.respondToPlanApproval({
-    planId,
-    response: { action: 'approved' },
-  });
+  await respondToSuspension(ctx, toolCallId, { action: 'approved' });
 }
 
 function formatPlanGoalObjective(title: string, plan: string): string {
@@ -243,20 +271,20 @@ function formatPlanGoalObjective(title: string, plan: string): string {
 
 export async function handlePlanApproval(
   ctx: EventHandlerContext,
-  planId: string,
+  toolCallId: string,
   title: string,
   plan: string,
 ): Promise<void> {
   const { state } = ctx;
   return new Promise(resolve => {
     const approvalOptions = {
-      planId,
+      toolCallId,
       title,
       plan,
       onApprove: async () => {
         state.activeInlinePlanApproval = undefined;
         state.ui.setFocus(state.editor);
-        await approvePlan(ctx, planId, title, plan);
+        await approvePlan(ctx, toolCallId, title, plan);
 
         // Fire a structured system-reminder signal to wake the freshly
         // switched-to default-mode agent. The signal echoes back as a
@@ -282,7 +310,7 @@ export async function handlePlanApproval(
       onGoal: async () => {
         state.activeInlinePlanApproval = undefined;
         state.ui.setFocus(state.editor);
-        await approvePlan(ctx, planId, title, plan);
+        await approvePlan(ctx, toolCallId, title, plan);
 
         // `approvePlan` waits for plan mode to idle before `startGoal` sends
         // the canonical goal reminder, so this starts a fresh build-mode run.
@@ -299,10 +327,7 @@ export async function handlePlanApproval(
       onReject: async (feedback?: string) => {
         state.activeInlinePlanApproval = undefined;
         state.ui.setFocus(state.editor);
-        await state.harness.respondToPlanApproval({
-          planId,
-          response: { action: 'rejected', feedback },
-        });
+        await respondToSuspension(ctx, toolCallId, { action: 'rejected', feedback });
         resolve();
       },
     };

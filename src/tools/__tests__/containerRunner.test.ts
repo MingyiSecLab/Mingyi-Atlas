@@ -6,7 +6,7 @@ import {
   containerToolInputSchema,
   normalizeContainerArgv,
   validateContainerTargets,
-} from '../container-runner.js';
+} from '../containerRunner.js';
 
 describe('run_container_tool helpers', () => {
   it('builds docker argv without using a shell command string', () => {

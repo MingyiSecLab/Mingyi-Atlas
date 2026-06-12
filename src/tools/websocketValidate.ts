@@ -2,7 +2,7 @@ import { performance } from 'node:perf_hooks';
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 
-import { isWebSocketUrl, MAX_MESSAGE_CHARS, rejectOutOfScope, scopeInput } from './api-validation-utils.js';
+import { isWebSocketUrl, MAX_MESSAGE_CHARS, rejectOutOfScope, scopeInput } from './apiValidationUtils.js';
 
 const websocketInputSchema = z.object({
   url: z.string().url().refine(isWebSocketUrl, 'URL must be ws:// or wss://.'),

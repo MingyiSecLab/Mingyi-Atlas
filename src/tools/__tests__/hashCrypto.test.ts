@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { cryptoAnalyzeTool } from '../crypto-analyze.js';
-import { hashAnalyzeTool } from '../hash-analyze.js';
+import { cryptoAnalyzeTool } from '../cryptoAnalyze.js';
+import { hashAnalyzeTool } from '../hashAnalyze.js';
 
 describe('hash and crypto analysis tools', () => {
   it('identifies common hash formats and computes digests offline', async () => {

@@ -42,6 +42,48 @@ export interface PendingSignalMessage {
   text: string;
   isInterjection?: boolean;
 }
+
+export interface GithubPrSubscriptionBadge {
+  owner?: string;
+  repo?: string;
+  prNumber: number;
+  lastSyncStatus?: string;
+  lastNotificationKind?: string;
+  lastNotificationPriority?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+export function getGithubPrSubscriptionsFromMetadata(
+  metadata: Record<string, unknown> | undefined,
+): GithubPrSubscriptionBadge[] {
+  const mastraMetadata = isRecord(metadata?.mastra) ? metadata.mastra : undefined;
+  const githubSignals = isRecord(mastraMetadata?.githubSignals) ? mastraMetadata.githubSignals : undefined;
+  const subscriptions = Array.isArray(githubSignals?.subscriptions) ? githubSignals.subscriptions : [];
+  const result: GithubPrSubscriptionBadge[] = [];
+
+  for (const subscription of subscriptions) {
+    if (!isRecord(subscription)) continue;
+    const prNumber = typeof subscription.number === 'number' ? subscription.number : undefined;
+    if (!prNumber) continue;
+    result.push({
+      prNumber,
+      ...(typeof subscription.owner === 'string' ? { owner: subscription.owner } : {}),
+      ...(typeof subscription.repo === 'string' ? { repo: subscription.repo } : {}),
+      ...(typeof subscription.lastSyncStatus === 'string' ? { lastSyncStatus: subscription.lastSyncStatus } : {}),
+      ...(typeof subscription.lastNotificationKind === 'string'
+        ? { lastNotificationKind: subscription.lastNotificationKind }
+        : {}),
+      ...(typeof subscription.lastNotificationPriority === 'string'
+        ? { lastNotificationPriority: subscription.lastNotificationPriority }
+        : {}),
+    });
+  }
+
+  return result.sort((a, b) => a.prNumber - b.prNumber);
+}
 // =============================================================================
 // MastraTUIOptions
 // =============================================================================
@@ -150,6 +192,8 @@ export interface TUIState {
   pendingNewThread: boolean;
   /** Current thread title (for display in status line) */
   currentThreadTitle?: string;
+  /** GitHub PR subscriptions for the current thread. */
+  activeGithubPrSubscriptions: GithubPrSubscriptionBadge[];
   /** Cached thread previews for the current TUI session */
   threadPreviewCache: Map<string, { preview: string; updatedAt: number }>;
   /** Threads whose preview lookup already returned empty during this session */
@@ -189,6 +233,8 @@ export interface TUIState {
   statusLine?: Text;
   memoryStatusLine?: Text;
   modelAuthStatus: { hasAuth: boolean; apiKeyEnvVar?: string };
+  githubPrGradientAnimator?: GradientAnimator;
+  githubPrPollingActive: boolean;
 
   // ── Observational Memory ──────────────────────────────────────────────
   omProgressComponent?: OMProgressComponent;
@@ -291,6 +337,7 @@ export function createTUIState(options: MastraTUIOptions): TUIState {
     // Thread / conversation
     pendingNewThread: false,
     currentThreadTitle: undefined,
+    activeGithubPrSubscriptions: [],
     threadPreviewCache: new Map(),
     attemptedThreadPreviewIds: new Set(),
 
@@ -310,6 +357,7 @@ export function createTUIState(options: MastraTUIOptions): TUIState {
     // Status line
     projectInfo: detectProject(process.cwd()),
     modelAuthStatus: { hasAuth: true },
+    githubPrPollingActive: false,
 
     // Goal loop
     goalManager: new GoalManager(),

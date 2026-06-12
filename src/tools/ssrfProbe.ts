@@ -1,7 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 
-import { getBaselineAndProbe, isHttpUrl, paramProbeSchema, rejectOutOfScope, responseSummary } from './api-validation-utils.js';
+import { getBaselineAndProbe, isHttpUrl, paramProbeSchema, rejectOutOfScope, responseSummary } from './apiValidationUtils.js';
 
 const ssrfProbeSchema = paramProbeSchema.extend({
   probeUrl: z.string().url().refine(isHttpUrl, 'probeUrl must be http:// or https://.'),

@@ -8,6 +8,8 @@ vi.mock('../../tools/index.js', () => ({
   createWebExtractTool: () => ({ description: 'web extract' }),
   hasTavilyKey: () => false,
   requestSandboxAccessTool: { description: 'request sandbox access' },
+  cryptoAnalyzeTool: { description: 'crypto analyze' },
+  hashAnalyzeTool: { description: 'hash analyze' },
 }));
 
 import { getToolCategory } from '../../permissions.js';

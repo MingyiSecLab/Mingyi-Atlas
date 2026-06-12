@@ -6,7 +6,7 @@ import {
   ensureBrowserOutputFilename,
   normalizeBrowserArgv,
   validateBrowserTargets,
-} from '../browser-runner.js';
+} from '../browserRunner.js';
 
 describe('run_browser_cli helpers', () => {
   it('requires targets to be inside scope', () => {

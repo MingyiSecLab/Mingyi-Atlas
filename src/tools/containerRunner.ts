@@ -7,8 +7,8 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 
 import { getPentestFindingsPath } from '../security/pentest/findings.js';
-import { getRecordedScopeHosts, isHostInScope, scopeTargetsToHosts } from './http-request.js';
-import { resolvePentestProjectContext } from './pentest-target.js';
+import { getRecordedScopeHosts, isHostInScope, scopeTargetsToHosts } from './httpRequest.js';
+import { resolvePentestProjectContext } from './pentestTarget.js';
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 const MAX_TIMEOUT_MS = 10 * 60_000;

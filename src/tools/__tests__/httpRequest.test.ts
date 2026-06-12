@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { recordPentestScope } from '../../security/pentest/context.js';
 import { getPentestContextPath } from '../../security/pentest/context.js';
-import { getRecordedScopeHosts, httpRequestTool, isHostInScope, scopeTargetsToHosts } from '../http-request.js';
+import { getRecordedScopeHosts, httpRequestTool, isHostInScope, scopeTargetsToHosts } from '../httpRequest.js';
 
 let tempDirs: string[] = [];
 let servers: http.Server[] = [];

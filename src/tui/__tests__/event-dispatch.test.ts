@@ -190,14 +190,14 @@ describe('dispatchEvent thread lifecycle', () => {
 });
 
 describe('dispatchEvent task updates', () => {
-  it('uses recorded task insertion index when rendering completed tasks', async () => {
+  it('does not render a duplicate completed task list when all tasks complete', async () => {
     const tasks = [{ id: 'task-1', content: 'Task 1', status: 'completed' as const, activeForm: 'Completing task 1' }];
     const state = createMockTUIState(createMockHarness());
     const ectx = createMockEctx();
 
     await dispatchEvent({ type: 'task_updated', tasks }, ectx, state);
 
-    expect(ectx.renderCompletedTasksInline).toHaveBeenCalledWith(tasks, 5, true);
+    expect(ectx.renderCompletedTasksInline).not.toHaveBeenCalled();
     expect(state.taskToolInsertIndex).toBe(-1);
   });
 

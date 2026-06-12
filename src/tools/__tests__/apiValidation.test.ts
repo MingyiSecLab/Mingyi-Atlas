@@ -2,9 +2,9 @@ import http from 'node:http';
 import { Buffer } from 'node:buffer';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { graphqlValidateTool } from '../graphql-validate.js';
-import { jwtAnalyzeTool } from '../jwt-analyze.js';
-import { sqliProbeTool } from '../sqli-probe.js';
+import { graphqlValidateTool } from '../graphqlValidate.js';
+import { jwtAnalyzeTool } from '../jwtAnalyze.js';
+import { sqliProbeTool } from '../sqliProbe.js';
 
 let servers: http.Server[] = [];
 

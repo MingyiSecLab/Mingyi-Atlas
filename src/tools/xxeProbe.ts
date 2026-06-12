@@ -1,7 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 
-import { isHttpUrl, responseSummary, scopedFetch, scopeInput } from './api-validation-utils.js';
+import { isHttpUrl, responseSummary, scopedFetch, scopeInput } from './apiValidationUtils.js';
 
 const xxeProbeSchema = z.object({
   url: z.string().url().refine(isHttpUrl, 'URL must be http:// or https://.'),

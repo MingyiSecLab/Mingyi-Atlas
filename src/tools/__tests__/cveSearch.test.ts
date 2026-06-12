@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { cveSearchInputSchema, executeCveSearch } from '../cve-search.js';
+import { cveSearchInputSchema, executeCveSearch } from '../cveSearch.js';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
