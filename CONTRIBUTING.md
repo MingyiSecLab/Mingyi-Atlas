@@ -72,9 +72,9 @@ Pentest mode is for authorized testing only.
 
 - New active validation tools should only be exposed in `modeId === 'pentest'`.
 - Update `src/agents/prompts/pentest.ts` with usage rules and safety boundaries.
-- Update pentest subagent tool groups in `src/agents/subagents/pentest/skill-tools.ts`.
-- Give tools only to the subagents that need them. Recon and analysis should not receive active probe tools unless there is a clear reason.
-- Add or update `src/agents/subagents/pentest/__tests__/index.test.ts` and `src/agents/__tests__/tools.test.ts`.
+- Update specialized subagent tool groups in `src/agents/subagents/specialized/shared/toolProfiles.ts`.
+- Give tools only to the subagents that need them. Attack-surface and analysis specialists should not receive active probe tools unless there is a clear reason.
+- Add or update `src/agents/subagents/specialized/__tests__/index.test.ts` and `src/agents/__tests__/tools.test.ts`.
 
 ## Skill and Workflow Contributions
 

@@ -1,6 +1,6 @@
 /**
  * Inline plan approval component.
- * Shows a submitted plan as rendered markdown with Approve/Reject/Request Changes options
+ * Shows a submitted plan as rendered markdown with approval options
  * directly in the conversation flow.
  */
 
@@ -98,7 +98,7 @@ export class PlanApprovalInlineComponent extends Container implements Focusable 
     const component = new PlanApprovalInlineComponent(
       {
         toolCallId: '',
-        title: 'Untitled plan',
+        title: '未命名计划',
         plan: '',
         onApprove: () => {},
         onGoal: () => {},
@@ -131,7 +131,7 @@ export class PlanApprovalInlineComponent extends Container implements Focusable 
     if (!args || typeof args !== 'object' || this.resolved) return;
     const partial = args as { title?: unknown; plan?: unknown };
     if (typeof partial.title === 'string') {
-      this.planTitle = partial.title || 'Untitled plan';
+      this.planTitle = partial.title || '未命名计划';
     }
     if (typeof partial.plan === 'string') {
       this.planContent = partial.plan;
@@ -151,19 +151,19 @@ export class PlanApprovalInlineComponent extends Container implements Focusable 
     const items: SelectItem[] = [
       {
         value: 'approve',
-        label: `  ${theme.fg('success', 'Approve')} ${theme.fg('dim', '— switch to Build mode and implement')}`,
+        label: `  ${theme.fg('success', '批准并执行')} ${theme.fg('dim', '- 切换到 Build 模式并开始实现')}`,
       },
       {
         value: 'goal',
-        label: `  ${theme.fg('success', 'Use as /goal')} ${theme.fg('dim', '— switch to Build mode and pursue this plan')}`,
+        label: `  ${theme.fg('success', '设为 /goal')} ${theme.fg('dim', '- 切换到 Build 模式并持续执行该计划')}`,
       },
       {
         value: 'reject',
-        label: `  ${theme.fg('error', 'Reject')} ${theme.fg('dim', '— stay in Plan mode')}`,
+        label: `  ${theme.fg('error', '拒绝')} ${theme.fg('dim', '- 留在 Plan 模式')}`,
       },
       {
         value: 'edit',
-        label: `  ${theme.fg('warning', 'Request changes')} ${theme.fg('dim', '— provide feedback')}`,
+        label: `  ${theme.fg('warning', '要求修改')} ${theme.fg('dim', '- 填写修改意见')}`,
       },
     ];
 
@@ -178,7 +178,7 @@ export class PlanApprovalInlineComponent extends Container implements Focusable 
 
     this.contentBox.addChild(this.selectList);
     this.contentBox.addChild(new Spacer(1));
-    this.contentBox.addChild(new Text(theme.fg('dim', 'Up/Down navigate  Enter select  Esc reject'), 0, 0));
+    this.contentBox.addChild(new Text(theme.fg('dim', '上下键选择  Enter 确认  Esc 拒绝'), 0, 0));
   }
 
   private renderStreaming(): void {
@@ -187,11 +187,11 @@ export class PlanApprovalInlineComponent extends Container implements Focusable 
     this.feedbackInput = undefined;
     this.renderPlanHeader();
     this.renderPlanContent();
-    this.contentBox.addChild(new Text(theme.fg('dim', 'Submitting plan…'), 0, 0));
+    this.contentBox.addChild(new Text(theme.fg('dim', '正在提交计划...'), 0, 0));
   }
 
   private renderPlanHeader(prefix = ''): void {
-    this.contentBox.addChild(new Text(`${prefix}${theme.bold(theme.fg('accent', `Plan: ${this.planTitle}`))}`, 0, 0));
+    this.contentBox.addChild(new Text(`${prefix}${theme.bold(theme.fg('accent', `计划：${this.planTitle}`))}`, 0, 0));
     this.contentBox.addChild(new Spacer(1));
   }
 
@@ -202,7 +202,7 @@ export class PlanApprovalInlineComponent extends Container implements Focusable 
 
   private renderFeedback(feedback?: string): void {
     if (!feedback) return;
-    this.contentBox.addChild(new Text(theme.fg('warning', `Requested changes: ${feedback}`), 0, 0));
+    this.contentBox.addChild(new Text(theme.fg('warning', `修改意见：${feedback}`), 0, 0));
     this.contentBox.addChild(new Spacer(1));
   }
 
@@ -228,21 +228,21 @@ export class PlanApprovalInlineComponent extends Container implements Focusable 
   private handleApprove(): void {
     if (this.resolved) return;
     this.resolved = true;
-    this.showResult('Approved', true);
+    this.showResult('已批准', true);
     this.onApprove?.();
   }
 
   private handleGoal(): void {
     if (this.resolved) return;
     this.resolved = true;
-    this.showResult('Set as goal', true);
+    this.showResult('已设为目标', true);
     this.onGoal?.();
   }
 
   private handleReject(feedback?: string): void {
     if (this.resolved) return;
     this.resolved = true;
-    this.showResult(feedback ? 'Changes requested' : 'Rejected', false, feedback);
+    this.showResult(feedback ? '已要求修改' : '已拒绝', false, feedback);
     this.onReject?.(feedback);
   }
 
@@ -254,7 +254,7 @@ export class PlanApprovalInlineComponent extends Container implements Focusable 
     this.renderPlanHeader();
     this.renderPlanContent();
 
-    this.contentBox.addChild(new Text(theme.fg('accent', 'Provide feedback for revision:'), 0, 0));
+    this.contentBox.addChild(new Text(theme.fg('accent', '请输入修改意见：'), 0, 0));
     this.contentBox.addChild(new Spacer(1));
 
     this.feedbackInput = new Input();
@@ -270,7 +270,7 @@ export class PlanApprovalInlineComponent extends Container implements Focusable 
     this.contentBox.addChild(this.feedbackInput);
     this.contentBox.addChild(new Spacer(1));
     this.contentBox.addChild(
-      new Text(theme.fg('dim', 'Enter to submit feedback  Esc to reject without feedback'), 0, 0),
+      new Text(theme.fg('dim', 'Enter 提交意见  Esc 直接拒绝'), 0, 0),
     );
     this.ui.requestRender(true);
   }
@@ -325,9 +325,9 @@ export class PlanResultComponent extends Container {
     this.addChild(contentBox);
 
     const icon = options.isApproved ? theme.fg('success', '✓') : theme.fg('error', '✗');
-    const status = options.isApproved ? 'Approved' : options.feedback ? 'Changes requested' : 'Rejected';
+    const status = options.isApproved ? '已批准' : options.feedback ? '已要求修改' : '已拒绝';
 
-    contentBox.addChild(new Text(theme.bold(theme.fg('accent', `Plan: ${options.title}`)), 0, 0));
+    contentBox.addChild(new Text(theme.bold(theme.fg('accent', `计划：${options.title}`)), 0, 0));
     contentBox.addChild(new Spacer(1));
     contentBox.addChild(new PlanContentBox(options.plan));
     contentBox.addChild(new Spacer(1));
@@ -335,7 +335,7 @@ export class PlanResultComponent extends Container {
     contentBox.addChild(new Spacer(1));
 
     if (options.feedback) {
-      contentBox.addChild(new Text(theme.fg('warning', `Requested changes: ${options.feedback}`), 0, 0));
+      contentBox.addChild(new Text(theme.fg('warning', `修改意见：${options.feedback}`), 0, 0));
       contentBox.addChild(new Spacer(1));
     }
   }

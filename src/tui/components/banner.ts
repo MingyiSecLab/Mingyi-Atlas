@@ -1,6 +1,6 @@
 /**
  * ASCII art banner for the TUI header.
- * Renders the Mingyi Atlas brand in block-letter art with a green gradient.
+ * Renders the Mingyi Atlas brand with responsive terminal art.
  */
 import chalk from 'chalk';
 
@@ -8,14 +8,29 @@ import { theme } from '../theme.js';
 
 const DEFAULT_APP_NAME = 'Mingyi Atlas';
 
-// Brand green gradient stops (left to right)
-const GRADIENT_STOPS = ['#085314', '#0d8020', '#16c858', '#62f69d', '#a1fac7'];
+// Brand gradient stops (left to right). The wider palette gives the banner a
+// sharper red-team / cyber map feel while staying readable on dark terminals.
+const GRADIENT_STOPS = ['#0b2f1d', '#11a63f', '#39ff88', '#22d3ee', '#7c3aed'];
 
-// Full "MINGYI ATLAS" banner.
+// Full "MINGYI ATLAS" banner for wide terminals.
 const FULL_ART = [
-  '█▀▄▀█ █ █▄  █ █▀▀ █▄█ █   ▄▀█ ▀█▀ █   ▄▀█ █▀',
-  '█ ▀ █ █ █ ▀▄█ █▄█  █  █   █▀█  █  █   █▀█ ▀█',
-  '▀   ▀ ▀ ▀  ▀ ▀▀▀  ▀  ▀   ▀ ▀  ▀  ▀▀▀ ▀ ▀ ▀▀',
+  '███╗   ███╗██╗███╗   ██╗ ██████╗ ██╗   ██╗██╗     █████╗ ████████╗██╗      █████╗ ███████╗',
+  '████╗ ████║██║████╗  ██║██╔════╝ ╚██╗ ██╔╝██║    ██╔══██╗╚══██╔══╝██║     ██╔══██╗██╔════╝',
+  '██╔████╔██║██║██╔██╗ ██║██║  ███╗ ╚████╔╝ ██║    ███████║   ██║   ██║     ███████║███████╗',
+  '██║╚██╔╝██║██║██║╚██╗██║██║   ██║  ╚██╔╝  ██║    ██╔══██║   ██║   ██║     ██╔══██║╚════██║',
+  '██║ ╚═╝ ██║██║██║ ╚████║╚██████╔╝   ██║   ██║    ██║  ██║   ██║   ███████╗██║  ██║███████║',
+  '╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝    ╚═╝   ╚═╝    ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝',
+];
+
+// Medium "MINGYI ATLAS" banner.
+const MEDIUM_ART = [
+  '███╗   ███╗██╗███╗   ██╗ ██████╗ ██╗   ██╗',
+  '████╗ ████║██║████╗  ██║██╔════╝ ╚██╗ ██╔╝',
+  '██╔████╔██║██║██╔██╗ ██║██║  ███╗ ╚████╔╝ ',
+  '██║╚██╔╝██║██║██║╚██╗██║██║   ██║  ╚██╔╝  ',
+  '██║ ╚═╝ ██║██║██║ ╚████║╚██████╔╝   ██║   ',
+  '╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝    ╚═╝   ',
+  '           A T L A S   ·   A U T O N O M O U S   S E C U R I T Y',
 ];
 
 // Short "MINGYI" banner.
@@ -33,6 +48,10 @@ const LEGACY_MASTRA_CODE_ART = [
 ];
 
 const LEGACY_MASTRA_ART = ['█▀▄▀█ ▄▀█ █▀ ▀█▀ █▀█ ▄▀█', '█ ▀ █ █▀█ ▀█  █  █▀▄ █▀█', '▀   ▀ ▀ ▀ ▀▀  ▀  ▀ ▀ ▀ ▀'];
+
+function maxLineWidth(lines: string[]): number {
+  return Math.max(...lines.map(line => [...line].length));
+}
 
 /**
  * Interpolate between two hex colors.
@@ -98,13 +117,17 @@ export function renderBanner(version: string, appName?: string): string {
     ? name === 'Mastra Code' && cols >= 50
       ? LEGACY_MASTRA_CODE_ART
       : LEGACY_MASTRA_ART
-    : cols >= 56
+    : cols >= maxLineWidth(FULL_ART) + 2
       ? FULL_ART
-      : SHORT_ART;
+      : cols >= maxLineWidth(MEDIUM_ART) + 2
+        ? MEDIUM_ART
+        : SHORT_ART;
   const coloredLines = art.map(line => colorLine(line));
 
-  // Append version below the art
-  coloredLines.push(theme.fg('dim', `v${version}`));
+  const versionLine = isDefaultBrand
+    ? `${theme.fg('accent', '◆')} ${theme.bold(theme.fg('accent', 'Mingyi Atlas'))}${theme.fg('dim', ` v${version}`)}`
+    : theme.fg('dim', `v${version}`);
+  coloredLines.push(versionLine);
 
   return coloredLines.join('\n');
 }

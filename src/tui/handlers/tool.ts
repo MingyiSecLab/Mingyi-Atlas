@@ -133,7 +133,7 @@ export function handleToolApprovalRequired(
   const categoryLabel = category ? TOOL_CATEGORIES[category]?.label : undefined;
 
   // Send notification to alert the user
-  ctx.notify('tool_approval', `Approve ${toolName}?`);
+  ctx.notify('tool_approval', `是否批准工具：${toolName}？`);
 
   const dialog = new ToolApprovalDialogComponent({
     toolCallId,

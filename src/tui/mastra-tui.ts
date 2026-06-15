@@ -8,6 +8,7 @@ import type { Component } from '@earendil-works/pi-tui';
 import type { AgentSignalAttributes } from '@mastra/core/agent';
 import type { HarnessEvent, HarnessMessage } from '@mastra/core/harness';
 import type { Workspace } from '@mastra/core/workspace';
+import { pentestSpecializedSubagentIds } from '../agents/subagents/specialized/index.js';
 import { getOAuthProviders } from '../auth/storage.js';
 import {
   OnboardingInlineComponent,
@@ -1246,12 +1247,7 @@ export class MastraTUI {
       explore: 'fast',
       plan: 'plan',
       execute: 'build',
-      'pentest-supervisor': 'pentest',
-      'pentest-recon': 'pentest',
-      'pentest-vuln-analysis': 'pentest',
-      'pentest-validation': 'pentest',
-      'pentest-report': 'pentest',
-      'pentest-remediation': 'pentest',
+      ...Object.fromEntries(pentestSpecializedSubagentIds.map(id => [id, 'pentest'])),
     };
     for (const [agentType, modeId] of Object.entries(subagentModeMap)) {
       const saModelId = (modePack.models as Record<string, string>)[modeId];

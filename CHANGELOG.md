@@ -1,11 +1,28 @@
 # Mingyi Atlas Changelog
 
-## 0.21.2-alpha.4
+## 0.22.3
+
+### Added
+
+- Added a new specialized pentest subagent package for attack-surface discovery, authentication, validation, and finding judgment.
+- Added pentest-specific prompt guidance that treats subagents as stage-oriented workers and judges rather than generic parallel helpers.
+
+### Changed
+
+- Reworked pentest orchestration to route specialized subagents through the new `specialized` bundle and map them to the `pentest` mode.
+- Expanded the pentest system prompt with clearer authorization, scope, safety, and reporting instructions.
+- Updated the generic subagent guidance so pentest mode can delegate a single focused specialist when the task benefits from isolation or independent review.
+- Refreshed TUI approval and banner copy to use the new branding and localized user-facing labels.
+- Simplified suspension response forwarding in headless and TUI prompt handlers.
+- Updated contributor and development docs to reference the specialized pentest subagent layout.
+
+### Removed
+
+- Removed the legacy `src/agents/subagents/pentest/` implementation in favor of the specialized subagent layout.
 
 ### Fixed
 
-- Fixed update checks for prerelease versions so `0.21.2-alpha.3` is detected as newer than `0.21.2-alpha.2`.
-- Fixed update checks to read npm dist-tags instead of only the `latest` endpoint, so alpha releases are detected even when `latest` lags behind `alpha`.
+- Fixed the release version bump to `0.22.3`.
 
 ## 0.21.2-alpha.3
 

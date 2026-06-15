@@ -134,7 +134,7 @@ export class SubagentExecutionComponent extends Container implements IToolExecut
     const maxLineWidth = termWidth - 6 - BOX_INDENT * 2;
 
     // ── Bottom border with info (always rendered) ──
-    const typeLabelText = this.forked ? 'fork' : this.agentType;
+    const typeLabelText = this.forked ? `${this.agentType} fork` : this.agentType;
     const typeLabel = theme.bold(theme.fg('accent', typeLabelText));
     const modelLabel = this.modelId ? theme.fg('muted', ` ${this.modelId}`) : '';
     const statusIcon = this.done

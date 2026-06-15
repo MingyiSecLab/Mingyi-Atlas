@@ -206,11 +206,7 @@ function autoResolve<TState extends Record<string, unknown>>(
   event: HarnessEvent,
 ): { resolved: true; label: string; json: Record<string, unknown> } | { resolved: false } {
   const respondToSuspension = (toolCallId: string, resumeData: unknown) => {
-    const responder = harness.respondToToolSuspension as (args: {
-      toolCallId: string;
-      resumeData: unknown;
-    }) => Promise<void>;
-    void responder({ toolCallId, resumeData });
+    void harness.respondToToolSuspension({ toolCallId, resumeData });
   };
 
   switch (event.type) {

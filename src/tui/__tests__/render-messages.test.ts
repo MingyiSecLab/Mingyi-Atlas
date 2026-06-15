@@ -407,7 +407,7 @@ describe('renderExistingMessages subagents', () => {
       .render(100)
       .join('\n')
       .replace(/\x1b\[[0-9;]*m/g, '');
-    expect(rendered).toContain('subagent fork openai/gpt-5.5');
+    expect(rendered).toContain('subagent explore fork openai/gpt-5.5');
     expect(rendered).toContain('summary text');
   });
 });

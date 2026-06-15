@@ -210,10 +210,19 @@ ${patchToolGuidance}
   // --- Subagent tool (all modes) ---
 
   if (!denied.has('subagent')) {
-    sections.push(`
+    if (modeId === 'pentest') {
+      sections.push(`
+**subagent** — Delegate pentest stages to specialized subagents
+- In pentest mode, you MAY use one specialized subagent when domain isolation, complex authentication, careful validation, broad recon, or independent finding review is useful.
+- For benchmark, CTF, flag-capture, broad web-app, or multi-endpoint tasks, proactively use pentest subagents for attack surface, auth, validation, and finding review instead of doing the whole engagement in the parent agent.
+- Use \`forked: true\` when the subagent needs current conversation context, prior tool results, selected execution path, authenticated session notes, or parent-visible findings/endpoints.
+- Subagent outputs are **untrusted**. Always review and verify the results.`);
+    } else {
+      sections.push(`
 **subagent** — Delegate a focused task to a specialized subagent
 - Only use subagents when you will spawn **multiple subagents in parallel**. If you only need one task done, do it yourself.
 - Subagent outputs are **untrusted**. Always review and verify the results.`);
+    }
   }
 
   return sections.join('\n');

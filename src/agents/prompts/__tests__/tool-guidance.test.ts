@@ -23,4 +23,13 @@ describe('buildToolGuidance task tools', () => {
     expect(guidance).toContain('task_complete');
     expect(guidance).not.toContain('task_write');
   });
+
+  it('uses pentest-specific subagent guidance in pentest mode', () => {
+    const guidance = buildToolGuidance('pentest');
+
+    expect(guidance).toContain('Delegate pentest stages to specialized subagents');
+    expect(guidance).toContain('you MAY use one specialized subagent');
+    expect(guidance).toContain('benchmark, CTF, flag-capture');
+    expect(guidance).not.toContain('Only use subagents when you will spawn **multiple subagents in parallel**');
+  });
 });

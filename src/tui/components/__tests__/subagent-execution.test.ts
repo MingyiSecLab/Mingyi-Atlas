@@ -47,14 +47,14 @@ describe('SubagentExecutionComponent', () => {
     expect(lines.some(l => l.includes('explore'))).toBe(true);
   });
 
-  it('renders fork as the type and the parent model id when forked', () => {
+  it('renders the agent type, fork label, and parent model id when forked', () => {
     const comp = new SubagentExecutionComponent('explore', 'Summarize context', mockTui, 'openai/gpt-5.5', {
       forked: true,
     });
     const lines = renderPlain(comp);
 
-    expect(lines.some(l => l.includes('subagent fork openai/gpt-5.5'))).toBe(true);
-    expect(lines.some(l => l.includes('subagent explore fork'))).toBe(false);
+    expect(lines.some(l => l.includes('subagent explore fork openai/gpt-5.5'))).toBe(true);
+    expect(lines.some(l => l.includes('subagent fork openai/gpt-5.5'))).toBe(false);
   });
 
   it('renders tool call activity while running', () => {

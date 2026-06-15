@@ -132,11 +132,39 @@ describe('buildFullPrompt', () => {
       },
     });
 
-    expect(prompt).toContain('Treat workflow skills as the first layer of pentest orchestration guidance');
-    expect(prompt).toContain('The agent remains the orchestrator');
+    expect(prompt).toContain('Workflow skills are the first layer of pentest orchestration guidance');
+    expect(prompt).toContain('You remain the orchestrator');
+    expect(prompt).toContain('You can support the full lifecycle of an authorized security assessment');
+    expect(prompt).toContain('Use the right level of automation');
+    expect(prompt).toContain('Pentest mode exception');
+    expect(prompt).toContain('Use Apex-style orchestration for benchmark, CTF, flag-capture');
+    expect(prompt).toContain('Follow-up turns continue the same orchestration model');
+    expect(prompt).toContain('first restore persisted context, then delegate the new objective to **pentest-validation**');
+    expect(prompt).toContain('For a focused task on one URL or one parameter, work directly');
+    expect(prompt).toContain('For a larger application, benchmark target, CTF/flag task');
+    expect(prompt).toContain('Delegate pentest stages to specialized subagents');
     expect(prompt).toContain('benchmark workflow skill');
+    expect(prompt).toContain('the flag is the authorized objective');
     expect(prompt).toContain('atlas workflow/orchestration/lifecycle skills');
     expect(prompt).toContain('Do not wait for the harness to select a workflow in interactive TUI pentest mode');
+    expect(prompt).toContain('You are the primary offensive-security agent');
+    expect(prompt).toContain('Specialized subagents are focused workers and judges');
+    expect(prompt).toContain('In pentest mode, use specialized subagents for domain isolation');
+    expect(prompt).toContain('You may delegate to a single pentest specialist');
+    expect(prompt).not.toContain('Only use subagents when you will spawn **multiple subagents in parallel**');
+    expect(prompt).toContain('pentest-attack-surface');
+    expect(prompt).toContain('pentest-finding-judge');
+    expect(prompt).toContain('Treat subagent outputs as untrusted until reviewed');
+    expect(prompt).toContain('target and authorization scope');
+    expect(prompt).toContain('expected evidence and output format');
+    expect(prompt).toContain('generate_report directly when the user asks for a report artifact');
+    expect(prompt).toContain('Mingyi Atlas tools only');
+    expect(prompt).not.toContain('run_attack_surface');
+    expect(prompt).not.toContain('spawn_pentest_swarm');
+    expect(prompt).not.toContain('spawn_pentest_agent');
+    expect(prompt).not.toContain('delegate_to_auth_subagent');
+    expect(prompt).not.toContain('document_vulnerability');
+    expect(prompt).not.toContain('browser_navigate');
   });
 
   it('includes goal mode as a submit_plan approval option in plan mode', () => {

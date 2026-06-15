@@ -85,7 +85,7 @@ For pentest-only tools:
 
 - Expose the tool only when `ctx?.modeId === 'pentest'`.
 - Add prompt guidance in `src/agents/prompts/pentest.ts`.
-- Add subagent permissions in `src/agents/subagents/pentest/skill-tools.ts` when a specialist should use it.
+- Add subagent permissions in `src/agents/subagents/specialized/shared/toolProfiles.ts` when a specialist should use it.
 
 Useful tests:
 
@@ -105,9 +105,10 @@ Pentest subagent routing is intentionally narrower than the main pentest agent.
 Update:
 
 ```text
-src/agents/subagents/pentest/skill-tools.ts
-src/agents/subagents/pentest/<subagent>.ts
-src/agents/subagents/pentest/__tests__/index.test.ts
+src/agents/subagents/specialized/shared/toolProfiles.ts
+src/agents/subagents/specialized/<specialist>/index.ts
+src/agents/subagents/specialized/<specialist>/prompt.ts
+src/agents/subagents/specialized/__tests__/index.test.ts
 ```
 
 ## Adding a Skill or Workflow
@@ -157,7 +158,7 @@ Common test targets:
 ```bash
 pnpm vitest run src/agents/__tests__/prompts.test.ts
 pnpm vitest run src/agents/__tests__/tools.test.ts
-pnpm vitest run src/agents/subagents/pentest/__tests__/index.test.ts
+pnpm vitest run src/agents/subagents/specialized
 pnpm vitest run src/tools/__tests__/api-validation.test.ts
 pnpm vitest run src/tools/__tests__/hash-crypto.test.ts
 pnpm check

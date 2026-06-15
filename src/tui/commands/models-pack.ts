@@ -2,6 +2,7 @@ import { Box, SelectList, Spacer, Text } from '@earendil-works/pi-tui';
 import type { SelectItem } from '@earendil-works/pi-tui';
 import chalk from 'chalk';
 
+import { pentestSpecializedSubagentIds } from '../../agents/subagents/specialized/index.js';
 import { setClipboardText } from '../../clipboard/index.js';
 import type { ModePack, ProviderAccess, ProviderAccessLevel } from '../../onboarding/packs.js';
 import { getAvailableModePacks } from '../../onboarding/packs.js';
@@ -404,12 +405,7 @@ async function applyPack(ctx: SlashCommandContext, pack: ModePack, previousPackI
     explore: 'fast',
     plan: 'plan',
     execute: 'build',
-    'pentest-supervisor': 'pentest',
-    'pentest-recon': 'pentest',
-    'pentest-vuln-analysis': 'pentest',
-    'pentest-validation': 'pentest',
-    'pentest-report': 'pentest',
-    'pentest-remediation': 'pentest',
+    ...Object.fromEntries(pentestSpecializedSubagentIds.map(id => [id, 'pentest'])),
   };
   for (const [agentType, modeId] of Object.entries(subagentModeMap)) {
     const saModelId = (pack.models as Record<string, string>)[modeId];

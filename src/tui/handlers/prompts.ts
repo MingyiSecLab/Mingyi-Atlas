@@ -25,11 +25,7 @@ function processNextInlineQuestion(state: TUIState): void {
 }
 
 function respondToSuspension(ctx: EventHandlerContext, toolCallId: string, resumeData: unknown): Promise<void> {
-  const responder = ctx.state.harness.respondToToolSuspension as (args: {
-    toolCallId: string;
-    resumeData: unknown;
-  }) => Promise<void>;
-  return responder({ toolCallId, resumeData });
+  return ctx.state.harness.respondToToolSuspension({ toolCallId, resumeData });
 }
 
 /**
@@ -246,7 +242,7 @@ export async function handleSandboxAccessRequest(
 
 /**
  * Handle a plan_approval_required event from the submit_plan tool.
- * Shows the plan inline with Approve/Reject/Request Changes options.
+ * Shows the plan inline with user approval options.
  */
 async function approvePlan(ctx: EventHandlerContext, toolCallId: string, title: string, plan: string): Promise<void> {
   const { state } = ctx;

@@ -57,6 +57,27 @@ describe('handleAskQuestion goal mode', () => {
     state.activeInlineQuestion!.handleInput('\r');
     await promise;
   });
+
+  it('responds through the harness object so Mastra methods keep their this binding', async () => {
+    const { ctx, state } = createCtx();
+    const harness = {
+      wasCalledWithThis: false,
+      getDisplayState: vi.fn(() => ({ isRunning: false })),
+      respondToToolSuspension(args: { toolCallId: string; resumeData: unknown }) {
+        this.wasCalledWithThis = true;
+        expect(args).toEqual({ toolCallId: 'q1', resumeData: 'A' });
+        return Promise.resolve();
+      },
+    };
+    state.harness = harness as any;
+
+    const promise = handleAskQuestion(ctx, 'q1', 'Pick one', [{ label: 'A' }]);
+
+    state.activeInlineQuestion!.handleInput('\r');
+    await promise;
+
+    expect(harness.wasCalledWithThis).toBe(true);
+  });
 });
 
 function createPlanApprovalCtx() {
@@ -157,7 +178,7 @@ describe('handlePlanApproval regular approval', () => {
     expect(state.chatContainer.children.filter((child: unknown) => child === streamedComponent)).toHaveLength(1);
     expect(state.activeInlinePlanApproval).toBe(streamedComponent);
     expect(state.ui.setFocus).toHaveBeenCalledWith(streamedComponent);
-    expect(streamedComponent.render(80).join('\n')).toContain('Use as /goal');
+    expect(streamedComponent.render(80).join('\n')).toContain('设为 /goal');
   });
 
   it('approves the plan and sends a single begin-executing system-reminder through harness.sendSignal', async () => {

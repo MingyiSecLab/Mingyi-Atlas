@@ -182,7 +182,7 @@ describe('ChatBoundarySpacer', () => {
     plan.updateArgs({ title: 'Test plan', plan: '## Step one\nDo the thing.' });
     const lines = renderSequence([quietTool('view'), plan]);
 
-    expect(lines.join('\n')).toContain('Plan: Test plan');
+    expect(lines.join('\n')).toContain('计划：Test plan');
     expect(lines.join('\n')).toContain('Step one');
     expect(lines.filter(line => line === '')).toHaveLength(1);
   });

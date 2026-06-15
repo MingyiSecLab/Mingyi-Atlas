@@ -59,44 +59,44 @@ export class ToolApprovalDialogComponent extends Box implements Focusable {
 
   private buildUI(): void {
     // Title
-    this.addChild(new Text(theme.fg('warning', '⚠ Tool Approval Required'), 0, 0));
+    this.addChild(new Text(theme.fg('warning', '需要工具执行授权'), 0, 0));
     this.addChild(new Spacer(1));
 
     // Tool name
-    this.addChild(new Text(theme.fg('accent', `Tool: `) + theme.fg('text', this.toolName), 0, 0));
+    this.addChild(new Text(theme.fg('accent', `工具：`) + theme.fg('text', this.toolName), 0, 0));
     if (this.categoryLabel) {
-      this.addChild(new Text(theme.fg('accent', `Category: `) + theme.fg('text', this.categoryLabel), 0, 0));
+      this.addChild(new Text(theme.fg('accent', `类别：`) + theme.fg('text', this.categoryLabel), 0, 0));
     }
     this.addChild(new Spacer(1));
 
     // Arguments (formatted)
-    this.addChild(new Text(theme.fg('muted', 'Arguments:'), 0, 0));
+    this.addChild(new Text(theme.fg('muted', '参数：'), 0, 0));
     const argsText = this.formatArgs(this.args);
     for (const line of argsText.split('\n').slice(0, 10)) {
       this.addChild(new Text(theme.fg('text', '  ' + line), 0, 0));
     }
     if (argsText.split('\n').length > 10) {
-      this.addChild(new Text(theme.fg('muted', '  ... (truncated)'), 0, 0));
+      this.addChild(new Text(theme.fg('muted', '  ...（已截断）'), 0, 0));
     }
 
     this.addChild(new Spacer(1));
     // Prompt text with keyboard shortcuts
     const categoryHint = this.categoryLabel
-      ? `lways allow ${this.categoryLabel.toLowerCase()}`
-      : 'lways allow category';
+      ? `始终允许 ${this.categoryLabel}`
+      : '始终允许此类别';
     const dimColor = chalk.hex(theme.getTheme().dim);
     const key = chalk.hex(theme.getTheme().text).bold;
     this.addChild(
       new Text(
-        theme.fg('accent', 'Allow? ') +
+        theme.fg('accent', '允许执行？') +
           key('y') +
-          dimColor('es  ') +
+          dimColor(' 同意  ') +
           key('n') +
-          dimColor('o  ') +
+          dimColor(' 拒绝  ') +
           key('a') +
-          dimColor(categoryHint + '  ') +
+          dimColor(` ${categoryHint}  `) +
           key('Y') +
-          dimColor('olo'),
+          dimColor(' 开启 YOLO 自动批准'),
         0,
         0,
       ),
@@ -105,7 +105,7 @@ export class ToolApprovalDialogComponent extends Box implements Focusable {
 
   private formatArgs(args: unknown): string {
     if (args === null || args === undefined) {
-      return '(none)';
+      return '（无）';
     }
 
     if (typeof args !== 'object') {
@@ -113,7 +113,7 @@ export class ToolApprovalDialogComponent extends Box implements Focusable {
     }
 
     const entries = Object.entries(args as Record<string, unknown>);
-    if (entries.length === 0) return '(none)';
+    if (entries.length === 0) return '（无）';
 
     const lines: string[] = [];
     for (const [key, value] of entries) {
@@ -126,7 +126,7 @@ export class ToolApprovalDialogComponent extends Box implements Focusable {
       const maxLen = 120;
       const firstLine = str.split('\n')[0] ?? '';
       const lineCount = typeof value === 'string' ? str.split('\n').length : 0;
-      const suffix = lineCount > 1 ? ` (${lineCount} lines)` : '';
+      const suffix = lineCount > 1 ? `（${lineCount} 行）` : '';
       const display = firstLine.length > maxLen ? firstLine.slice(0, maxLen) + '…' : firstLine;
       lines.push(`${key}: ${display}${suffix}`);
     }

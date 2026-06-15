@@ -20,7 +20,7 @@ describe('PlanApprovalInlineComponent', () => {
     const selectList = (component as any).selectList;
     expect(
       selectList.items.some(
-        (item: { value: string; label: string }) => item.value === 'goal' && item.label.includes('Use as /goal'),
+        (item: { value: string; label: string }) => item.value === 'goal' && item.label.includes('设为 /goal'),
       ),
     ).toBe(true);
 
@@ -68,7 +68,7 @@ describe('PlanApprovalInlineComponent', () => {
     const rendered = component.render(80).join('\n');
 
     expect(ui.requestRender).toHaveBeenCalledWith(true);
-    expect(rendered).toContain('Provide feedback for revision:');
+    expect(rendered).toContain('请输入修改意见：');
     expect(rendered).toContain('a');
   });
 
@@ -89,7 +89,7 @@ describe('PlanApprovalInlineComponent', () => {
     (component as any).handleReject('Add verification steps');
     const lines = component.render(80);
     const planLineIndex = lines.findIndex(line => line.includes('Build the feature'));
-    const feedbackLineIndex = lines.findIndex(line => line.includes('Requested changes: Add verification steps'));
+    const feedbackLineIndex = lines.findIndex(line => line.includes('修改意见：Add verification steps'));
 
     expect(onReject).toHaveBeenCalledWith('Add verification steps');
     expect(planLineIndex).toBeGreaterThan(-1);
@@ -105,9 +105,9 @@ describe('PlanApprovalInlineComponent', () => {
     });
 
     const lines = component.render(80);
-    const statusIndex = lines.findIndex(line => line.includes('Changes requested'));
+    const statusIndex = lines.findIndex(line => line.includes('已要求修改'));
     const planLineIndex = lines.findIndex(line => line.includes('Build the feature'));
-    const feedbackLineIndex = lines.findIndex(line => line.includes('Requested changes: Add verification steps'));
+    const feedbackLineIndex = lines.findIndex(line => line.includes('修改意见：Add verification steps'));
 
     expect(statusIndex).toBeGreaterThan(-1);
     expect(planLineIndex).toBeGreaterThan(-1);

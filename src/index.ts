@@ -38,13 +38,9 @@ import { getStaticallyLoadedInstructionPaths } from './agents/prompts/agent-inst
 import { executeSubagent } from './agents/subagents/execute.js';
 import { exploreSubagent } from './agents/subagents/explore.js';
 import {
-  pentestReconSubagent,
-  pentestRemediationSubagent,
-  pentestReportSubagent,
-  pentestSupervisorSubagent,
-  pentestValidationSubagent,
-  pentestVulnAnalysisSubagent,
-} from './agents/subagents/pentest/index.js';
+  pentestSpecializedSubagentIds,
+  pentestSpecializedSubagents,
+} from './agents/subagents/specialized/index.js';
 import { planSubagent } from './agents/subagents/plan.js';
 import { attachOMThreadStatePersistence, restoreOMThreadStateForCurrentThread } from './agents/thread-caveman-state.js';
 import { createDynamicTools } from './agents/tools.js';
@@ -408,12 +404,7 @@ export async function createMingyiAtlas(config?: MingyiAtlasConfig) {
     exploreSubagent,
     planSubagent,
     executeSubagent,
-    pentestSupervisorSubagent,
-    pentestReconSubagent,
-    pentestVulnAnalysisSubagent,
-    pentestValidationSubagent,
-    pentestReportSubagent,
-    pentestRemediationSubagent,
+    ...pentestSpecializedSubagents,
   ];
 
   const defaultBuildModelId = 'anthropic/claude-opus-4-6';
@@ -522,12 +513,7 @@ export async function createMingyiAtlas(config?: MingyiAtlasConfig) {
     explore: 'fast',
     plan: 'plan',
     execute: 'build',
-    'pentest-supervisor': 'pentest',
-    'pentest-recon': 'pentest',
-    'pentest-vuln-analysis': 'pentest',
-    'pentest-validation': 'pentest',
-    'pentest-report': 'pentest',
-    'pentest-remediation': 'pentest',
+    ...Object.fromEntries(pentestSpecializedSubagentIds.map(id => [id, 'pentest'])),
   };
   // Subagents inherit workspace tools from the parent agent's workspace automatically.
   // Apply disabledTools filter to both default and custom subagents.

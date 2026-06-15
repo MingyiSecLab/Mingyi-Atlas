@@ -23,21 +23,22 @@ describe('renderBanner', () => {
   }
 
   it('renders multi-line block art for wide terminals', () => {
-    setColumns(80);
+    setColumns(100);
     const result = renderBanner('0.2.0');
     const plain = stripAnsi(result);
     const lines = plain.split('\n');
-    // 3 lines of art + 1 version line
-    expect(lines.length).toBe(4);
+    // 6 lines of wordmark, 1 version line
+    expect(lines.length).toBe(7);
     expect(plain).toContain('█');
-    expect(plain).toContain('▀');
+    expect(plain).toContain('███████╗');
   });
 
   it('uses Mingyi Atlas art for the default brand', () => {
     setColumns(80);
     const result = renderBanner('0.2.0', 'Mingyi Atlas');
     const plain = stripAnsi(result);
-    expect(plain).toContain('█▀▄▀█ █ █▄  █ █▀▀ █▄█ █');
+    expect(plain).toContain('███╗   ███╗██╗███╗   ██╗');
+    expect(plain).toContain('A T L A S');
     expect(plain).not.toContain('█▀▄▀█ ▄▀█ █▀ ▀█▀ █▀█ ▄▀█   █▀▀ █▀█ █▀▄ █▀▀');
   });
 
@@ -55,6 +56,17 @@ describe('renderBanner', () => {
     const lines = plain.split('\n');
     expect(lines.length).toBe(4);
     expect(lines[0]!.length).toBeLessThan(30);
+  });
+
+  it('uses medium Mingyi Atlas art when the full logo would overflow', () => {
+    setColumns(80);
+    const result = renderBanner('0.2.0');
+    const plain = stripAnsi(result);
+    const lines = plain.split('\n');
+    expect(lines.length).toBe(8);
+    expect(plain).toContain('A T L A S');
+    expect(plain).not.toContain('███████╗');
+    expect(Math.max(...lines.map(line => [...line].length))).toBeLessThanOrEqual(80);
   });
 
   it('falls back to compact single line for narrow terminals', () => {

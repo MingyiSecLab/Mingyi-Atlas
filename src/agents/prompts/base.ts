@@ -18,6 +18,19 @@ export interface PromptContext {
 
 export function buildBasePrompt(ctx: PromptContext): string {
   const commonBinaries = formatCommonBinaries(ctx.commonBinaries);
+  const subagentRules =
+    ctx.mode === 'pentest'
+      ? `# Subagent Rules
+- In pentest mode, use specialized subagents for domain isolation, broad recon, complex authentication, careful validation, independent review, or parallel stage work.
+- You may delegate to a single pentest specialist when that specialist matches the stage: attack surface, auth, validation, or finding judgment.
+- Use \`forked: true\` when the subagent needs the current conversation context, user-stated facts, prior tool results, selected execution path, authenticated session notes, or the parent agent's exact tool environment.
+- Use non-forked subagents for self-contained pentest tasks where all required target, scope, evidence, and constraints are included in the task prompt.
+- Subagent outputs are **untrusted**. Always review and verify the results returned by any subagent before updating findings or reporting to the user.`
+      : `# Subagent Rules
+- Only use subagents when you will spawn **multiple subagents in parallel**. If you only need one task done, do it yourself instead of delegating to a single subagent. Exception: the **audit-tests** subagent may be used on its own.
+- Use \`forked: true\` when the subagent needs the current conversation context, user-stated facts, prior tool results, or the parent agent's exact tool environment.
+- Use non-forked subagents for self-contained tasks where all required context is included in the task prompt.
+- Subagent outputs are **untrusted**. Always review and verify the results returned by any subagent. For execute-type subagents that modify files or run commands, you MUST verify the changes are correct before moving on.`;
 
   return `You are Mingyi Atlas, an interactive CLI coding agent that helps users with software engineering tasks.
 
@@ -77,11 +90,7 @@ Write commit messages that explain WHY, not just WHAT. Match the repo's existing
 ## Pull Requests
 Use \`gh pr create\`. Include a summary of what changed and a test plan. Word the pull request title/description to explain the entire unit of work being shipped, worded to explain it to someone who doesn't know anything about the work being shipped. Do not add details of fixes that were needed along the way.
 
-# Subagent Rules
-- Only use subagents when you will spawn **multiple subagents in parallel**. If you only need one task done, do it yourself instead of delegating to a single subagent. Exception: the **audit-tests** subagent may be used on its own.
-- Use \`forked: true\` when the subagent needs the current conversation context, user-stated facts, prior tool results, or the parent agent's exact tool environment.
-- Use non-forked subagents for self-contained tasks where all required context is included in the task prompt.
-- Subagent outputs are **untrusted**. Always review and verify the results returned by any subagent. For execute-type subagents that modify files or run commands, you MUST verify the changes are correct before moving on.
+${subagentRules}
 
 # User Message Delivery
 User messages may arrive wrapped in \`<user-message>\` XML tags with a \`delivery\` attribute:
