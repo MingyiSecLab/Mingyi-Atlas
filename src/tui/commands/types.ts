@@ -27,4 +27,5 @@ export interface SlashCommandContext {
   addUserMessage: (message: HarnessMessage) => void;
   renderExistingMessages: () => Promise<void>;
   showOnboarding: () => Promise<void>;
+  refreshModelAuthStatus?: () => Promise<void>;
 }

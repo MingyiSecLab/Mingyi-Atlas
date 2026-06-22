@@ -17,6 +17,37 @@ interface ProviderInfo {
   source: 'env' | 'stored' | 'none';
 }
 
+export function getModelProviderId(modelId: string): string | undefined {
+  const normalizedModelId = modelId.startsWith('mastra/') ? modelId.substring('mastra/'.length) : modelId;
+  const providerId = normalizedModelId.split('/', 1)[0]?.trim();
+  return providerId ? providerId : undefined;
+}
+
+export async function refreshCurrentModelAfterApiKeyChange(
+  ctx: SlashCommandContext,
+  provider: string,
+): Promise<void> {
+  const currentModelId = ctx.state.harness.getCurrentModelId() ?? '';
+  if (!currentModelId) return;
+
+  const currentProvider = getModelProviderId(currentModelId);
+  if (currentProvider !== provider) return;
+
+  try {
+    await ctx.state.harness.switchModel({ modelId: currentModelId });
+    if (ctx.refreshModelAuthStatus) {
+      await ctx.refreshModelAuthStatus();
+    } else {
+      ctx.updateStatusLine();
+    }
+  } catch (error) {
+    ctx.showError(
+      `Failed to reload current model after API key change: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    ctx.updateStatusLine();
+  }
+}
+
 /**
  * Build a deduplicated list of providers from available models,
  * annotated with their current key source.
@@ -134,7 +165,7 @@ export async function handleApiKeysCommand(ctx: SlashCommandContext): Promise<vo
 
       // Handle Delete key to remove stored keys
       const originalHandleInput = list.handleInput.bind(list);
-      list.handleInput = (data: string) => {
+      list.handleInput = async (data: string) => {
         // Delete or Backspace
         if (data === '\x7f' || data === '\x1b[3~') {
           const info = providers.find(p => p.provider === currentSelection);
@@ -143,6 +174,7 @@ export async function handleApiKeysCommand(ctx: SlashCommandContext): Promise<vo
             if (info.envVar) {
               delete process.env[info.envVar];
             }
+            await refreshCurrentModelAfterApiKeyChange(ctx, info.provider);
             providers = getProviderList(ctx, models);
             ctx.showInfo(`API key removed for ${info.provider}`);
             rebuildList();
@@ -179,10 +211,11 @@ export async function handleApiKeysCommand(ctx: SlashCommandContext): Promise<vo
       const dialog = new ApiKeyDialogComponent({
         providerName: info.provider,
         apiKeyEnvVar: info.envVar,
-        onSubmit: (key: string) => {
+        onSubmit: async (key: string) => {
           ctx.state.ui.hideOverlay();
           if (ctx.authStorage) {
             ctx.authStorage.setStoredApiKey(info.provider, key, info.envVar);
+            await refreshCurrentModelAfterApiKeyChange(ctx, info.provider);
             ctx.showInfo(`API key saved for ${info.provider}`);
             providers = getProviderList(ctx, models);
             rebuildList();

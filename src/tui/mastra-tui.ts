@@ -1013,6 +1013,7 @@ export class MastraTUI {
       addUserMessage: msg => addUserMessage(this.state, msg),
       renderExistingMessages: () => this.renderExistingMessagesAndSeedIdleCounter(),
       showOnboarding: () => this.showOnboarding(),
+      refreshModelAuthStatus: () => this.refreshModelAuthStatus(),
     };
   }
 
