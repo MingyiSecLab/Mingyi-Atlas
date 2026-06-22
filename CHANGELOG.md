@@ -6,6 +6,10 @@
 
 - Added a new specialized pentest subagent package for attack-surface discovery, authentication, validation, and finding judgment.
 - Added pentest-specific prompt guidance that treats subagents as stage-oriented workers and judges rather than generic parallel helpers.
+- Added a pentest-mode-only `run_pentest_workflow` tool for starting and resuming structured pentest workflow runs.
+- Added a typed `src/workflow/pentest` workflow layer with runner contracts, persisted workflow state, stage history, adapters, reporting, metrics, and focused tests.
+- Added runner bridge contracts for skill search and activation, specialized subagent dispatch, pentest tool execution, and workflow persistence.
+- Added additional container runner utilities for pentest workflows, including `httpx`, `dnsx`, `katana`, `masscan`, and `testssl.sh`.
 
 ### Changed
 
@@ -15,6 +19,8 @@
 - Refreshed TUI approval and banner copy to use the new branding and localized user-facing labels.
 - Simplified suspension response forwarding in headless and TUI prompt handlers.
 - Updated contributor and development docs to reference the specialized pentest subagent layout.
+- Changed structured pentest workflow execution to fail fast when required runtime bridge capabilities are unavailable instead of returning placeholder success.
+- Changed workflow methodology resolution so runner-backed workflow starts require explicit skill search and skill activation through the bridge contract.
 
 ### Removed
 
@@ -23,6 +29,7 @@
 ### Fixed
 
 - Fixed the release version bump to `0.22.3`.
+- Fixed pentest workflow target execution defaults so unavailable runtime execution records failed or blocked outcomes rather than completed target status.
 
 ## 0.21.2-alpha.3
 
