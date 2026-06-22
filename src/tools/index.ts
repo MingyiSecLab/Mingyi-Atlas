@@ -24,5 +24,6 @@ export { requestSandboxAccessTool } from './requestSandboxAccess';
 export { createFindingTools } from './findings';
 export { extractJsEndpointsTool } from './extractJsEndpoints';
 export { generateReportTool } from './report';
+export { createPentestWorkflowRunnerTool, runPentestWorkflowTool } from './runPentestWorkflow';
 export { httpRequestTool } from './httpRequest';
 export { validateDiscoveryTool } from './validateDiscovery';

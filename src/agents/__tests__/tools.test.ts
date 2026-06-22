@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+const runPentestWorkflowExecute = vi.hoisted(() => vi.fn());
+
 vi.mock('../../tools/index.js', () => ({
   createContextTools: () => ({
     record_scope: { description: 'record scope' },
@@ -26,6 +28,7 @@ vi.mock('../../tools/index.js', () => ({
   createWebExtractTool: () => ({ description: 'web extract' }),
   extractJsEndpointsTool: { description: 'extract js endpoints' },
   generateReportTool: { description: 'generate report' },
+  runPentestWorkflowTool: { description: 'run pentest workflow', execute: runPentestWorkflowExecute },
   graphqlValidateTool: { description: 'graphql validate' },
   hashAnalyzeTool: { description: 'hash analyze' },
   hasTavilyKey: () => false,
@@ -110,6 +113,7 @@ describe('createDynamicTools', () => {
     expect(pentestTools.request_smuggling_assess).toBeDefined();
     expect(pentestTools.run_browser_cli).toBeDefined();
     expect(pentestTools.run_container_tool).toBeDefined();
+    expect(pentestTools.run_pentest_workflow).toBeDefined();
     expect(pentestTools.cve_search).toBeDefined();
     expect(pentestTools.detect_auth_scheme).toBeDefined();
     expect(pentestTools.detect_captcha).toBeDefined();
@@ -125,6 +129,17 @@ describe('createDynamicTools', () => {
     expect(pentestTools.add_retest_item).toBeDefined();
     expect(pentestTools.list_retest_queue).toBeDefined();
     expect(pentestTools.update_retest_item).toBeDefined();
+  });
+
+  it('does not invoke the pentest workflow runner during pentest tool registration', () => {
+    runPentestWorkflowExecute.mockClear();
+    const getDynamicTools = createDynamicTools();
+    const pentestTools = getDynamicTools({
+      requestContext: createRequestContext({ projectPath: process.cwd() }, 'pentest'),
+    });
+
+    expect(pentestTools.run_pentest_workflow).toBeDefined();
+    expect(runPentestWorkflowExecute).not.toHaveBeenCalled();
   });
 
   it('runs pre/post hooks around tool execution', async () => {

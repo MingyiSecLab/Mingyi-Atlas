@@ -26,6 +26,7 @@ import {
   requestSandboxAccessTool,
   runBrowserCliTool,
   runContainerTool,
+  runPentestWorkflowTool,
   sqliProbeTool,
   ssrfProbeTool,
   sstiProbeTool,
@@ -126,6 +127,7 @@ export function createDynamicTools(
       tools.request_smuggling_assess = requestSmugglingAssessTool;
       tools.run_browser_cli = runBrowserCliTool;
       tools.run_container_tool = runContainerTool;
+      tools.run_pentest_workflow = runPentestWorkflowTool;
       tools.cve_search = cveSearchTool;
       tools.detect_auth_scheme = detectAuthSchemeTool;
       tools.detect_captcha = detectCaptchaTool;
