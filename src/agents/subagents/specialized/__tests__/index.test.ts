@@ -30,10 +30,10 @@ describe('specialized pentest subagents', () => {
 
   it('uses focused specialist ids without a supervisor subagent', () => {
     expect(pentestSpecializedSubagentIds).toEqual([
-      'pentest-attack-surface',
-      'pentest-auth',
-      'pentest-validation',
-      'pentest-finding-judge',
+      'attack-surface',
+      'auth',
+      'validation',
+      'finding-judge',
     ]);
     expect(specializedSubagents.map(subagent => subagent.id)).toEqual(pentestSpecializedSubagentIds);
     expect(specializedSubagents.some(subagent => subagent.id.includes('supervisor'))).toBe(false);

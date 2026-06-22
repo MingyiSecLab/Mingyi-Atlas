@@ -4,7 +4,7 @@ import { TOOL_PROFILE_FINDING_JUDGE } from '../shared/toolProfiles.js';
 import { findingJudgePrompt } from './prompt.js';
 
 export const pentestFindingJudgeSubagent: HarnessSubagent = {
-  id: 'pentest-finding-judge',
+  id: 'finding-judge',
   name: 'Pentest Finding Judge',
   description: 'Independently reviews candidate finding evidence and rejects unsupported or low-signal claims.',
   instructions: findingJudgePrompt,
