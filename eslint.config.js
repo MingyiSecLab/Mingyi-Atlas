@@ -10,6 +10,6 @@ export default [
     ...tseslint.configs.disableTypeChecked,
   },
   {
-    ignores: ['scripts/**'],
+    ignores: ['dist/**', 'scripts/**', 'tests/**'],
   },
 ];

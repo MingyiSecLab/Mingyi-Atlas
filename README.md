@@ -238,7 +238,9 @@ pnpm pack:check
 - [DEVELOPMENT.md](DEVELOPMENT.md)：本地设置、项目布局和实现模式。
 - [SECURITY.md](SECURITY.md)：漏洞报告和安全工具边界。
 - [docs/architecture.md](docs/architecture.md)：高层实现架构概览。
-- [docs/pentest-tools.md](docs/pentest-tools.md)：渗透测试工具设计和安全规则。
+- [docs/pentest-capabilities.md](docs/pentest-capabilities.md)：渗透测试能力全景参考，包括工具矩阵、子 Agent 职责、技能覆盖和安全边界。
+- [docs/pentest-tools.md](docs/pentest-tools.md)：渗透测试工具设计细节和 Scope 规则。
+- [docs/security-domain.md](docs/security-domain.md)：安全域数据层：数据模型、持久化、去重和报告。
 - [docs/skills-and-workflows.md](docs/skills-and-workflows.md)：内置技能和工作流指导。
 
 ## 发布
