@@ -1,5 +1,22 @@
 # Mingyi Atlas Changelog
 
+## 0.24.0
+
+### Changed
+
+- Raised the Node.js minimum version to `>=22.19.0` to match the `@earendil-works/pi-tui` upgrade.
+- Switched analytics distinct IDs from hostname-derived values to anonymous persistent IDs stored in `~/.mingyi-atlas/analytics.json`.
+
+### Fixed
+
+- Updated the `src/agents/__tests__/tools.test.ts` harness stub to the current Session API shape.
+- Added package metadata coverage for the published CLI entrypoint and engine floor.
+
+### Tests
+
+- `pnpm check`
+- `pnpm test:publish`
+
 ## 0.22.3
 
 ### Added

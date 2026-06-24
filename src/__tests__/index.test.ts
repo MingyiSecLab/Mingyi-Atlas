@@ -54,6 +54,8 @@ function createMockSettings() {
       omCavemanObservations: null,
       omObserveAttachments: null,
       subagentModels: {},
+      goalJudgeModel: null,
+      goalMaxTurns: null,
     },
     preferences: {
       yolo: null,
@@ -79,12 +81,25 @@ function createMockSettings() {
       viewport: { width: 1280, height: 720 },
       stagehand: { env: 'LOCAL' },
     },
+    shellPassthrough: { mode: 'default' },
+    signals: { unixSocketPubSub: false },
     observability: { resources: {}, localTracing: false },
   };
 }
 
 vi.mock('@mastra/core/harness', () => ({
   Harness: class {
+    session = {
+      thread: {
+        getId: () => harnessGetCurrentThreadIdMock(),
+        list: (options: unknown) => harnessListThreadsMock(options),
+        setSetting: (setting: unknown) => harnessSetThreadSettingMock(setting),
+      },
+      state: {
+        get: () => harnessStateMock,
+        set: (state: unknown) => harnessSetStateMock(state),
+      },
+    };
     constructor(config: unknown) {
       harnessConstructorMock(config);
     }
@@ -126,6 +141,15 @@ vi.mock('@mastra/core/processors', () => ({
   },
 }));
 
+vi.mock('@mastra/core/tools', async importOriginal => {
+  const actual = await importOriginal<typeof import('@mastra/core/tools')>();
+  return {
+    ...actual,
+    DEFAULT_GOAL_JUDGE_PROMPT: 'mock-goal-prompt',
+    DEFAULT_GOAL_MAX_RUNS: 50,
+  };
+});
+
 vi.mock('./agents/instructions.js', () => ({
   getDynamicInstructions: vi.fn(),
 }));
@@ -138,6 +162,7 @@ vi.mock('./agents/memory.js', () => ({
 
 vi.mock('./agents/model.js', () => ({
   getDynamicModel: vi.fn(),
+  getGoalJudgeModel: vi.fn(),
   resolveModel: vi.fn(),
 }));
 
@@ -159,6 +184,7 @@ vi.mock('./agents/tools.js', () => ({
 
 vi.mock('./agents/workspace.js', () => ({
   getDynamicWorkspace: vi.fn(),
+  getGoalJudgeTools: vi.fn(),
 }));
 
 vi.mock('./auth/storage.js', () => ({
@@ -314,6 +340,21 @@ describe('createMingyiAtlas', () => {
     expect(harnessConstructorMock).toHaveBeenCalled();
     const harnessConfig = harnessConstructorMock.mock.calls[0]?.[0] as { memory?: unknown } | undefined;
     expect(typeof harnessConfig?.memory).toBe('function');
+  });
+
+  it('configures the native goal judge with tools and prompt wiring', async () => {
+    const { createMingyiAtlas } = await import('../index.js');
+
+    await createMingyiAtlas();
+
+    expect(agentConstructorMock).toHaveBeenCalled();
+    const agentConfig = agentConstructorMock.mock.calls[0]?.[0] as
+      | { goal?: { judge?: unknown; maxRuns?: number; prompt?: string; tools?: unknown } }
+      | undefined;
+    expect(agentConfig?.goal?.judge).toBeDefined();
+    expect(agentConfig?.goal?.maxRuns).toBe(50);
+    expect(agentConfig?.goal?.prompt).toBe('mock-goal-prompt');
+    expect(agentConfig?.goal?.tools).toBeDefined();
   });
 
   it('rejects cross-process PubSub mode without a PubSub instance', async () => {

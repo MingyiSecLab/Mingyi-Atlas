@@ -23,7 +23,7 @@ npx @mingyilab/mingyi-atlas
 
 Requirements:
 
-- Node.js `>=22.13.0`
+- Node.js `>=22.19.0`
 - `fd` or `fdfind` is optional, but recommended for fast `@file` autocomplete
 - Docker is optional, but required for container-backed pentest browser/tool runners
 
@@ -161,12 +161,15 @@ Global data:
 ```text
 ~/.mingyi-atlas/
   auth.json
+  analytics.json
   settings.json
   mingyi-atlas.db
   mingyi-atlas-vectors.db
   locks/
   signals/
 ```
+
+`analytics.json` stores an anonymous persistent telemetry distinct ID instead of deriving it from the hostname.
 
 Project data:
 
@@ -198,6 +201,7 @@ Useful environment variables:
 | `ANTHROPIC_API_KEY` | Anthropic API key fallback |
 | `OPENAI_API_KEY` | OpenAI API key |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Google model API key |
+| `MASTRA_TELEMETRY_DISABLED=1` | Disable product telemetry |
 | `MINGYI_ATLAS_DISABLE_CAFFEINATE=1` | Disable macOS sleep prevention |
 | `MINGYI_ATLAS_ANALYTICS_DEBUG=1` | Print analytics debug events |
 | `MINGYI_ATLAS_CVE_CACHE_PATH` | Override CVE cache location |
@@ -239,7 +243,8 @@ Contributor and maintainer docs:
 - [SECURITY.md](SECURITY.md) for vulnerability reporting and security-tool boundaries.
 - [docs/architecture.md](docs/architecture.md) for a high-level implementation overview.
 - [docs/pentest-tools.md](docs/pentest-tools.md) for pentest tool design and safety rules.
-- [docs/skills-and-workflows.md](docs/skills-and-workflows.md) for built-in skills and workflow guidance.
+- [docs/skills.md](docs/skills.md) for skill structure, discovery rules, and authoring guidance.
+- [docs/workflows.md](docs/workflows.md) for workflow layers, current runtime workflow status, and usage boundaries.
 
 ## Publishing
 

@@ -53,6 +53,16 @@ function createMockHarness(opts?: { id?: string; resourceId?: string }) {
 function createMockCtx(harness: ReturnType<typeof createMockHarness>) {
   const infoMessages: string[] = [];
   const errorMessages: string[] = [];
+  const session = {
+    identity: {
+      getResourceId: vi.fn(() => harness.getResourceId()),
+      getDefaultResourceId: vi.fn(() => harness.getDefaultResourceId()),
+    },
+    thread: {
+      list: vi.fn((options?: unknown) => harness.listThreads(options)),
+      getId: vi.fn(() => harness.getCurrentThreadId()),
+    },
+  };
 
   return {
     ctx: {
@@ -65,6 +75,7 @@ function createMockCtx(harness: ReturnType<typeof createMockHarness>) {
         allShellComponents: [] as any[],
         messageComponentsById: new Map<string, any>(),
         ui: { requestRender: vi.fn() },
+        session,
       },
       harness: harness as any,
       showInfo: vi.fn((msg: string) => infoMessages.push(msg)),

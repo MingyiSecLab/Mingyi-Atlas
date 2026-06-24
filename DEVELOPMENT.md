@@ -4,7 +4,7 @@ This document describes how to work on Mingyi Atlas locally.
 
 ## Requirements
 
-- Node.js `>=22.13.0`
+- Node.js `>=22.19.0`
 - pnpm
 - Docker, optional for browser/container-backed pentest tooling
 - `fd` or `fdfind`, optional for fast file autocomplete

@@ -52,6 +52,7 @@ import {
   isGoalJudgeInputLocked,
   showGoalJudgeInputLockInfo,
 } from './goal-input-lock.js';
+import { getCurrentModeId, getCurrentResourceId, getCurrentThreadId } from './session-access.js';
 import type { TUIState } from './state.js';
 
 const TRACKED_COMMANDS = new Set(['login', 'models', 'mode', 'memory-gateway', 'custom-providers', 'threads', 'new']);
@@ -69,9 +70,9 @@ export async function dispatchSlashCommand(
     if (!TRACKED_COMMANDS.has(command)) return;
     ctx.analytics?.trackCommand(command, {
       action: 'attempted',
-      threadId: state.harness.getCurrentThreadId(),
-      resourceId: state.harness.getResourceId(),
-      mode: state.harness.getCurrentModeId(),
+      threadId: getCurrentThreadId(state),
+      resourceId: getCurrentResourceId(state),
+      mode: getCurrentModeId(state),
     });
   };
   const trimmedInput = input.trim();

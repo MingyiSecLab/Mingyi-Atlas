@@ -1,3 +1,4 @@
+import { ensureActiveModelSelection } from '../model-selection.js';
 import { sendSlashCommandMessage } from './send-slash-command-message.js';
 import type { SlashCommandContext } from './types.js';
 
@@ -5,7 +6,7 @@ const MASTRA_REPO = 'mastra-ai/mastra';
 const MASTRA_LABEL = 'mingyi-atlas';
 
 export async function handleReportIssueCommand(ctx: SlashCommandContext, args: string[]): Promise<void> {
-  if (!ctx.state.harness.hasModelSelected()) {
+  if (!(await ensureActiveModelSelection(ctx.state))) {
     ctx.showInfo('No model selected. Use /models to select a model, or /login to authenticate.');
     return;
   }

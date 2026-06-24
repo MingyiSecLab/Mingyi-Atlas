@@ -134,6 +134,7 @@ export interface MastraTUIOptions {
 export interface TUIState {
   // ── Core dependencies (set once) ──────────────────────────────────────
   harness: Harness<any>;
+  session: Harness<any>['session'];
   options: MastraTUIOptions;
   hookManager?: HookManager;
   analytics?: MingyiAtlasAnalytics;
@@ -300,6 +301,7 @@ export function createTUIState(options: MastraTUIOptions): TUIState {
   const result: TUIState = {
     // Core dependencies
     harness: options.harness,
+    session: options.harness.session,
     options,
     hookManager: options.hookManager,
     analytics: options.analytics,
@@ -377,7 +379,8 @@ export function createTUIState(options: MastraTUIOptions): TUIState {
     if (result.activeGoalJudge) {
       return mastra.blue;
     }
-    return options.harness.getCurrentMode()?.color;
+    const color = result.session.mode.resolve().metadata?.color;
+    return typeof color === 'string' ? color : undefined;
   };
   return result;
 }

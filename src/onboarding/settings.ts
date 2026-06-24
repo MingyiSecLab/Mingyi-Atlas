@@ -894,6 +894,10 @@ export function checkProfileProviderMismatch(
   return undefined;
 }
 
+function browserRecordingOptions() {
+  return { outputDir: join(getAppDataDir(), 'browser-recordings') };
+}
+
 /**
  * Create a browser instance from settings.
  * Shared by startup (main.ts) and live reconfiguration (/browser command).
@@ -920,6 +924,7 @@ export async function createBrowserFromSettings(settings: BrowserSettings): Prom
       apiKey: stagehand?.apiKey ?? process.env.BROWSERBASE_API_KEY,
       projectId: stagehand?.projectId ?? process.env.BROWSERBASE_PROJECT_ID,
       preserveUserDataDir: stagehand?.preserveUserDataDir,
+      recording: browserRecordingOptions(),
     };
     return cdpUrl
       ? new StagehandBrowser({ ...launchConfig, cdpUrl, scope: 'shared', ...stagehandOpts })
@@ -927,8 +932,19 @@ export async function createBrowserFromSettings(settings: BrowserSettings): Prom
   } else if (provider === 'agent-browser') {
     const { AgentBrowser } = await import('@mastra/agent-browser');
     return cdpUrl
-      ? new AgentBrowser({ ...launchConfig, cdpUrl, scope: 'shared', storageState: agentBrowser?.storageState })
-      : new AgentBrowser({ ...launchConfig, storageState: agentBrowser?.storageState, scope });
+      ? new AgentBrowser({
+          ...launchConfig,
+          cdpUrl,
+          scope: 'shared',
+          storageState: agentBrowser?.storageState,
+          recording: browserRecordingOptions(),
+        })
+      : new AgentBrowser({
+          ...launchConfig,
+          storageState: agentBrowser?.storageState,
+          recording: browserRecordingOptions(),
+          scope,
+        });
   }
 
   throw new Error(`Unsupported browser provider: ${provider}`);

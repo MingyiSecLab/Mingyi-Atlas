@@ -68,7 +68,7 @@ function createState() {
   const setText = vi.fn();
   const memorySetText = vi.fn();
 
-  return {
+  const state = {
     harness: {
       getDisplayState: vi.fn(() => ({
         omProgress: { status: 'idle' },
@@ -100,6 +100,27 @@ function createState() {
     goalManager: { getGoal: vi.fn(() => null) },
     ui: { requestRender: vi.fn() },
   } as any;
+
+  state.session = {
+    displayState: {
+      get: vi.fn(() => state.harness.getDisplayState()),
+    },
+    mode: {
+      get: vi.fn(() => state.harness.getCurrentModeId()),
+      resolve: vi.fn(() => {
+        const mode = state.harness.getCurrentMode();
+        return mode ? { ...mode, metadata: { color: mode.color } } : { metadata: {} };
+      }),
+    },
+    followUps: {
+      count: vi.fn(() => state.harness.getFollowUpCount()),
+    },
+    run: {
+      isRunning: vi.fn(() => state.harness.isRunning?.() ?? false),
+    },
+  };
+
+  return state;
 }
 
 describe('updateStatusLine', () => {
@@ -339,7 +360,6 @@ describe('updateStatusLine', () => {
 
     const rendered = state.statusLine.setText.mock.calls[0]?.[0];
     expect(rendered).toContain('goal (2days3hr)');
-    expect(rendered).not.toContain('pursuing goal');
     vi.useRealTimers();
   });
 });

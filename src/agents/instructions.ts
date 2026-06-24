@@ -8,7 +8,7 @@ import { buildFullPrompt } from './prompts/index.js';
 export async function getDynamicInstructions({ requestContext }: { requestContext: { get(key: string): unknown } }) {
   const harnessContext = requestContext.get('harness') as HarnessRequestContext<MingyiAtlasState> | undefined;
   const state = harnessContext?.state;
-  const modeId = harnessContext?.modeId ?? 'build';
+  const modeId = harnessContext?.session.modeId ?? 'build';
   const projectPath = state?.projectPath ?? process.cwd();
 
   const promptCtx: PromptContext = {

@@ -86,8 +86,8 @@ async function tuiMain(pipedInput?: string | null) {
 
   analytics = createMingyiAtlasAnalytics({ version: getCurrentVersion() });
   analytics.capture('mingyi-atlas_session_started', {
-    mode: harness.getCurrentModeId(),
-    resourceId: harness.getResourceId(),
+    mode: harness.session.mode.get(),
+    resourceId: harness.session.identity.getResourceId(),
     hasAuthStorage: Boolean(authStorage),
     hasMcp: Boolean(mcpManager),
     theme: themeMode,
@@ -113,7 +113,7 @@ async function tuiMain(pipedInput?: string | null) {
       .then(browser => {
         if (!browser) return;
         harness.setBrowser(browser);
-        void harness.setState({ activeBrowserSettings: settings.browser } as any).catch(() => {});
+        void harness.session.state.set({ activeBrowserSettings: settings.browser } as any).catch(() => {});
       })
       .catch(() => {});
   }

@@ -7,6 +7,7 @@ import { Container, Spacer, Text } from '@earendil-works/pi-tui';
 import type { Component } from '@earendil-works/pi-tui';
 import type { HarnessMessage, HarnessMessageContent, TaskItemInput, TaskItemSnapshot } from '@mastra/core/harness';
 import { assignTaskIds, parseSubagentMeta } from '@mastra/core/harness';
+import type { GoalEvaluationPayload } from '@mastra/core/stream';
 import chalk from 'chalk';
 import {
   insertChatComponentWithBoundarySpacing,
@@ -15,6 +16,7 @@ import {
 import { AskQuestionInlineComponent } from './components/ask-question-inline.js';
 import { AssistantMessageComponent } from './components/assistant-message.js';
 import type { ChatSpacingKind } from './components/chat-spacing.js';
+import { JudgeDisplayComponent } from './components/judge-display.js';
 import { OMMarkerComponent } from './components/om-marker.js';
 import { OMOutputComponent } from './components/om-output.js';
 import { PlanResultComponent } from './components/plan-approval-inline.js';
@@ -25,6 +27,11 @@ import { TemporalGapComponent } from './components/temporal-gap.js';
 import { ToolExecutionComponentEnhanced } from './components/tool-execution-enhanced.js';
 import { PendingUserMessageComponent, UserMessageComponent } from './components/user-message.js';
 import { formatToolResult, isTaskMutationTool } from './handlers/tool.js';
+import {
+  getCurrentModeColor as getStateModeColor,
+  getDisplayStateSnapshot,
+  listActiveMessages,
+} from './session-access.js';
 import type { TUIState } from './state.js';
 import { BOX_INDENT, getMarkdownTheme, theme, mastra } from './theme.js';
 
@@ -47,7 +54,7 @@ function getPendingUserMessageLabel(isInterjection?: boolean): string | undefine
 }
 
 function getCurrentModeColor(state: TUIState): string | undefined {
-  return state.harness.getCurrentMode?.()?.color;
+  return getStateModeColor(state);
 }
 
 // =============================================================================
@@ -238,7 +245,7 @@ export function confirmPendingUserMessage(state: TUIState, messageId: string, te
   const pending = state.pendingSignalMessageComponentsById.get(messageId);
   if (!pending) return;
 
-  if (state.streamingComponent && state.harness.getDisplayState().isRunning) {
+  if (state.streamingComponent && getDisplayStateSnapshot(state).isRunning) {
     state.streamingComponent = undefined;
     state.streamingMessage = undefined;
   }
@@ -321,7 +328,25 @@ export function addUserMessage(state: TUIState, message: HarnessMessage, options
   );
 
   if (reminderPart) {
-    const goalMetadata = reminderPart as typeof reminderPart & { goalMaxTurns?: number; judgeModelId?: string };
+    const goalMetadata = reminderPart as typeof reminderPart & {
+      goalMaxTurns?: number;
+      judgeModelId?: string;
+      goalEvaluation?: GoalEvaluationPayload;
+    };
+
+    if (reminderPart.reminderType === 'goal-judge' && goalMetadata.goalEvaluation) {
+      const judgeComponent = new JudgeDisplayComponent(
+        null,
+        goalMetadata.goalEvaluation.iteration,
+        goalMetadata.goalEvaluation.maxRuns,
+      );
+      judgeComponent.setEvaluation(goalMetadata.goalEvaluation);
+      addChildBeforeMessageOrFollowUps(state, judgeComponent, reminderPart.precedesMessageId);
+      state.messageComponentsById.set(message.id, judgeComponent);
+      state.ui.requestRender();
+      return;
+    }
+
     const reminderComponent = createReminderComponent(reminderPart.reminderType, {
       message: reminderPart.message,
       path: reminderPart.path,
@@ -464,7 +489,7 @@ export function addUserMessage(state: TUIState, message: HarnessMessage, options
 
     state.messageComponentsById.set(message.id, userComponent);
 
-    if (state.streamingComponent && state.harness.getDisplayState().isRunning) {
+    if (state.streamingComponent && getDisplayStateSnapshot(state).isRunning) {
       state.chatContainer.addChild(userComponent);
       state.followUpComponents.push(userComponent);
       reconcileChatBoundarySpacers(state.chatContainer);
@@ -569,7 +594,7 @@ function getLatestMessageTimestamp(messages: HarnessMessage[]): number | undefin
  * Called on thread switch and initial load.
  */
 export async function renderExistingMessages(state: TUIState): Promise<void> {
-  const messages = await state.harness.listMessages({ limit: STARTUP_MESSAGE_WINDOW_SIZE });
+  const messages = await listActiveMessages(state, { limit: STARTUP_MESSAGE_WINDOW_SIZE });
   state.lastRenderedMessageAt = getLatestMessageTimestamp(messages);
 
   state.chatContainer.clear();
@@ -616,7 +641,9 @@ export async function renderExistingMessages(state: TUIState): Promise<void> {
           }
 
           // Find matching tool result
-          const toolResult = message.content.find(c => c.type === 'tool_result' && c.id === content.id);
+          const toolResult = message.content.find(
+            (c: HarnessMessageContent) => c.type === 'tool_result' && c.id === content.id,
+          );
 
           // Render subagent tool calls with dedicated component
           if (content.name === 'subagent') {
@@ -852,22 +879,16 @@ export async function renderExistingMessages(state: TUIState): Promise<void> {
     if (state.taskProgress) {
       state.taskProgress.updateTasks(previousTasksAcc);
     }
-    const currentTasks =
-      typeof state.harness.getState === 'function'
-        ? (state.harness.getState() as { tasks?: TaskItemSnapshot[] }).tasks
-        : undefined;
+    const currentTasks = (state.session.state.get() as { tasks?: TaskItemSnapshot[] } | undefined)?.tasks;
     if (!areTasksEqual(currentTasks, previousTasksAcc)) {
       try {
-        await state.harness.setState({ tasks: previousTasksAcc });
+        await state.session.state.set({ tasks: previousTasksAcc });
       } catch {
         // Custom harness state schemas may not accept TUI replayed task state.
         // Keep the reconstructed task list local to display state in that case.
       }
     }
-    const harnessWithReplayTasks = state.harness as typeof state.harness & {
-      restoreDisplayTasks?: (tasks: TaskItemSnapshot[]) => void;
-    };
-    harnessWithReplayTasks.restoreDisplayTasks?.(previousTasksAcc);
+    state.session.displayState.restoreTasks(previousTasksAcc as never);
   }
 
   reconcileChatBoundarySpacers(state.chatContainer);

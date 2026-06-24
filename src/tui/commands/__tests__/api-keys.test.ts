@@ -14,8 +14,12 @@ describe('api key refresh helpers', () => {
     const refreshModelAuthStatus = vi.fn().mockResolvedValue(undefined);
     const ctx = {
       state: {
+        session: {
+          model: {
+            get: () => 'mastra/anthropic/claude-sonnet-4-6',
+          },
+        },
         harness: {
-          getCurrentModelId: () => 'mastra/anthropic/claude-sonnet-4-6',
           switchModel,
         },
       },
@@ -36,8 +40,12 @@ describe('api key refresh helpers', () => {
     const switchModel = vi.fn().mockResolvedValue(undefined);
     const ctx = {
       state: {
+        session: {
+          model: {
+            get: () => 'openai/gpt-5.4',
+          },
+        },
         harness: {
-          getCurrentModelId: () => 'openai/gpt-5.4',
           switchModel,
         },
       },

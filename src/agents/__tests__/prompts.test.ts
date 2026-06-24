@@ -192,6 +192,31 @@ describe('buildFullPrompt', () => {
     expect(prompt).toContain('goal judge can tell when the work is done');
   });
 
+  it('requires plan mode to submit completed plans through submit_plan', () => {
+    const prompt = buildFullPrompt({
+      projectPath: '/tmp/project',
+      projectName: 'test-project',
+      gitBranch: 'main',
+      platform: 'darwin',
+      date: '2026-03-23',
+      mode: 'plan',
+      activePlan: null,
+      modeId: 'plan',
+      currentDate: '2026-03-23',
+      workingDir: '/tmp/project',
+      state: {
+        permissionRules: { tools: {} },
+      },
+    });
+
+    expect(prompt).toContain('## submit_plan Payload');
+    expect(prompt).toContain('call the `submit_plan` tool immediately');
+    expect(prompt).toContain('submit_plan.plan');
+    expect(prompt).toContain('Do not output the completed plan as ordinary assistant text');
+    expect(prompt).not.toContain('## Your Plan Output');
+    expect(prompt).not.toContain('Produce a clear, step-by-step plan with this structure');
+  });
+
   it('includes common binary availability in environment details', () => {
     const prompt = buildFullPrompt({
       projectPath: '/tmp/project',

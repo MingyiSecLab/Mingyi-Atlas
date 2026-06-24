@@ -27,7 +27,7 @@ export async function refreshCurrentModelAfterApiKeyChange(
   ctx: SlashCommandContext,
   provider: string,
 ): Promise<void> {
-  const currentModelId = ctx.state.harness.getCurrentModelId() ?? '';
+  const currentModelId = ctx.state.session.model.get() ?? '';
   if (!currentModelId) return;
 
   const currentProvider = getModelProviderId(currentModelId);

@@ -81,6 +81,18 @@ function createContext(threads: HarnessThread[]) {
       switchThread: vi.fn(),
       cloneThread: vi.fn(),
     },
+    session: {
+      thread: {
+        list: vi.fn((options?: unknown) => state.harness.listThreads(options)),
+        getId: vi.fn(() => state.harness.getCurrentThreadId()),
+      },
+      identity: {
+        getResourceId: vi.fn(() => state.harness.getResourceId()),
+      },
+      mode: {
+        get: vi.fn(() => state.harness.getCurrentModeId()),
+      },
+    },
   };
 
   const ctx = {

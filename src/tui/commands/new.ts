@@ -3,9 +3,10 @@ import type { SlashCommandContext } from './types.js';
 export async function handleNewCommand(ctx: SlashCommandContext): Promise<void> {
   const { state } = ctx;
 
-  // Abort any in-flight stream so events from the old thread do not leak
-  // into the new conversation.
-  state.harness.abort();
+  // Detach from the old thread's event stream so cross-process events
+  // don't leak into the new conversation. Unlike bare abort(), this also
+  // unsubscribes from the PubSub topic.
+  state.harness.detachFromCurrentThread();
 
   state.pendingNewThread = true;
   state.chatContainer.clear();
@@ -17,9 +18,9 @@ export async function handleNewCommand(ctx: SlashCommandContext): Promise<void> 
   state.messageComponentsById.clear();
   state.allShellComponents = [];
   // Clear file tracking in display state (thread_created will also reset this)
-  state.harness.getDisplayState().modifiedFiles.clear();
+  state.session.displayState.get().modifiedFiles.clear();
   // Clear per-thread ephemeral state from the global harness state
-  await state.harness.setState({ tasks: [], activePlan: null, sandboxAllowedPaths: [] });
+  await state.session.state.set({ tasks: [], activePlan: null, sandboxAllowedPaths: [] });
   if (state.taskProgress) {
     state.taskProgress.updateTasks([]);
   }

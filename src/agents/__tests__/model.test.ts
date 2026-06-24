@@ -186,7 +186,7 @@ import { wrapLanguageModel } from 'ai';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { opencodeClaudeMaxProvider, buildAnthropicOAuthFetch } from '../../providers/claude-max.js';
 import { openaiCodexProvider, buildOpenAICodexOAuthFetch } from '../../providers/openai-codex.js';
-import { resolveModel, getDynamicModel, getAnthropicApiKey, getOpenAIApiKey } from '../model.js';
+import { resolveModel, getDynamicModel, getGoalJudgeModel, getAnthropicApiKey, getOpenAIApiKey } from '../model.js';
 
 function makeRequestContext({ threadId, resourceId }: { threadId?: string; resourceId?: string } = {}) {
   const values = new Map<string, unknown>();
@@ -369,6 +369,36 @@ describe('resolveModel', () => {
     });
 
     it('remaps OpenAI GPT-5 models for Codex OAuth in dynamic model resolution', () => {
+      mockAuthStorageInstance.get.mockReturnValue({
+        type: 'oauth',
+        access: 'openai-oauth-access-token',
+        refresh: 'openai-oauth-refresh-token',
+        expires: Date.now() + 60_000,
+      });
+
+      const values = new Map<string, unknown>();
+      const requestContext = {
+        get: (key: string) => values.get(key),
+        set: (key: string, value: unknown) => values.set(key, value),
+      } as any;
+      requestContext.set('harness', {
+        session: {
+          modelId: 'openai/gpt-5.2',
+        },
+        state: {
+          thinkingLevel: 'high',
+        },
+      });
+
+      getDynamicModel({ requestContext });
+
+      expect(openaiCodexProvider).toHaveBeenCalledWith('gpt-5.2-codex', {
+        thinkingLevel: 'high',
+        headers: undefined,
+      });
+    });
+
+    it('falls back to legacy state.currentModelId when session.modelId is unavailable', () => {
       mockAuthStorageInstance.get.mockReturnValue({
         type: 'oauth',
         access: 'openai-oauth-access-token',
@@ -757,6 +787,43 @@ describe('resolveModel', () => {
       });
       expect(MastraGateway).toHaveBeenCalledWith({ baseUrl: 'https://gateway-api.mastra.ai' });
       delete process.env['MASTRA_GATEWAY_API_KEY'];
+    });
+  });
+
+  describe('getGoalJudgeModel', () => {
+    it('returns undefined when no goal judge model is configured', () => {
+      mockLoadSettings.mockReturnValue({ customProviders: [], memoryGateway: {}, models: { goalJudgeModel: null } });
+
+      const result = getGoalJudgeModel({ requestContext: makeRequestContext() });
+
+      expect(result).toBeUndefined();
+    });
+
+    it('resolves the configured goal judge model through the normal model resolver', () => {
+      mockAuthStorageInstance.get.mockReturnValue({
+        type: 'oauth',
+        access: 'openai-oauth-access-token',
+        refresh: 'openai-oauth-refresh-token',
+        expires: Date.now() + 60_000,
+      });
+      mockLoadSettings.mockReturnValue({
+        customProviders: [],
+        memoryGateway: {},
+        models: { goalJudgeModel: 'openai/gpt-5.2' },
+      });
+
+      const result = getGoalJudgeModel({
+        requestContext: makeRequestContext({ threadId: 'thread-123', resourceId: 'resource-456' }),
+      }) as Record<string, unknown>;
+
+      expect(result.__provider).toBe('openai-codex');
+      expect(openaiCodexProvider).toHaveBeenCalledWith('gpt-5.2-codex', {
+        thinkingLevel: undefined,
+        headers: {
+          'x-thread-id': 'thread-123',
+          'x-resource-id': 'resource-456',
+        },
+      });
     });
   });
 });

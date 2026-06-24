@@ -10,6 +10,7 @@ import {
   handleAgentEnd,
   handleAgentAborted,
   handleAgentError,
+  handleGoalEvaluation,
   handleMessageStart,
   handleMessageUpdate,
   handleMessageEnd,
@@ -40,6 +41,12 @@ import {
   handleToolEnd,
 } from './handlers/index.js';
 import type { EventHandlerContext } from './handlers/types.js';
+import {
+  getCurrentResourceId,
+  getCurrentThreadId,
+  getDisplayStateSnapshot,
+  listThreads,
+} from './session-access.js';
 import type { TUIState } from './state.js';
 import { getGithubPrSubscriptionsFromMetadata } from './state.js';
 
@@ -89,8 +96,8 @@ export async function dispatchEvent(event: HarnessEvent, ectx: EventHandlerConte
     case 'tool_approval_required':
       trackInteractivePrompt(ectx, 'tool_approval_required', {
         toolName: event.toolName,
-        threadId: state.harness.getCurrentThreadId(),
-        resourceId: state.harness.getResourceId(),
+        threadId: getCurrentThreadId(state),
+        resourceId: getCurrentResourceId(state),
       });
       handleToolApprovalRequired(ectx, event.toolCallId, event.toolName, event.args);
       break;
@@ -107,8 +114,8 @@ export async function dispatchEvent(event: HarnessEvent, ectx: EventHandlerConte
       if (event.toolName === 'ask_user' || event.toolName === 'request_access' || event.toolName === 'submit_plan') {
         trackInteractivePrompt(ectx, event.toolName, {
           toolName: event.toolName,
-          threadId: state.harness.getCurrentThreadId(),
-          resourceId: state.harness.getResourceId(),
+          threadId: getCurrentThreadId(state),
+          resourceId: getCurrentResourceId(state),
         });
       }
       handleToolInputStart(ectx, event.toolCallId, event.toolName);
@@ -146,7 +153,7 @@ export async function dispatchEvent(event: HarnessEvent, ectx: EventHandlerConte
       ectx.showInfo(`Switched to thread: ${event.threadId}`);
       // Clear per-thread ephemeral state first so renderExistingMessages
       // and other downstream observers see clean state.
-      await state.harness.setState({ tasks: [], activePlan: null, sandboxAllowedPaths: [] });
+      await state.session.state.set({ tasks: [], activePlan: null, sandboxAllowedPaths: [] });
       if (state.taskProgress) {
         state.taskProgress.updateTasks([]);
         state.ui.requestRender();
@@ -162,7 +169,7 @@ export async function dispatchEvent(event: HarnessEvent, ectx: EventHandlerConte
         }
       });
       // Update current thread title for status line display
-      const threads = await state.harness.listThreads();
+      const threads = await listThreads(state);
       const currentThread = threads.find((t: HarnessThread) => t.id === event.threadId);
       if (currentThread) {
         state.currentThreadTitle = currentThread.title;
@@ -172,8 +179,12 @@ export async function dispatchEvent(event: HarnessEvent, ectx: EventHandlerConte
           state.githubPrPollingActive = false;
           state.githubPrGradientAnimator?.stop();
         }
-        // Load goal state from thread metadata
-        state.goalManager?.loadFromThreadMetadata(metadata);
+        // Load the objective from the durable ThreadState slot, falling back to
+        // the legacy thread-metadata goal for pre-migration threads.
+        await state.goalManager?.loadFromThread(state);
+        if (!state.goalManager?.getGoal()) {
+          state.goalManager?.loadFromThreadMetadata(metadata);
+        }
       }
       break;
     }
@@ -199,12 +210,12 @@ export async function dispatchEvent(event: HarnessEvent, ectx: EventHandlerConte
         state.goalManager?.loadFromThreadMetadata(event.thread.metadata as Record<string, unknown> | undefined);
       }
       // Sync inherited resource-level settings
-      const tState = state.harness.getState() as any;
+      const tState = state.session.state.get() as any;
       if (typeof tState?.escapeAsCancel === 'boolean') {
         state.editor.escapeEnabled = tState.escapeAsCancel;
       }
       // Clear per-thread ephemeral state so new threads start clean.
-      await state.harness.setState({ tasks: [], activePlan: null, sandboxAllowedPaths: [] });
+      await state.session.state.set({ tasks: [], activePlan: null, sandboxAllowedPaths: [] });
       if (state.taskProgress) {
         state.taskProgress.updateTasks([]);
       }
@@ -363,7 +374,7 @@ export async function dispatchEvent(event: HarnessEvent, ectx: EventHandlerConte
         // narrates completion), so we don't leave a redundant completed-task
         // receipt in the transcript that reads like a second live list. We only
         // render an inline receipt when the list is explicitly cleared.
-        const previousTasks = state.harness.getDisplayState().previousTasks;
+        const previousTasks = (getDisplayStateSnapshot(state).previousTasks ?? []) as TaskItemSnapshot[];
         if (previousTasks.length > 0 && (!tasks || tasks.length === 0)) {
           // Tasks were cleared
           ectx.renderClearedTasksInline(previousTasks, insertIndex);
@@ -371,6 +382,11 @@ export async function dispatchEvent(event: HarnessEvent, ectx: EventHandlerConte
 
         state.ui.requestRender();
       }
+      break;
+    }
+
+    case 'goal_evaluation': {
+      handleGoalEvaluation(ectx, event.payload);
       break;
     }
 

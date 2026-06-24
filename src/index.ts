@@ -21,6 +21,7 @@ import {
 import type { RequestContext } from '@mastra/core/request-context';
 import type { PublicSchema } from '@mastra/core/schema';
 import { MastraCompositeStore } from '@mastra/core/storage';
+import { DEFAULT_GOAL_JUDGE_PROMPT, DEFAULT_GOAL_MAX_RUNS } from '@mastra/core/tools';
 import { DuckDBStore } from '@mastra/duckdb';
 
 import {
@@ -32,7 +33,7 @@ import {
 
 import { getDynamicInstructions } from './agents/instructions.js';
 import { getDynamicMemory } from './agents/memory.js';
-import { getDynamicModel, resolveModel } from './agents/model.js';
+import { getDynamicModel, getGoalJudgeModel, resolveModel } from './agents/model.js';
 import { PentestSkillSearchGate } from './agents/processors/pentest-skill-search-gate.js';
 import { getStaticallyLoadedInstructionPaths } from './agents/prompts/agent-instructions.js';
 import { executeSubagent } from './agents/subagents/execute.js';
@@ -45,7 +46,7 @@ import { planSubagent } from './agents/subagents/plan.js';
 import { attachOMThreadStatePersistence, restoreOMThreadStateForCurrentThread } from './agents/thread-caveman-state.js';
 import { createDynamicTools } from './agents/tools.js';
 
-import { getDynamicWorkspace } from './agents/workspace.js';
+import { getDynamicWorkspace, getGoalJudgeTools } from './agents/workspace.js';
 import { AuthStorage } from './auth/storage.js';
 import { DEFAULT_CONFIG_DIR, validateConfigDirName } from './constants.js';
 import { createOutcomeScorer, createEfficiencyScorer } from './evals/scorers/index.js';
@@ -95,7 +96,7 @@ export interface MingyiAtlasConfig {
   /** Working directory for project detection. Default: process.cwd() */
   cwd?: string;
   /** Override modes (model IDs, colors, which modes exist). Default: build/plan/fast/pentest */
-  modes?: HarnessMode<MingyiAtlasState>[];
+  modes?: HarnessMode[];
   /** Override or extend subagent definitions. Default: explore/plan/execute plus pentest specialists */
   subagents?: HarnessSubagent[];
   /** Extra tools merged into the dynamic tool set. Can be a static record or a function that receives requestContext. */
@@ -372,6 +373,12 @@ export async function createMingyiAtlas(config?: MingyiAtlasConfig) {
     instructions: getDynamicInstructions,
     model: getDynamicModel,
     tools: createDynamicTools(mcpManager, config?.extraTools, hookManager, config?.disabledTools),
+    goal: {
+      judge: ctx => getGoalJudgeModel(ctx, config?.settingsPath),
+      maxRuns: globalSettings.models.goalMaxTurns ?? DEFAULT_GOAL_MAX_RUNS,
+      prompt: DEFAULT_GOAL_JUDGE_PROMPT,
+      tools: getGoalJudgeTools,
+    },
     scorers: {
       outcome: {
         scorer: outcomeScorer,
@@ -408,34 +415,34 @@ export async function createMingyiAtlas(config?: MingyiAtlasConfig) {
   ];
 
   const defaultBuildModelId = 'anthropic/claude-opus-4-6';
-  const defaultModes: HarnessMode<MingyiAtlasState>[] = [
+  const defaultModes: HarnessMode[] = [
     {
       id: 'build',
       name: 'Build',
       default: true,
       defaultModelId: defaultBuildModelId,
-      color: mastra.green,
+      metadata: { color: mastra.green },
       agent: codeAgent,
     },
     {
       id: 'plan',
       name: 'Plan',
       defaultModelId: 'openai/gpt-5.2-codex',
-      color: mastra.purple,
+      metadata: { color: mastra.purple },
       agent: codeAgent,
     },
     {
       id: 'fast',
       name: 'Fast',
       defaultModelId: 'cerebras/zai-glm-4.7',
-      color: mastra.orange,
+      metadata: { color: mastra.orange },
       agent: codeAgent,
     },
     {
       id: 'pentest',
       name: 'Pentest',
       defaultModelId: defaultBuildModelId,
-      color: mastra.blue,
+      metadata: { color: mastra.blue },
       agent: codeAgent,
     },
   ];

@@ -1,8 +1,9 @@
+import { ensureActiveModelSelection } from '../model-selection.js';
 import { sendSlashCommandMessage } from './send-slash-command-message.js';
 import type { SlashCommandContext } from './types.js';
 
 export async function handleReviewCommand(ctx: SlashCommandContext, args: string[]): Promise<void> {
-  if (!ctx.state.harness.hasModelSelected()) {
+  if (!(await ensureActiveModelSelection(ctx.state))) {
     ctx.showInfo('No model selected. Use /models to select a model, or /login to authenticate.');
     return;
   }

@@ -52,6 +52,26 @@ describe('gateway oauth fetch wrappers', () => {
     });
   });
 
+  it('merges SDK-provided anthropic-beta values with the OAuth-required betas', async () => {
+    anthropicStorage.get.mockReturnValue({ type: 'oauth' });
+    anthropicStorage.getApiKey.mockResolvedValue('oauth-token');
+    fetchMock.mockResolvedValueOnce(new Response('{}', { status: 200 }));
+
+    const { buildAnthropicOAuthFetch } = await import('../claude-max.js');
+    const fetchWithOAuth = buildAnthropicOAuthFetch({ authStorage: anthropicStorage as any });
+
+    await fetchWithOAuth('https://api.anthropic.com/v1/messages', {
+      headers: { 'anthropic-beta': 'server-side-fallback-2026-06-01' },
+    });
+
+    const headers = fetchMock.mock.calls[0]?.[1]?.headers as Headers;
+    const betas = headers.get('anthropic-beta')!.split(',');
+    expect(betas).toContain('server-side-fallback-2026-06-01');
+    expect(betas).toContain('oauth-2025-04-20');
+    expect(betas).toContain('claude-code-20250219');
+    expect(new Set(betas).size).toBe(betas.length);
+  });
+
   it('annotates OpenAI gateway fetch errors with the request URL', async () => {
     openAIStorage.get.mockReturnValue({ type: 'oauth', access: 'oauth-token', expires: Date.now() + 60_000 });
     fetchMock.mockRejectedValueOnce(new Error('fetch failed'));

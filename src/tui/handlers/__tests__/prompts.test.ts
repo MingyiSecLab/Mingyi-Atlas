@@ -14,7 +14,7 @@ function createCtx() {
     options: { inlineQuestions: true },
     harness: {
       respondToToolSuspension: vi.fn(),
-      getDisplayState: vi.fn(() => ({ isRunning: false })),
+      session: { displayState: { get: vi.fn(() => ({ isRunning: false })) } },
     },
     pendingInlineQuestions: [],
     gradientAnimator: {
@@ -58,25 +58,26 @@ describe('handleAskQuestion goal mode', () => {
     await promise;
   });
 
-  it('responds through the harness object so Mastra methods keep their this binding', async () => {
+  it('resolves a multi_select prompt with an array of every toggled option label', async () => {
     const { ctx, state } = createCtx();
-    const harness = {
-      wasCalledWithThis: false,
-      getDisplayState: vi.fn(() => ({ isRunning: false })),
-      respondToToolSuspension(args: { toolCallId: string; resumeData: unknown }) {
-        this.wasCalledWithThis = true;
-        expect(args).toEqual({ toolCallId: 'q1', resumeData: 'A' });
-        return Promise.resolve();
-      },
-    };
-    state.harness = harness as any;
+    const options = [{ label: 'React' }, { label: 'Vue' }, { label: 'Svelte' }];
 
-    const promise = handleAskQuestion(ctx, 'q1', 'Pick one', [{ label: 'A' }]);
+    const promise = handleAskQuestion(ctx, 'q1', 'Which apply?', options, 'multi_select');
 
-    state.activeInlineQuestion!.handleInput('\r');
+    const component = state.activeInlineQuestion!;
+    // Toggle React (space), move down twice to Svelte, toggle it, then confirm (enter).
+    component.handleInput(' ');
+    component.handleInput('\x1b[B');
+    component.handleInput('\x1b[B');
+    component.handleInput(' ');
+    component.handleInput('\r');
+
     await promise;
 
-    expect(harness.wasCalledWithThis).toBe(true);
+    expect(state.harness.respondToToolSuspension).toHaveBeenCalledWith({
+      toolCallId: 'q1',
+      resumeData: ['React', 'Svelte'],
+    });
   });
 });
 
@@ -87,9 +88,11 @@ function createPlanApprovalCtx() {
     accepted: Promise.resolve({ accepted: true, runId: 'run-1' }),
   });
   const state = {
+    session: {
+      state: { set: vi.fn().mockResolvedValue(undefined) },
+      identity: { getResourceId: vi.fn(() => 'resource-1') },
+    },
     harness: {
-      setState: vi.fn().mockResolvedValue(undefined),
-      getResourceId: vi.fn(() => 'resource-1'),
       respondToToolSuspension: vi.fn().mockResolvedValue(undefined),
       sendSignal,
     },

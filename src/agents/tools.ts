@@ -112,7 +112,7 @@ export function createDynamicTools(
       Object.assign(tools, mcpTools);
     }
 
-    if (ctx?.modeId === 'pentest') {
+    if (ctx?.session.modeId === 'pentest') {
       Object.assign(tools, createContextTools());
       Object.assign(tools, createFindingTools());
       tools.http_request = httpRequestTool;

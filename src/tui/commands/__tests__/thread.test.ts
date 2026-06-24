@@ -40,11 +40,21 @@ function createMockHarness() {
 
 function createMockCtx(harness: ReturnType<typeof createMockHarness>) {
   const infoMessages: string[] = [];
+  const session = {
+    thread: {
+      getId: vi.fn(() => harness.getCurrentThreadId()),
+      list: vi.fn((options?: unknown) => harness.listThreads(options)),
+    },
+    identity: {
+      getResourceId: vi.fn(() => harness.getResourceId()),
+    },
+  };
 
   return {
     ctx: {
       state: {
         pendingNewThread: false,
+        session,
       },
       harness: harness as any,
       showInfo: vi.fn((msg: string) => infoMessages.push(msg)),

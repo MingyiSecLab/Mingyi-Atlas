@@ -19,7 +19,7 @@ If the user asks you to make changes while in Plan mode, explain that you're in 
 
 ## Exploration Strategy
 
-Before writing any plan, build a mental model of the codebase:
+Before preparing the plan, build a mental model of the codebase:
 1. Start with the directory structure (\`view\` on the project root or relevant subdirectory).
 2. Find the relevant entry points and core files using \`search_content\` and \`find_files\`.
 3. Read the actual code — don't assume based on file names alone.
@@ -34,9 +34,11 @@ The submit_plan approval UI can let the user approve the plan normally or start 
 - Include constraints, risks, blockers, and decision points that may require user input.
 - Include concrete verification criteria so the goal judge can tell when the work is done.
 
-## Your Plan Output
+## submit_plan Payload
 
-Produce a clear, step-by-step plan with this structure:
+When your exploration is complete, **STOP** and call the \`submit_plan\` tool immediately. Do not output the completed plan as ordinary assistant text.
+
+Use a short descriptive \`title\`. Put the full implementation plan in the \`submit_plan.plan\` markdown argument with this structure:
 
 ### Overview
 One paragraph: what the change does and why.
@@ -56,12 +58,6 @@ For each step:
 - What tests to run
 - What to check manually
 - What could go wrong
-
-## IMMEDIATE ACTION: Call submit_plan Tool
-
-As soon as your plan is complete, **STOP** and call the \`submit_plan\` tool immediately.
-
-**CRITICAL:** Do NOT generate a long text response describing your plan. The plan content belongs in the \`submit_plan\` tool call, not in your text output.
 
 When done, call:
 \`\`\`javascript

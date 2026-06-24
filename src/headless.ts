@@ -236,7 +236,7 @@ function autoResolve<TState extends Record<string, unknown>>(
       };
     }
     case 'tool_approval_required': {
-      harness.respondToToolApproval({ decision: 'approve' });
+      harness.session.respondToToolApproval({ decision: 'approve' });
       return { resolved: true, label: `[auto-approved] ${event.toolName}`, json: { ...event, autoApproved: true } };
     }
     default:
@@ -351,7 +351,7 @@ function finalizeSummary<TState extends Record<string, unknown>>(
   harness: Harness<TState>,
 ): void {
   summary.finishReason = endEvent.reason;
-  summary.threadId = harness.getCurrentThreadId() ?? undefined;
+  summary.threadId = harness.session.thread.getId() ?? undefined;
 }
 
 /** Resolve a thread by ID or title. Tries exact ID match first, then title. */
@@ -359,7 +359,7 @@ async function resolveThread<TState extends Record<string, unknown>>(
   harness: Harness<TState>,
   threadIdOrTitle: string,
 ): Promise<{ threadId: string; matchType: 'id' | 'title' } | { error: string }> {
-  const threads = await harness.listThreads();
+  const threads = await harness.session.thread.list();
 
   const byId = threads.find(t => t.id === threadIdOrTitle);
   if (byId) return { threadId: byId.id, matchType: 'id' };
@@ -447,7 +447,7 @@ export async function runHeadless<TState extends Record<string, unknown>>(
 
     if (!args.model) {
       if (modeModelId) {
-        if (harness.getCurrentModelId() !== modeModelId) {
+        if (harness.session.model.get() !== modeModelId) {
           await harness.switchModel({ modelId: modeModelId });
         }
         if (!emit) process.stderr.write(`[model] ${modeModelId} (mode: ${args.mode})\n`);
@@ -476,7 +476,7 @@ export async function runHeadless<TState extends Record<string, unknown>>(
 
   // --- Resolve thinking level ---
   if (args.thinkingLevel) {
-    await harness.setState({ thinkingLevel: args.thinkingLevel } as unknown as Partial<TState>);
+    await harness.session.state.set({ thinkingLevel: args.thinkingLevel } as unknown as Partial<TState>);
     if (!emit) process.stderr.write(`[thinking] ${args.thinkingLevel}\n`);
   }
 
@@ -544,7 +544,7 @@ export async function runHeadless<TState extends Record<string, unknown>>(
       await harness.switchThread({ threadId: result.threadId });
       if (!emit) process.stderr.write(`[thread] resumed ${result.threadId} (matched by ${result.matchType})\n`);
     } else if (args.continue_) {
-      const threads = await harness.listThreads();
+      const threads = await harness.session.thread.list();
       if (threads.length > 0) {
         const sorted = [...threads].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
         await harness.switchThread({ threadId: sorted[0]!.id });

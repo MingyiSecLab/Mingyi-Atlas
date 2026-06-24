@@ -23,7 +23,7 @@ npx @mingyilab/mingyi-atlas
 
 运行要求：
 
-- Node.js `>=22.13.0`
+- Node.js `>=22.19.0`
 - `fd` 或 `fdfind` 可选，但建议安装，用于更快的 `@file` 自动补全
 - Docker 可选，但使用容器支持的渗透测试浏览器/工具运行器时需要 Docker
 
@@ -161,12 +161,15 @@ CAPTCHA 处理仅限检测和人工交接。工具可以识别提供商、图片
 ```text
 ~/.mingyi-atlas/
   auth.json
+  analytics.json
   settings.json
   mingyi-atlas.db
   mingyi-atlas-vectors.db
   locks/
   signals/
 ```
+
+`analytics.json` 保存匿名、持久化的本机 telemetry distinct ID，不再使用主机名派生标识。
 
 项目数据：
 
@@ -198,6 +201,7 @@ const app = await createMingyiAtlas({
 | `ANTHROPIC_API_KEY` | Anthropic API Key 兜底配置 |
 | `OPENAI_API_KEY` | OpenAI API Key |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Google 模型 API Key |
+| `MASTRA_TELEMETRY_DISABLED=1` | 禁用产品 telemetry |
 | `MINGYI_ATLAS_DISABLE_CAFFEINATE=1` | 禁用 macOS 防休眠 |
 | `MINGYI_ATLAS_ANALYTICS_DEBUG=1` | 打印 analytics 调试事件 |
 | `MINGYI_ATLAS_CVE_CACHE_PATH` | 覆盖 CVE 缓存路径 |
@@ -241,7 +245,8 @@ pnpm pack:check
 - [docs/pentest-capabilities.md](docs/pentest-capabilities.md)：渗透测试能力全景参考，包括工具矩阵、子 Agent 职责、技能覆盖和安全边界。
 - [docs/pentest-tools.md](docs/pentest-tools.md)：渗透测试工具设计细节和 Scope 规则。
 - [docs/security-domain.md](docs/security-domain.md)：安全域数据层：数据模型、持久化、去重和报告。
-- [docs/skills-and-workflows.md](docs/skills-and-workflows.md)：内置技能和工作流指导。
+- [docs/skills.md](docs/skills.md)：技能结构、发现规则和编写说明。
+- [docs/workflows.md](docs/workflows.md)：工作流分层、运行时工作流现状与使用边界。
 
 ## 发布
 

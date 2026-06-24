@@ -12,7 +12,7 @@ import { addPendingUserMessage, addUserMessage, renderExistingMessages } from '.
 import type { TUIState } from '../state.js';
 
 function createState(): TUIState {
-  return {
+  const state = {
     chatContainer: new Container(),
     ui: { requestRender: vi.fn() },
     toolOutputExpanded: false,
@@ -26,9 +26,47 @@ function createState(): TUIState {
     pendingSignalMessageComponentsById: new Map(),
     followUpComponents: [],
     harness: {
-      getDisplayState: () => ({ isRunning: false }),
+      getDisplayState: vi.fn(() => ({ isRunning: false, tasks: [], previousTasks: [] })),
+      listMessages: vi.fn().mockResolvedValue([]),
+      getState: vi.fn(() => ({})),
+      setState: vi.fn().mockResolvedValue(undefined),
+      restoreDisplayTasks: vi.fn(),
     },
-  } as unknown as TUIState;
+  } as unknown as TUIState & { harness: Record<string, any> };
+
+  state.session = {
+    displayState: {
+      get: vi.fn(() => state.harness.getDisplayState()),
+      restoreTasks: vi.fn((tasks: unknown[]) => state.harness.restoreDisplayTasks?.(tasks)),
+    },
+    thread: {
+      listActiveMessages: vi.fn((options?: { limit?: number }) => state.harness.listMessages?.(options ?? {})),
+      list: vi.fn(() => state.harness.listThreads?.() ?? Promise.resolve([])),
+      getId: vi.fn(() => state.harness.getCurrentThreadId?.() ?? null),
+    },
+    state: {
+      get: vi.fn(() => state.harness.getState?.() ?? {}),
+      set: vi.fn((updates: Record<string, unknown>) => state.harness.setState?.(updates) ?? Promise.resolve(undefined)),
+    },
+    identity: {
+      getResourceId: vi.fn(() => state.harness.getResourceId?.()),
+    },
+    mode: {
+      get: vi.fn(() => state.harness.getCurrentModeId?.()),
+      resolve: vi.fn(() => {
+        const mode = state.harness.getCurrentMode?.();
+        return mode ? { ...mode, metadata: { color: mode.color } } : { metadata: {} };
+      }),
+    },
+    followUps: {
+      count: vi.fn(() => state.harness.getFollowUpCount?.() ?? 0),
+    },
+    run: {
+      isRunning: vi.fn(() => state.harness.isRunning?.() ?? false),
+    },
+  } as any;
+
+  return state as unknown as TUIState;
 }
 
 function createUserMessage(

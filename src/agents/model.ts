@@ -476,7 +476,7 @@ export function resolveModel(
 export function getDynamicModel({ requestContext }: { requestContext: RequestContext }): ResolvedModel {
   const harnessContext = requestContext.get('harness') as HarnessRequestContext<any> | undefined;
 
-  const modelId = harnessContext?.state?.currentModelId;
+  const modelId = harnessContext?.session?.modelId ?? harnessContext?.state?.currentModelId;
   if (!modelId) {
     throw new Error('No model selected. Use /models to select a model first.');
   }
@@ -484,4 +484,13 @@ export function getDynamicModel({ requestContext }: { requestContext: RequestCon
   const thinkingLevel = harnessContext?.state?.thinkingLevel as ThinkingLevel | undefined;
 
   return resolveModel(modelId, { thinkingLevel, remapForCodexOAuth: true, requestContext });
+}
+
+export function getGoalJudgeModel(
+  { requestContext }: { requestContext: RequestContext },
+  settingsPath?: string,
+): ResolvedModel | undefined {
+  const judgeModelId = loadSettings(settingsPath).models.goalJudgeModel;
+  if (!judgeModelId) return undefined;
+  return resolveModel(judgeModelId, { remapForCodexOAuth: true, requestContext });
 }

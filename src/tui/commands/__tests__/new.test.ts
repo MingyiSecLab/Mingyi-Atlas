@@ -16,10 +16,12 @@ function createCtx() {
     allShellComponents: [{}],
     taskToolInsertIndex: 5,
     taskProgress: { updateTasks: vi.fn() },
+    session: {
+      displayState: { get: vi.fn(() => displayState) },
+      state: { set: vi.fn().mockResolvedValue(undefined) },
+    },
     harness: {
-      abort: vi.fn(),
-      getDisplayState: vi.fn(() => displayState),
-      setState: vi.fn().mockResolvedValue(undefined),
+      detachFromCurrentThread: vi.fn(),
     },
     ui: { requestRender: vi.fn() },
   };
@@ -33,12 +35,29 @@ function createCtx() {
 }
 
 describe('handleNewCommand', () => {
-  it('aborts the running stream before starting a pending new thread', async () => {
+  it('detaches from the current thread before starting a pending new thread', async () => {
     const { ctx, state, displayState } = createCtx();
+    const callOrder: string[] = [];
+
+    state.harness.detachFromCurrentThread.mockImplementation(() => {
+      callOrder.push('detach');
+    });
+    const originalPendingNewThread = Object.getOwnPropertyDescriptor(state, 'pendingNewThread');
+    Object.defineProperty(state, 'pendingNewThread', {
+      set(value: boolean) {
+        if (value) callOrder.push('pendingNewThread');
+        Object.defineProperty(state, 'pendingNewThread', { value, writable: true, configurable: true });
+      },
+      get() {
+        return originalPendingNewThread?.value ?? false;
+      },
+      configurable: true,
+    });
 
     await handleNewCommand(ctx);
 
-    expect(state.harness.abort).toHaveBeenCalledTimes(1);
+    expect(state.harness.detachFromCurrentThread).toHaveBeenCalledTimes(1);
+    expect(callOrder).toEqual(['detach', 'pendingNewThread']);
     expect(state.pendingNewThread).toBe(true);
     expect(state.chatContainer.clear).toHaveBeenCalledTimes(1);
     expect(state.pendingTools.size).toBe(0);
@@ -49,7 +68,7 @@ describe('handleNewCommand', () => {
     expect(state.messageComponentsById.size).toBe(0);
     expect(state.allShellComponents).toEqual([]);
     expect(displayState.modifiedFiles.size).toBe(0);
-    expect(state.harness.setState).toHaveBeenCalledWith({ tasks: [], activePlan: null, sandboxAllowedPaths: [] });
+    expect(state.session.state.set).toHaveBeenCalledWith({ tasks: [], activePlan: null, sandboxAllowedPaths: [] });
     expect(state.taskProgress.updateTasks).toHaveBeenCalledWith([]);
     expect(state.taskToolInsertIndex).toBe(-1);
     expect(ctx.updateStatusLine).toHaveBeenCalledTimes(1);

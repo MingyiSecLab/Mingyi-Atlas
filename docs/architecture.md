@@ -1,6 +1,6 @@
 # Architecture Overview
 
-Mingyi Atlas is a terminal AI agent built on top of Mastra's `Agent`, `Harness`, and `Workspace` primitives. The project combines an interactive TUI, a headless runner, dynamic prompts, dynamic tools, skill loading, persistent state, and a pentest-oriented security domain layer.
+Mingyi Atlas is a terminal AI agent built on top of Mastra's `Agent`, `Harness`, and `Workspace` primitives. The project combines an interactive TUI, a headless runner, dynamic prompts, dynamic tools, skill loading, runtime workflows, persistent state, and a pentest-oriented security domain layer.
 
 This document focuses on three questions:
 
@@ -20,6 +20,7 @@ flowchart TD
   App --> Harness["Mastra Harness"]
   App --> Agent["Code Agent"]
   App --> Workspace["Dynamic Workspace<br/>src/agents/workspace.ts"]
+  App --> Workflows["Runtime workflows<br/>src/workflow/*"]
   App --> Memory["Storage + Memory + Vector Store"]
   App --> Auth["Auth + Settings"]
   App --> MCP["MCP Manager"]
@@ -33,6 +34,7 @@ flowchart TD
 
   Tools --> WorkspaceTools["Workspace tools<br/>view/search/edit/exec/LSP"]
   Tools --> ModelTools["Custom tools<br/>src/tools/*"]
+  Tools --> WorkflowTools["Workflow-backed tools<br/>run_pentest_workflow"]
   Tools --> McpTools["MCP tools"]
 
   TUI --> Harness
@@ -48,6 +50,7 @@ flowchart LR
   SRC --> Agents["agents/<br/>prompts, model routing,<br/>workspace, subagents, processors"]
   SRC --> Tools["tools/<br/>model-callable tools"]
   SRC --> Security["security/<br/>pentest context, findings,<br/>reports, shared helpers"]
+  SRC --> Workflow["workflow/<br/>typed runtime workflows and registries"]
   SRC --> Skills["skills/<br/>built-in skills and workflows"]
   SRC --> Auth["auth/<br/>OAuth/API key storage"]
   SRC --> MCP["mcp/<br/>server config and manager"]
@@ -69,6 +72,7 @@ src/
   agents/                 Prompt assembly, model routing, workspace, subagents
   tools/                  Agent-callable tool implementations
   security/               Pentest domain logic and runtime artifact helpers
+  workflow/               Typed runtime workflows and registries
   skills/                 Built-in Markdown skills and workflows
   auth/                   Credential storage and provider auth helpers
   mcp/                    MCP config loading and tool exposure
@@ -168,6 +172,8 @@ There are two tool layers in the system.
 2. Custom dynamic tools in `src/tools/`:
    security analysis, browser/container helpers, reporting, scope recording, and similar domain-specific operations.
 
+Some custom tools are thin wrappers over runtime workflows. `run_pentest_workflow` is the current example: it exposes a workflow-backed execution path through the pentest tool surface.
+
 The workspace is built in `src/agents/workspace.ts` and controls:
 
 - project root
@@ -186,9 +192,14 @@ Dynamic tool registration in `src/agents/tools.ts` controls:
 - per-tool deny rules from thread state
 - hook wrapping for pre/post tool use
 
-## Skills and Subagents
+## Skills, Workflows, and Subagents
 
-Skills are Markdown operating instructions, not TypeScript tools.
+Skills are Markdown operating instructions, not TypeScript tools. Runtime workflows are TypeScript graphs and state machines.
+
+- Skills describe how to think and what order to follow.
+- Runtime workflows describe what executes and what state is persisted.
+- A workflow skill may guide a multi-step process without being executable code.
+- A runtime workflow may be executable code without being the primary orchestration prompt.
 
 - Skill path resolution lives in `src/agents/workspace.ts`
 - Built-in skills live in `src/skills`
@@ -209,6 +220,7 @@ The parent agent remains the orchestrator. Subagents are focused workers, not th
 ## Pentest Overlay
 
 The pentest path adds domain-specific state, tools, prompts, and runtime artifacts on top of the normal agent runtime.
+Today, the interactive pentest prompt remains the primary orchestrator; the runtime pentest workflow is an optional structured execution path.
 
 ```mermaid
 flowchart TD
@@ -216,7 +228,9 @@ flowchart TD
   PentestMode --> PentestTools["src/tools/* pentest tools"]
   PentestMode --> PentestSkills["src/skills/standard/* pentest skills"]
   PentestMode --> PentestSubagents["specialized pentest subagents"]
+  PentestMode --> PentestWorkflow["src/workflow/pentest/*"]
   PentestTools --> SecurityDomain["src/security/pentest/*"]
+  PentestWorkflow --> SecurityDomain
   SecurityDomain --> RuntimeData[".mingyi-atlas/pentest/targets/<target-slug>/"]
 ```
 
@@ -226,6 +240,7 @@ Runtime pentest data is stored under:
 .mingyi-atlas/pentest/targets/<target-slug>/
   context.json
   findings.json
+  workflow-runs/
   http-responses/
   browser-runs/
   tool-runs/
@@ -244,5 +259,6 @@ If you want to understand or change a specific area, start here:
 - Workspace behavior: `src/agents/workspace.ts`
 - Tool exposure: `src/agents/tools.ts`
 - Tool implementation: `src/tools/*`
+- Runtime workflows: `src/workflow/pentest/*`
 - TUI event flow: `src/tui/mastra-tui.ts`, `src/tui/event-dispatch.ts`, `src/tui/command-dispatch.ts`
 - Pentest domain state: `src/security/pentest/*`

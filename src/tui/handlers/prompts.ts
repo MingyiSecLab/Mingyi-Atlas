@@ -246,7 +246,7 @@ export async function handleSandboxAccessRequest(
  */
 async function approvePlan(ctx: EventHandlerContext, toolCallId: string, title: string, plan: string): Promise<void> {
   const { state } = ctx;
-  await state.harness.setState({
+  await state.session.state.set({
     activePlan: {
       title,
       plan,
@@ -256,7 +256,7 @@ async function approvePlan(ctx: EventHandlerContext, toolCallId: string, title: 
   savePlanToDisk({
     title,
     plan,
-    resourceId: state.harness.getResourceId(),
+    resourceId: state.session.identity.getResourceId(),
   }).catch(() => {});
   await respondToSuspension(ctx, toolCallId, { action: 'approved' });
 }

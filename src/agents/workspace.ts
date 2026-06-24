@@ -2,15 +2,16 @@ import fs, { existsSync } from 'node:fs';
 import os from 'node:os';
 import path, { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { ToolsInput } from '@mastra/core/agent';
 import type { HarnessRequestContext } from '@mastra/core/harness';
 import type { Mastra } from '@mastra/core/mastra';
 import type { RequestContext } from '@mastra/core/request-context';
-import { Workspace, LocalFilesystem, LocalSandbox } from '@mastra/core/workspace';
+import { Workspace, LocalFilesystem, LocalSandbox, createWorkspaceTools } from '@mastra/core/workspace';
 import type { LSPConfig, WorkspaceToolsConfig } from '@mastra/core/workspace';
 import { DEFAULT_CONFIG_DIR } from '../constants.js';
 import { loadSettings } from '../onboarding/settings.js';
 import type { MingyiAtlasState } from '../schema';
-import { TOOL_NAME_OVERRIDES } from '../tool-names.js';
+import { MC_TOOLS, TOOL_NAME_OVERRIDES } from '../tool-names.js';
 
 // =============================================================================
 // Sandbox Environment
@@ -168,7 +169,7 @@ function detectPackageRunner(projectPath: string): string | undefined {
 export function getDynamicWorkspace({ requestContext, mastra }: { requestContext: RequestContext; mastra?: Mastra }) {
   const ctx = requestContext.get('harness') as HarnessRequestContext<MingyiAtlasState> | undefined;
   const state = ctx?.getState();
-  const modeId = ctx?.modeId ?? 'build';
+  const modeId = ctx?.session?.modeId ?? 'build';
   const rawProjectPath = state?.projectPath;
 
   if (!rawProjectPath) {
@@ -230,4 +231,35 @@ export function getDynamicWorkspace({ requestContext, mastra }: { requestContext
     ...(skillPaths.length > 0 ? { skills: skillPaths } : {}),
     lsp: lspConfig,
   });
+}
+
+const GOAL_JUDGE_READONLY_TOOLS: readonly string[] = [
+  MC_TOOLS.VIEW,
+  MC_TOOLS.SEARCH_CONTENT,
+  MC_TOOLS.FIND_FILES,
+  MC_TOOLS.FILE_STAT,
+  MC_TOOLS.LSP_INSPECT,
+];
+
+export async function getGoalJudgeTools({
+  requestContext,
+  mastra,
+}: {
+  requestContext: RequestContext;
+  mastra?: Mastra;
+}): Promise<ToolsInput | undefined> {
+  let workspace: Workspace<LocalFilesystem, LocalSandbox>;
+  try {
+    workspace = getDynamicWorkspace({ requestContext, mastra });
+  } catch {
+    return undefined;
+  }
+
+  const allTools = await createWorkspaceTools(workspace, { requestContext, workspace });
+  const readonly: ToolsInput = {};
+  for (const name of GOAL_JUDGE_READONLY_TOOLS) {
+    if (allTools[name]) readonly[name] = allTools[name];
+  }
+
+  return Object.keys(readonly).length > 0 ? readonly : undefined;
 }

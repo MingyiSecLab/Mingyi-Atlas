@@ -433,7 +433,7 @@ describe('headless mode — --model flag', () => {
     expect(modelChanged.modelId).toBe('anthropic/claude-haiku-4-5');
 
     // Verify the harness state was updated
-    expect(harness.getCurrentModelId()).toBe('anthropic/claude-haiku-4-5');
+    expect(harness.session.model.get()).toBe('anthropic/claude-haiku-4-5');
   });
 
   it('returns exit code 1 for an unknown model', async () => {
@@ -614,8 +614,8 @@ describe('headless mode — --model flag', () => {
 
     expect(exitCode).toBe(0);
     expect(stderrCalls.join('')).toContain('--model overrides --mode');
-    expect(harness.getCurrentModeId()).toBe('fast');
-    expect(harness.getCurrentModelId()).toBe('anthropic/claude-haiku-4-5');
+    expect(harness.session.mode.get()).toBe('fast');
+    expect(harness.session.model.get()).toBe('anthropic/claude-haiku-4-5');
   });
 
   it('emits structured warning in JSON mode when --model and --mode are both provided', async () => {
@@ -698,8 +698,8 @@ describe('headless mode — --mode with effectiveDefaults', () => {
     );
 
     expect(exitCode).toBe(0);
-    expect(harness.getCurrentModelId()).toBe('cerebras/zai-glm-4.7');
-    expect(harness.getCurrentModeId()).toBe('fast');
+    expect(harness.session.model.get()).toBe('cerebras/zai-glm-4.7');
+    expect(harness.session.mode.get()).toBe('fast');
   });
 
   it('--model still overrides effectiveDefaults', async () => {
@@ -728,8 +728,8 @@ describe('headless mode — --mode with effectiveDefaults', () => {
 
     expect(exitCode).toBe(0);
     // --model should win over effectiveDefaults
-    expect(harness.getCurrentModeId()).toBe('fast');
-    expect(harness.getCurrentModelId()).toBe('anthropic/claude-haiku-4-5');
+    expect(harness.session.mode.get()).toBe('fast');
+    expect(harness.session.model.get()).toBe('anthropic/claude-haiku-4-5');
   });
 
   it('--mode returns exit code 1 when resolved model is not available', async () => {
@@ -840,7 +840,7 @@ describe('headless mode — --mode with effectiveDefaults', () => {
 
     expect(exitCode).toBe(0);
     expect(stderrCalls.join('')).toContain('--mode fast has no configured model, using default');
-    expect(harness.getCurrentModeId()).toBe('fast');
+    expect(harness.session.mode.get()).toBe('fast');
     // No model_changed event should have been emitted
     expect(events.find(e => e.type === 'model_changed')).toBeUndefined();
   });
@@ -867,7 +867,7 @@ describe('headless mode — thread control', () => {
     expect(exitCode).toBe(0);
 
     // Verify the targeted thread was actually used (updatedAt advanced)
-    const threads = await harness.listThreads();
+    const threads = await harness.session.thread.list();
     const targeted = threads.find(t => t.id === thread.id);
     expect(targeted).toBeDefined();
     expect(targeted!.updatedAt.getTime()).toBeGreaterThan(updatedAtBefore);
@@ -893,7 +893,7 @@ describe('headless mode — thread control', () => {
     expect(exitCode).toBe(0);
 
     // Verify the titled thread was actually used
-    const threads = await harness.listThreads();
+    const threads = await harness.session.thread.list();
     const targeted = threads.find(t => t.id === thread.id);
     expect(targeted).toBeDefined();
     expect(targeted!.updatedAt.getTime()).toBeGreaterThan(updatedAtBefore);
@@ -935,7 +935,7 @@ describe('headless mode — thread control', () => {
 
     expect(exitCode).toBe(0);
 
-    const threads = await harness.listThreads();
+    const threads = await harness.session.thread.list();
     const titled = threads.find(t => t.title === 'my-new-title');
     expect(titled).toBeDefined();
   });

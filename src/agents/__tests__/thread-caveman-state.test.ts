@@ -14,20 +14,32 @@ function createHarness({
   onListThreads?: () => void;
 }) {
   let activeThreadId: string | undefined = currentThreadId;
+  const getState = vi.fn(() => state);
+  const listThreads = vi.fn(async () => {
+    onListThreads?.();
+    return [{ id: 'thread-1', metadata }];
+  });
+  const setState = vi.fn(async (nextState: Record<string, unknown>) => {
+    Object.assign(state, nextState);
+  });
+  const setThreadSetting = vi.fn(async () => {});
   const harness = {
     getCurrentThreadId: vi.fn(() => activeThreadId),
-    getState: vi.fn(() => state),
-    listThreads: vi.fn(async () => {
-      onListThreads?.();
-      return [{ id: 'thread-1', metadata }];
-    }),
+    getState,
+    listThreads,
     switchCurrentThread: (threadId: string | undefined) => {
       activeThreadId = threadId;
     },
-    setState: vi.fn(async (nextState: Record<string, unknown>) => {
-      Object.assign(state, nextState);
-    }),
-    setThreadSetting: vi.fn(async () => {}),
+    setState,
+    setThreadSetting,
+    session: {
+      state: { get: getState, set: setState },
+      thread: {
+        getId: vi.fn(() => activeThreadId ?? null),
+        list: listThreads,
+        setSetting: setThreadSetting,
+      },
+    },
   };
 
   return harness;
@@ -40,7 +52,7 @@ describe('restoreOMThreadStateForCurrentThread', () => {
     await restoreOMThreadStateForCurrentThread(harness as never);
 
     expect(harness.listThreads).toHaveBeenCalledWith({ allResources: true });
-    expect(harness.setState).toHaveBeenCalledWith({ cavemanObservations: true });
+    expect(harness.session.state.set).toHaveBeenCalledWith({ cavemanObservations: true });
     expect(harness.setThreadSetting).not.toHaveBeenCalled();
   });
 
@@ -50,7 +62,7 @@ describe('restoreOMThreadStateForCurrentThread', () => {
     await restoreOMThreadStateForCurrentThread(harness as never);
 
     expect(harness.listThreads).toHaveBeenCalledWith({ allResources: true });
-    expect(harness.setState).toHaveBeenCalledWith({ cavemanObservations: false });
+    expect(harness.session.state.set).toHaveBeenCalledWith({ cavemanObservations: false });
     expect(harness.setThreadSetting).not.toHaveBeenCalled();
   });
 
@@ -59,7 +71,7 @@ describe('restoreOMThreadStateForCurrentThread', () => {
 
     await restoreOMThreadStateForCurrentThread(harness as never);
 
-    expect(harness.setState).not.toHaveBeenCalled();
+    expect(harness.session.state.set).not.toHaveBeenCalled();
     expect(harness.setThreadSetting).toHaveBeenCalledWith({ key: 'cavemanObservations', value: true });
   });
 
@@ -68,7 +80,7 @@ describe('restoreOMThreadStateForCurrentThread', () => {
 
     await restoreOMThreadStateForCurrentThread(harness as never);
 
-    expect(harness.setState).not.toHaveBeenCalled();
+    expect(harness.session.state.set).not.toHaveBeenCalled();
     expect(harness.setThreadSetting).toHaveBeenCalledWith({ key: 'cavemanObservations', value: false });
   });
 
@@ -78,7 +90,7 @@ describe('restoreOMThreadStateForCurrentThread', () => {
     await restoreOMThreadStateForCurrentThread(harness as never);
 
     expect(harness.listThreads).not.toHaveBeenCalled();
-    expect(harness.setState).not.toHaveBeenCalled();
+    expect(harness.session.state.set).not.toHaveBeenCalled();
     expect(harness.setThreadSetting).not.toHaveBeenCalled();
   });
 
@@ -91,7 +103,7 @@ describe('restoreOMThreadStateForCurrentThread', () => {
 
     await restoreOMThreadStateForCurrentThread(harness as never);
 
-    expect(harness.setState).not.toHaveBeenCalled();
+    expect(harness.session.state.set).not.toHaveBeenCalled();
     expect(harness.setThreadSetting).not.toHaveBeenCalled();
   });
 
@@ -104,7 +116,7 @@ describe('restoreOMThreadStateForCurrentThread', () => {
 
     await restoreOMThreadStateForCurrentThread(harness as never);
 
-    expect(harness.setState).not.toHaveBeenCalled();
+    expect(harness.session.state.set).not.toHaveBeenCalled();
     expect(harness.setThreadSetting).not.toHaveBeenCalled();
   });
 
@@ -113,7 +125,7 @@ describe('restoreOMThreadStateForCurrentThread', () => {
 
     await restoreOMThreadStateForCurrentThread(harness as never);
 
-    expect(harness.setState).toHaveBeenCalledWith({ observeAttachments: 'auto' });
+    expect(harness.session.state.set).toHaveBeenCalledWith({ observeAttachments: 'auto' });
     expect(harness.setThreadSetting).not.toHaveBeenCalled();
   });
 
@@ -122,7 +134,7 @@ describe('restoreOMThreadStateForCurrentThread', () => {
 
     await restoreOMThreadStateForCurrentThread(harness as never);
 
-    expect(harness.setState).not.toHaveBeenCalled();
+    expect(harness.session.state.set).not.toHaveBeenCalled();
     expect(harness.setThreadSetting).toHaveBeenCalledWith({ key: 'observeAttachments', value: false });
   });
 });

@@ -6,12 +6,33 @@ import { visibleWidth } from '@earendil-works/pi-tui';
 import chalk from 'chalk';
 import { applyGradientSweep } from './components/obi-loader.js';
 import { formatObservationStatus, formatReflectionStatus } from './components/om-progress.js';
+import {
+  getCurrentModeColor as getStateModeColor,
+  getDisplayStateSnapshot,
+  getQueuedFollowUpCount,
+} from './session-access.js';
 import type { GithubPrSubscriptionBadge, TUIState } from './state.js';
 import { theme, mastra, tintHex, getTermWidth, extendedColors } from './theme.js';
 
 // Colors for OM modes — read from proxy at render time so they pick up contrast adaptation
 const getObserverColor = () => mastra.orange;
 const getReflectorColor = () => mastra.pink;
+
+function getDefaultOmProgressState() {
+  return {
+    status: 'idle' as const,
+    pendingTokens: 0,
+    threshold: 0,
+    thresholdPercent: 0,
+    observationTokens: 0,
+    reflectionThreshold: 0,
+    reflectionThresholdPercent: 0,
+    cycleId: undefined,
+    startTime: undefined,
+    operationType: undefined,
+    bufferedStatus: undefined,
+  };
+}
 
 /** Returns true if a thread title is generic/auto-generated and should not be displayed. */
 function isGenericTitle(title: string): boolean {
@@ -70,7 +91,7 @@ export function updateStatusLine(state: TUIState): void {
   const SEP = '  '; // double-space separator between parts
 
   // --- Determine if we're showing observer/reflector instead of main mode ---
-  const omStatus = state.harness.getDisplayState().omProgress.status;
+  const omStatus = getDisplayStateSnapshot(state).omProgress?.status;
   const isJudging = Boolean(state.activeGoalJudge);
   const isObserving = omStatus === 'observing';
   const isReflecting = omStatus === 'reflecting';
@@ -80,10 +101,10 @@ export function updateStatusLine(state: TUIState): void {
   let modeBadge = '';
   let modeBadgeWidth = 0;
   const modes = state.harness.listModes();
-  const currentMode = modes.length > 1 ? state.harness.getCurrentMode() : undefined;
+  const currentMode = modes.length > 1 ? state.session.mode.resolve() : undefined;
   const judgeModeColor = mastra.blue;
   // Use judge color for goal judge activity, OM color for OM activity, otherwise mode color
-  const mainModeColor = currentMode?.color;
+  const mainModeColor = getStateModeColor(state);
   const modeColor = isJudging
     ? judgeModeColor
     : showOMMode
@@ -176,7 +197,7 @@ export function updateStatusLine(state: TUIState): void {
     displayPath = '~' + displayPath.slice(homedir.length);
   }
   const branch = state.projectInfo.gitBranch;
-  const queuedCount = state.pendingQueuedActions.length + state.harness.getFollowUpCount();
+  const queuedCount = state.pendingQueuedActions.length + getQueuedFollowUpCount(state);
   const queuedLabel = queuedCount > 0 ? `${queuedCount} queued` : null;
   const goalState = state.goalManager?.getGoal();
   const goalDuration = goalState?.status === 'active' ? formatGoalDuration(goalState) : null;
@@ -288,7 +309,7 @@ export function updateStatusLine(state: TUIState): void {
     const useBadge = opts.badge === 'short' ? shortModeBadge : modeBadge;
     const useBadgeWidth = opts.badge === 'short' ? shortModeBadgeWidth : modeBadgeWidth;
     // Memory info — animate label text when buffering is active
-    const ds = state.harness.getDisplayState();
+    const ds = getDisplayStateSnapshot(state);
     const msgLabelStyler =
       ds.bufferingMessages && state.gradientAnimator?.isRunning()
         ? (label: string) =>
@@ -309,9 +330,9 @@ export function updateStatusLine(state: TUIState): void {
               state.gradientAnimator!.getFadeProgress(),
             )
         : undefined;
-    const omProg = state.harness.getDisplayState().omProgress;
-    const obs = formatObservationStatus(omProg, opts.memCompact, msgLabelStyler);
-    const ref = formatReflectionStatus(omProg, opts.memCompact, obsLabelStyler);
+    const omProg = { ...getDefaultOmProgressState(), ...(getDisplayStateSnapshot(state).omProgress ?? {}) };
+    const obs = formatObservationStatus(omProg as any, opts.memCompact, msgLabelStyler);
+    const ref = formatReflectionStatus(omProg as any, opts.memCompact, obsLabelStyler);
     if (obs) {
       parts.push({ plain: obs, styled: obs });
     }
@@ -482,10 +503,10 @@ export function updateStatusLine(state: TUIState): void {
       showQueue: true,
       compactGoal: true,
     }) ??
-    // 15. Model only + queue count
-    buildLine({ modelId: tinyModelId, showDir: false, badge: undefined, showQueue: true }) ??
-    // 16. Model only + compact goal label
+    // 15. Model only + compact goal label
     buildLine({ modelId: tinyModelId, showDir: false, badge: undefined, showQueue: true, compactGoal: true }) ??
+    // 16. Model only + queue count
+    buildLine({ modelId: tinyModelId, showDir: false, badge: undefined, showQueue: true }) ??
     // 17. Badge only + queue count
     buildLine({ modelId: '', showDir: false, badge: 'short', showQueue: true }) ??
     // 13. Model only

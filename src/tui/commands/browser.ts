@@ -82,6 +82,15 @@ async function checkAndConfirmProviderMismatch(
 /**
  * Apply browser settings to all mode agents and track the active settings.
  */
+type BrowserAgent = { setBrowser(browser: MastraBrowser | undefined): void; browser?: unknown };
+
+function resolveModeAgent(mode: unknown, harnessState: unknown): BrowserAgent | undefined {
+  const modeAgent = (mode as { agent?: unknown }).agent;
+  return typeof modeAgent === 'function'
+    ? (modeAgent(harnessState) as BrowserAgent)
+    : (modeAgent as BrowserAgent | undefined);
+}
+
 function applyBrowserToAgents(
   ctx: SlashCommandContext,
   browser: MastraBrowser | undefined,
@@ -89,11 +98,11 @@ function applyBrowserToAgents(
 ): void {
   const modes = ctx.harness.listModes();
   for (const mode of modes) {
-    const agent = typeof mode.agent === 'function' ? mode.agent(ctx.state.harness.getState()) : mode.agent;
-    agent.setBrowser(browser);
+    const agent = resolveModeAgent(mode, ctx.state.session.state.get());
+    agent?.setBrowser(browser);
   }
   // Track the active browser settings in harness state
-  ctx.harness.setState({ [ACTIVE_BROWSER_KEY]: browserSettings } as any);
+  void ctx.state.session.state.set({ [ACTIVE_BROWSER_KEY]: browserSettings } as any);
 }
 
 /**
@@ -221,7 +230,7 @@ export async function handleBrowserCommand(ctx: SlashCommandContext, args: strin
 
   if (arg === 'status') {
     // Get the active browser settings from harness state (what's actually running)
-    const state = ctx.harness.getState() as any;
+    const state = ctx.state.session.state.get() as any;
     const activeSettings = state?.[ACTIVE_BROWSER_KEY] as BrowserSettings | undefined;
 
     // Check for config drift between file and active instance
@@ -424,10 +433,9 @@ export async function handleBrowserCommand(ctx: SlashCommandContext, args: strin
     }
 
     // Get browser instance from the current mode's agent
-    const currentMode = ctx.harness.getCurrentMode();
-    const agent =
-      typeof currentMode.agent === 'function' ? currentMode.agent(ctx.state.harness.getState()) : currentMode.agent;
-    const browserInstance = agent.browser;
+    const currentMode = ctx.state.session.mode.resolve();
+    const agent = resolveModeAgent(currentMode, ctx.state.session.state.get());
+    const browserInstance = agent?.browser;
 
     if (!browserInstance) {
       ctx.showError('Browser not enabled. Run /browser on first.');
